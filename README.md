@@ -72,7 +72,27 @@ full flow.
 
 With R2 configured, verified render and asset artifacts are uploaded to R2 and
 local render outputs are deleted by default. Use `--keep-local` when you need a
-local mp4 to inspect; otherwise use the R2 URL emitted after upload.
+local mp4 to inspect; otherwise use the R2 URL emitted after upload. After a
+successful upload the script prints `local <path> deleted after verified R2
+upload` so you don't have to guess where the mp4 went.
+
+### Working-copy semantics (read once before cleaning anything)
+
+`render-episode.mjs` builds a self-contained working copy under
+`apps/hyperframe/out/episodes/<slug>/` so the canonical episode under
+`src/episodes/<slug>/` never gets mutated. The working copy has two symlinks:
+
+- `out/episodes/<slug>/lib` → `src/lib`
+- `out/episodes/<slug>/assets` → `src/episodes/<slug>/assets`
+
+The script defends the invariant with explicit guards (refuses to render if
+the working-copy path resolves to the source dir or escapes `./out/`), but
+**cleanup tools that follow symlinks are the footgun to avoid**. Standard POSIX
+`rm -rf out/episodes/<slug>` removes the symlinks themselves and is safe.
+Tools like `find … -delete`, `rsync --delete`, and certain Node `fs.rm` configs
+can follow symlinks and destroy source files. If in doubt, target the working
+copy explicitly with `rm -rf out/episodes/<slug>` and never run symlink-
+following cleanup on `out/`.
 
 ## Author a new episode
 

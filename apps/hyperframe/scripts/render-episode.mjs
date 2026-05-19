@@ -367,8 +367,32 @@ const main = async () => {
     fs.copyFileSync(hfConfigPath, path.join(workDir, "hyperframes.json"));
   }
 
+  // Safety guard — the working copy MUST live under out/, never src/. If a
+  // future refactor accidentally points workDir at episodeDir, the cleanup
+  // commands below + the symlink layout would destroy source files. Cheap
+  // assertion catches that class of bug at the boundary.
+  if (path.resolve(workDir) === path.resolve(episodeDir)) {
+    console.error(
+      `render-episode: refusing to render — workDir resolves to the source dir (${workDir}). This would risk overwriting src/.`,
+    );
+    process.exit(1);
+  }
+  if (!path.resolve(workDir).startsWith(`${path.resolve("out")}${path.sep}`)) {
+    console.error(
+      `render-episode: refusing to render — workDir (${workDir}) is outside ./out/. Aborting.`,
+    );
+    process.exit(1);
+  }
+
   // Symlink lib + assets to keep the working copy tiny and avoid copying
   // voice.mp3 (~MBs) every render.
+  //
+  // FOOTGUN: `out/episodes/<slug>/{lib,assets}` are symlinks pointing back
+  // to `src/`. Standard POSIX `rm -rf` removes the symlinks themselves, not
+  // their targets — but commands that follow symlinks (`find -delete`,
+  // `rsync --delete`, some Node `fs.rm` configs) can nuke src/. If you need
+  // to clean a working copy, target the dir explicitly: `rm -rf out/episodes/<slug>`
+  // and do NOT use symlink-following tools on `out/`.
   ensureSymlink(path.join(workDir, "lib"), path.resolve("src/lib"));
   ensureSymlink(path.join(workDir, "assets"), assetsDir);
 
@@ -429,6 +453,7 @@ const main = async () => {
     console.warn(publishOptions.warning);
   }
 
+  let localDeleted = false;
   if (publishOptions.upload) {
     console.log("[render-episode] uploading verified artifacts to R2");
     const publishResult = await publishEpisodeArtifacts({
@@ -443,9 +468,16 @@ const main = async () => {
     );
     console.log(`[render-episode] wrote ${path.join(episodeDir, "render.remote.json")}`);
     console.log(`[render-episode] wrote ${path.join(episodeDir, "assets.remote.json")}`);
+    localDeleted = publishOptions.deleteLocal === true;
   }
 
-  console.log(`\n[render-episode] done — ${outPath}`);
+  if (localDeleted) {
+    console.log(
+      `\n[render-episode] done — local ${outPath} deleted after verified R2 upload. Re-run with --keep-local to inspect the mp4 locally.`,
+    );
+  } else {
+    console.log(`\n[render-episode] done — ${outPath}`);
+  }
 };
 
 main().catch((err) => {
