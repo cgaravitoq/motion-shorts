@@ -41,11 +41,11 @@ Two shorts produced with this pipeline and published on
       <sub><b>Codex desde el móvil</b> · 54s · <a href="https://www.youtube.com/shorts/HW0vRlc_nCo">YouTube</a></sub>
     </td>
     <td align="center" width="50%">
-      <a href="https://www.youtube.com/shorts/BONndbUKd64">
-        <img src=".github/assets/mcp-usb-c-of-agents.gif" width="280" alt="MCP: the USB-C of agents" />
+      <a href="https://www.youtube.com/shorts/aey_LhOTRK8">
+        <img src=".github/assets/claude-code-routines.gif" width="280" alt="Claude Code routines" />
       </a>
       <br/>
-      <sub><b>MCP: el USB-C de los agentes</b> · 48s · <a href="https://www.youtube.com/shorts/BONndbUKd64">YouTube</a></sub>
+      <sub><b>Claude Code routines</b> · 59s · <a href="https://www.youtube.com/shorts/aey_LhOTRK8">YouTube</a></sub>
     </td>
   </tr>
 </table>
