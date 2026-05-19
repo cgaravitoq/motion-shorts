@@ -7,7 +7,6 @@ export const env = createEnv({
     ELEVENLABS_MODEL_ID: z.string().min(1).optional(),
     ELEVENLABS_SCRIBE_MODEL: z.string().min(1).optional(),
     ELEVENLABS_VOICE_ID_ES: z.string().min(1).optional(),
-    ELEVENLABS_VOICE_ID_ES_PERSONAL: z.string().min(1).optional(),
     ELEVENLABS_VOICE_ID_EN: z.string().min(1).optional(),
     TTS_PROVIDER: z.enum(["elevenlabs", "inworld"]).default("elevenlabs"),
     INWORLD_API_KEY: z.string().min(1).optional(),

@@ -5,21 +5,23 @@
 Set in `.env`:
 
 ```
-ELEVENLABS_VOICE_ID_ES=t9LRTh3y1ioN00e9wsNh  # Aaron Abad — Native Castilian, primary ES voice
-ELEVENLABS_VOICE_ID_ES_PERSONAL=3OHCfRbi6YGikMbbSXug  # Carlos personal clone, secondary ES voice
-ELEVENLABS_VOICE_ID_EN=7VqWGAWwo2HMrylfKrcm  # Fatih Yildirim — tech narration
-ELEVENLABS_MODEL_ID=eleven_v3  # Default TTS model; override with --model when testing v2/v2.5
+ELEVENLABS_VOICE_ID_ES=<your-spanish-voice-id>  # Primary ES narration voice
+ELEVENLABS_VOICE_ID_EN=<your-english-voice-id>  # Primary EN narration voice
+ELEVENLABS_MODEL_ID=eleven_v3                   # Default TTS model; override with --model when testing v2/v2.5
 ```
 
-The primary Spanish voice is peninsular / European Spanish and should be used for normal Spanish shorts. Carlos's personal clone is kept as a secondary voice for brand continuity tests, but do not make it the default.
+Pick voices from the [ElevenLabs Voice Library](https://elevenlabs.io/app/voice-library) — copy each voice's ID into the env vars above. Recommended criteria for a narration short:
 
-Override per episode with `--voice=<id>` on the audio CLI.
+- **ES**: native Castilian / peninsular Spanish, tech-narration register, neutral pace.
+- **EN**: tech-narration register, neutral pace, no heavy regional accent unless intentional.
 
-| Role | Voice ID | Use |
-|------|----------|-----|
-| Primary ES | `t9LRTh3y1ioN00e9wsNh` | Production Spanish shorts, especially AI/tech explainers. |
-| Secondary ES | `3OHCfRbi6YGikMbbSXug` | Carlos personal clone; explicit A/B only. |
-| Hook ES candidate | `NhUo7cJi70nyU8yfCimA` | Peninsular social/hook voice; not default unless a short specifically needs more ad-style energy. |
+Override per call with `--voice=<id>` on the audio CLI when A/B-ing voices.
+
+| Role | Source | Use |
+|------|--------|-----|
+| Primary ES | `ELEVENLABS_VOICE_ID_ES` | Production Spanish shorts, especially AI/tech explainers. |
+| Primary EN | `ELEVENLABS_VOICE_ID_EN` | Production English shorts. |
+| Per-episode override | `--voice=<voice-id>` CLI flag | One-off A/B or specific narrator. |
 
 ## Audio settings (canonical)
 
@@ -42,7 +44,7 @@ bun run audio examples/<slug>.txt --lang=es \
 Override per-call:
 - Hook (3-5s, energetic): `--stability=0.35 --similarity-boost=0.75 --speed=1.0`
 - Amplified style: `--style=0.25` (increases API latency)
-- Personal clone: avoid style/stability experiments by default. A tested issue duplicated final words in captions/audio when the clone was generated with `--stability=0.4 --similarity-boost=0.82 --style=0.35 --speed=1.05`.
+- Cloned voices: avoid style/stability experiments by default — high-style settings on a clone have been observed to duplicate final words in audio/captions.
 
 ElevenLabs rejects extreme `speed` values; keep production Spanish narration in the conservative `1.0-1.08` band unless a specific A/B wins.
 

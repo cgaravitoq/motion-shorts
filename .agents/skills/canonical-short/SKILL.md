@@ -74,9 +74,11 @@ Then fill the source slots and validate the generated monolithic `index.html`. T
 Voice IDs are set in `.env.example`:
 
 ```bash
-ELEVENLABS_VOICE_ID_ES=l1zE9xgNpUTaQCZzpNJa  # Alberto Rodriguez -- Castilian narrator
-ELEVENLABS_VOICE_ID_EN=7VqWGAWwo2HMrylfKrcm  # Fatih Yildirim -- tech narration
+ELEVENLABS_VOICE_ID_ES=<your-spanish-voice-id>  # Pick from https://elevenlabs.io/app/voice-library
+ELEVENLABS_VOICE_ID_EN=<your-english-voice-id>
 ```
+
+See `docs/voice-config.md` for selection criteria.
 
 Audio settings (canonical):
 

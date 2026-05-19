@@ -5,7 +5,7 @@
 Production shorts (`short-01` through `short-08`) shipped, validating the canonical pattern:
 
 - **Architecture**: Monolithic single-file `index.html` per episode. Zero `data-composition-src`.
-- **Narrator at validation time**: ES preset (Alberto Rodriguez, `l1zE9xgNpUTaQCZzpNJa`). Superseded for new shorts by `docs/voice-config.md`: primary ES is `t9LRTh3y1ioN00e9wsNh`; Carlos's personal clone is secondary.
+- **Narrator at validation time**: a peninsular Spanish narrator preset from the ElevenLabs Voice Library. Superseded for new shorts by `docs/voice-config.md`, which documents how to pick and configure the primary ES / EN voices via env vars.
 - **Scene transitions**: `FADE = 0.75s` cross-fades via `autoAlpha + scale + filter:blur`
 - **Branding**: Persistent `#brand-corner` top-left + end-card crossfade (corner fades out, `.cta-brand` 34px solid pops in)
 - **Hierarchical spacing**: Explicit margins replace uniform `gap` — tag->headline (32-90px), headline->body (40-90px), intra-body (12-22px)

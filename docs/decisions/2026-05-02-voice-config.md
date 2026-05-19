@@ -4,12 +4,9 @@
 
 ## Voice IDs
 
-> Superseded for new shorts. See `docs/voice-config.md` for current voice IDs.
+> Superseded for new shorts. See `docs/voice-config.md` for current voice selection.
 
-- ES: Alberto Rodriguez (`l1zE9xgNpUTaQCZzpNJa`) — Castilian narrator
-- EN: Fatih Yildirim (`7VqWGAWwo2HMrylfKrcm`) — tech narration
-
-Both are public ElevenLabs community voices.
+The original validation used public ElevenLabs Voice Library narrators (one peninsular Castilian for ES, one tech-narration voice for EN). New shorts pick voices via `.env` (`ELEVENLABS_VOICE_ID_ES`, `ELEVENLABS_VOICE_ID_EN`) — no hardcoded IDs in the repo.
 
 ## Audio settings
 
