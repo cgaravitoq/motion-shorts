@@ -41,22 +41,34 @@ stdio MCP server; there is no maintained production API or worker stack.
 
 ## Render an existing demo episode
 
+The demos render out of the box, **with or without** an ElevenLabs API key:
+
 ```bash
 cd apps/hyperframe
 bun run render:episode demo-explainer-blocks --format=mp4
 ```
 
-`render-episode.mjs` ffprobes the episode's `voice.mp3`, stamps
-`data-duration` and inlines `assets/captions.json` in a working copy
-under `apps/hyperframe/out/episodes/<slug>/`, then invokes
-`bunx hyperframes render` on that copy — `apps/hyperframe/src/episodes/<slug>/`
-is never mutated. The episode's `meta.json` carries a `tail` field
-(default `3`) that pads past end-of-audio so the brand-card lockup holds
-long enough to read. Override per-render with `--tail=<seconds>`.
+- **With `voice.mp3`** under `assets/`: `render-episode.mjs` ffprobes it, stamps
+  `data-duration` on the stage and the `<audio id="voiceover">` tag, inlines
+  `assets/captions.json` for word-level karaoke, and renders with audio.
+- **Without `voice.mp3`** (e.g. on a fresh clone with no ElevenLabs key):
+  the script warns, **strips the `<audio>` tag**, and uses the stage's
+  existing `data-duration` as the silent timeline. You still get a
+  fully-animated motion-graphics mp4 — just no narration. Add voice later
+  by generating `voice.mp3` and re-running the render.
 
-The demo episodes ship without committed audio binaries — generate voice
-locally with `bun run audio` (see [Author a new episode](#author-a-new-episode))
-or wire your own R2 bucket and `bun run hydrate:episode <slug>`.
+The working copy lives under `apps/hyperframe/out/episodes/<slug>/`;
+`apps/hyperframe/src/episodes/<slug>/` is never mutated. The episode's
+`meta.json` carries a `tail` field (default `3`) that pads past
+end-of-audio so the brand-card lockup holds long enough to read. Override
+per-render with `--tail=<seconds>`. Silent renders ignore `tail` (the
+stage `data-duration` is authoritative).
+
+To add narration to a demo: write a short script (`examples/<slug>.txt`),
+then run `bun run audio examples/<slug>.txt --lang=es --out=public/voice/<slug>`
+and copy `voice.mp3` (and optional `captions.json`) into the episode's
+`assets/` dir. See [Author a new episode](#author-a-new-episode) for the
+full flow.
 
 With R2 configured, verified render and asset artifacts are uploaded to R2 and
 local render outputs are deleted by default. Use `--keep-local` when you need a

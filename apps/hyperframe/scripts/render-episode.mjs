@@ -118,6 +118,17 @@ const stampDuration = (html, totalSeconds, voiceSeconds) => {
   return stamped;
 };
 
+const readStageDurationSeconds = (htmlPath) => {
+  const html = fs.readFileSync(htmlPath, "utf8");
+  const stageTag = html.match(/<div\b[^>]*\bdata-composition-id="[^"]+"[^>]*>/)?.[0];
+  if (!stageTag) return Number.NaN;
+  const raw = stageTag.match(/\bdata-duration="([^"]+)"/)?.[1];
+  return raw === undefined ? Number.NaN : Number.parseFloat(raw);
+};
+
+const stripVoiceoverTag = (html) =>
+  html.replace(/\s*<audio\b[^>]*\bid="voiceover"[^>]*>\s*<\/audio>\s*/g, "\n      ");
+
 const stampBrand = (html, brandSlug) => {
   if (!brandSlug) return { html, brand: null };
   const brandPath = path.resolve("brands", brandSlug, "brand.json");
@@ -256,12 +267,11 @@ const main = async () => {
     process.exit(1);
   }
 
-  for (const required of [metaPath, audioPath]) {
-    if (!fs.existsSync(required)) {
-      console.error(`render-episode: missing required file ${required}`);
-      process.exit(1);
-    }
+  if (!fs.existsSync(metaPath)) {
+    console.error(`render-episode: missing required file ${metaPath}`);
+    process.exit(1);
   }
+  const hasVoice = fs.existsSync(audioPath);
 
   // ── Validate all flags BEFORE any work ────────────────────────────────
   const fmt = values.format;
@@ -302,22 +312,42 @@ const main = async () => {
     process.exit(1);
   }
 
-  // ── Measure voice duration ────────────────────────────────────────────
-  const voiceSeconds = await getAudioDurationSeconds(audioPath);
-  if (!Number.isFinite(voiceSeconds) || voiceSeconds <= 0) {
-    console.error(
-      `render-episode: ffprobe returned invalid duration (${voiceSeconds}). Install ffmpeg or pin a duration manually.`,
+  // ── Measure voice duration (or fall back to silent render) ───────────
+  let voiceSeconds;
+  let totalSeconds;
+  if (hasVoice) {
+    voiceSeconds = await getAudioDurationSeconds(audioPath);
+    if (!Number.isFinite(voiceSeconds) || voiceSeconds <= 0) {
+      console.error(
+        `render-episode: ffprobe returned invalid duration (${voiceSeconds}). Install ffmpeg or pin a duration manually.`,
+      );
+      process.exit(1);
+    }
+    totalSeconds = Number((voiceSeconds + tailSeconds).toFixed(2));
+  } else {
+    voiceSeconds = 0;
+    totalSeconds = readStageDurationSeconds(indexPath);
+    if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
+      console.error(
+        `render-episode: ${audioPath} missing and could not read a positive data-duration from the stage <div>. ` +
+          'Generate voice with `bun run audio` or pin data-duration on <div data-composition-id=...>.',
+      );
+      process.exit(1);
+    }
+    console.warn(
+      `[render-episode] ${audioPath} not found — rendering silent. Stage data-duration=${totalSeconds}s drives the timeline. ` +
+        "Run `bun run audio <script.txt> --out=public/voice/<slug>` to add narration.",
     );
-    process.exit(1);
   }
-  const totalSeconds = Number((voiceSeconds + tailSeconds).toFixed(2));
 
   // ── Build working copy under out/episodes/<slug>/ ─────────────────────
   const workDir = path.resolve("out/episodes", slug);
   fs.mkdirSync(workDir, { recursive: true });
 
   const srcHtml = fs.readFileSync(indexPath, "utf8");
-  const stamped = stampDuration(srcHtml, totalSeconds, voiceSeconds);
+  const stamped = hasVoice
+    ? stampDuration(srcHtml, totalSeconds, voiceSeconds)
+    : stripVoiceoverTag(srcHtml);
   const { html: brandedHtml, brand } = stampBrand(stamped, meta.brand);
   if (brand && brand.publishable === false) {
     console.warn(
@@ -342,8 +372,11 @@ const main = async () => {
   ensureSymlink(path.join(workDir, "lib"), path.resolve("src/lib"));
   ensureSymlink(path.join(workDir, "assets"), assetsDir);
 
+  const durationLog = hasVoice
+    ? `${totalSeconds}s [voice=${voiceSeconds.toFixed(2)}s + tail=${tailSeconds}s from ${tailSource}]`
+    : `${totalSeconds}s [silent, stage data-duration]`;
   console.log(
-    `[render-episode] prepared ${workDir} (duration=${totalSeconds}s [voice=${voiceSeconds.toFixed(2)}s + tail=${tailSeconds}s from ${tailSource}], captions=${captionsCount}${brand ? `, brand=${brand.slug}` : ""})`,
+    `[render-episode] prepared ${workDir} (duration=${durationLog}, captions=${captionsCount}${brand ? `, brand=${brand.slug}` : ""})`,
   );
 
   // ── Run hyperframes render ────────────────────────────────────────────
