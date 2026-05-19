@@ -47,7 +47,7 @@ const contentTypeFor = (filename) => {
 
 const runId =
   process.argv.find((arg) => arg.startsWith("--run-id="))?.slice("--run-id=".length) ??
-  "tracked-assets-migration-cga-74";
+  "tracked-assets-migration";
 const env = {
   ...Bun.env,
   ...(Bun.env.R2_UPLOAD_GATEWAY_URL && Bun.env.R2_UPLOAD_GATEWAY_TOKEN
