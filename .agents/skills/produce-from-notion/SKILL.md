@@ -122,7 +122,7 @@ The 3 drafts MUST use different `Hook Type` values from: Bold Claim / Curiosity 
 
 ### TTS pre-flight
 
-Apply pronunciation gotchas to ALL 3 scripts before showing them: acronyms with periods, Spanish cognates over English tech terms, numbers in words. This way Carlos doesn't pick a TTS landmine.
+Apply pronunciation gotchas to ALL 3 scripts before showing them: acronyms with periods, Spanish cognates over English tech terms, numbers in words. This way the operator doesn't pick a TTS landmine.
 
 ## HITL #1 -- User picks a draft
 

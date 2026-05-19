@@ -6,10 +6,10 @@ export const DEFAULT_ELEVENLABS_MODEL_ID = "eleven_v3";
 const DEFAULT_OUTPUT_FORMAT = "mp3_44100_128" as const;
 
 /**
- * Spanish narration preset. The default ES voice is a peninsular Spanish
- * narrator; Carlos's personal clone is kept as an explicit secondary voice
- * because lowering stability / adding style can duplicate words in short
- * technical scripts.
+ * Spanish narration preset, tuned for a peninsular Spanish narrator on
+ * eleven_v3. Cloned voices are sensitive to style/stability changes —
+ * lowering stability or adding style can duplicate words in short technical
+ * scripts, so leave the defaults unless A/B-testing per call.
  *
  * Override per call (e.g. `--stability=0.35 --similarity-boost=0.75 --speed=1.0`
  * for a 3-5 s hook intro) — per-call values take precedence.
