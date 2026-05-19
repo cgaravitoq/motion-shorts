@@ -1,5 +1,8 @@
 # motion-shorts
 
+[![YouTube Channel](https://img.shields.io/badge/YouTube-@cgaravitoq--ai-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/@cgaravitoq-ai)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 Turborepo monorepo for producing vertical 9:16 motion-graphics shorts
 (YouTube Shorts, LinkedIn, TikTok, Instagram Reels) entirely from text
 scripts — [Hyperframes](https://hyperframes.heygen.com/) +
@@ -22,6 +25,34 @@ headless Chrome + ffmpeg, frame-accurate. See
 `source-driven-editorial-demo`, `catalog-components-lab`) of the
 canonical pattern documented in
 [`.agents/skills/canonical-short/SKILL.md`](./.agents/skills/canonical-short/SKILL.md).
+
+## Examples in the wild
+
+Two shorts produced with this pipeline and published on
+[**@cgaravitoq-ai**](https://www.youtube.com/@cgaravitoq-ai):
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <a href="https://www.youtube.com/shorts/HW0vRlc_nCo">
+        <img src=".github/assets/codex-mobile-remote-control.gif" width="280" alt="Codex mobile remote control" />
+      </a>
+      <br/>
+      <sub><b>Codex desde el móvil</b> · 54s · <a href="https://www.youtube.com/shorts/HW0vRlc_nCo">YouTube</a></sub>
+    </td>
+    <td align="center" width="50%">
+      <a href="https://www.youtube.com/shorts/BONndbUKd64">
+        <img src=".github/assets/mcp-usb-c-of-agents.gif" width="280" alt="MCP: the USB-C of agents" />
+      </a>
+      <br/>
+      <sub><b>MCP: el USB-C de los agentes</b> · 48s · <a href="https://www.youtube.com/shorts/BONndbUKd64">YouTube</a></sub>
+    </td>
+  </tr>
+</table>
+
+More episodes (Claude Code hooks, Codex vs Claude Code, prompt caching,
+agentic context engineering, AI engineering harness, …) on the
+[YouTube channel](https://www.youtube.com/@cgaravitoq-ai).
 
 ## Setup
 
