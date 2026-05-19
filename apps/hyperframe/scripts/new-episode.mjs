@@ -135,6 +135,43 @@ if (!brandLogoWatermarkSvg) {
   process.exit(1);
 }
 
+// Outro scene + animation come from the canonical catalog snippet so updates
+// to the catalog propagate to every new scaffold automatically. The snippet
+// owns the structure and the timeline; the scaffolder owns the surrounding
+// CSS (which uses brand-pack vars via `tk()`).
+const OUTRO_START = 24;
+const OUTRO_DURATION = 6;
+const brandLogoOutroSnippet = fs.readFileSync(
+  path.resolve("../../packages/catalog/snippets/brand-logo-outro.html"),
+  "utf8",
+);
+const outroSectionRaw = brandLogoOutroSnippet.match(/<section\b[\s\S]*?<\/section>/)?.[0];
+const outroTimelineRaw = brandLogoOutroSnippet.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+if (!outroSectionRaw || !outroTimelineRaw) {
+  console.error("new-episode: could not parse brand-logo-outro snippet (section + script required)");
+  process.exit(1);
+}
+const brandLogoOutroSection = outroSectionRaw
+  .replace('data-start="<OUTRO_START>"', `data-start="${OUTRO_START}"`)
+  .replace('data-duration="<OUTRO_DURATION>"', `data-duration="${OUTRO_DURATION}"`)
+  .replace(/<title id="brand-outro-title">[^<]*<\/title>/, `<title id="brand-outro-title">${brandName} logo</title>`)
+  .replace(
+    /<h1 id="brand-name" class="brand-outro__name">[^<]*<\/h1>/,
+    `<h1 id="brand-name" class="brand-outro__name">${brandName}</h1>`,
+  )
+  .replace(
+    /<p id="brand-tagline" class="brand-outro__tagline">[^<]*<\/p>/,
+    `<p id="brand-tagline" class="brand-outro__tagline">${brandTagline}</p>`,
+  )
+  // Scaffolded episodes don't have a source URL by default; drop the source
+  // line. Source-driven shorts can re-add it inline when authoring.
+  .replace(/<p id="brand-source"[^>]*>[^<]*<\/p>/, "");
+const brandLogoOutroTimeline = outroTimelineRaw
+  .replace(/^\s*\/\/[^\n]*\n/gm, "")
+  .replace(/OUTRO_START/g, String(OUTRO_START))
+  .replace(/,\s*"#brand-source"/g, "")
+  .trim();
+
 const indexHtml = templateId
   ? instantiateEpisodeTemplate({
       templateId,
@@ -243,22 +280,7 @@ const indexHtml = templateId
     >
       <div id="brand-corner" class="clip" data-start="0" data-duration="30" data-track-index="97">${brandLogoWatermarkSvg}</div>
 
-      <section id="scene-brand-outro" class="scene clip" data-start="24" data-duration="6" data-track-index="7" style="position:absolute; inset:0;">
-        <div class="brand-outro">
-          <div class="brand-outro__lockup">
-            <div id="brand-aura" class="brand-outro__aura"></div>
-            <svg id="brand-mark" class="brand-outro__mark" viewBox="0 0 578 320" role="img" aria-label="${brandName} logo">
-              <path id="brand-piece-left" class="brand-outro__piece" d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" />
-              <path id="brand-piece-top-left" class="brand-outro__piece" d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" />
-              <path id="brand-piece-bridge" class="brand-outro__piece" d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" />
-              <path id="brand-piece-bottom-right" class="brand-outro__piece" d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" />
-              <path id="brand-piece-right" class="brand-outro__piece" d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" />
-            </svg>
-          </div>
-          <h1 id="brand-name" class="brand-outro__name">${brandName}</h1>
-          <p id="brand-tagline" class="brand-outro__tagline">${brandTagline}</p>
-        </div>
-      </section>
+      ${brandLogoOutroSection}
 
       <!--
         Author scenes inline here. Track-index convention:
@@ -305,15 +327,13 @@ const indexHtml = templateId
           maxTokens: 5,
         });
       }
+      // Hide the outro scene before its reveal so the scaffolded episode
+      // shows black (or whatever scenes you add) until OUTRO_START.
       tl.set("#scene-brand-outro", { autoAlpha: 0, scale: 1.02, filter: "blur(8px)" }, 0);
-      tl.set(["#brand-name", "#brand-tagline"], { autoAlpha: 0, scale: 0.88, filter: "blur(16px)", transformOrigin: "50% 50%" }, 0);
-      tl.to("#brand-corner", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, 23.45);
-      tl.to("#scene-brand-outro", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, 24);
-      tl.to("#brand-aura", { autoAlpha: 1, scale: 1, duration: 0.65, ease: "power2.out" }, 24.2);
-      tl.to(".brand-outro__piece", { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.55, stagger: 0.08, ease: "back.out(1.6)", startAt: { x: -24, y: 20, scale: 0.92 } }, 24.3);
-      tl.to(["#brand-name", "#brand-tagline"], { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.62, stagger: 0.1, ease: "power3.out" }, 24.62);
-      tl.to("#brand-mark", { scale: 1.04, duration: 0.32, ease: "power2.out", overwrite: "auto" }, 24.8);
-      tl.to("#brand-mark", { scale: 1, duration: 0.34, ease: "power2.inOut", overwrite: "auto" }, 25.12);
+
+      // Canonical outro animation — sourced at scaffold time from
+      // packages/catalog/snippets/brand-logo-outro.html.
+      ${brandLogoOutroTimeline}
 
       window.__timelines = window.__timelines || {};
       window.__timelines["${slug}"] = tl;
