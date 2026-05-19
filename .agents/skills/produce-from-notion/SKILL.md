@@ -166,7 +166,7 @@ If `no, cambiar X`: edit script, re-run audio, re-`afplay`. Loop until `si`.
 ## Stage 4 -- Scaffold + build HTML
 
 ```bash
-BRAND_HANDLE=@cgaravitoq bun run new:episode <slug>
+BRAND_HANDLE=@your_handle bun run new:episode <slug>   # or set BRAND_HANDLE in .env
 
 cp public/voice/<slug>/voice.mp3 apps/hyperframe/src/episodes/<slug>/assets/voice.mp3
 cp public/voice/<slug>/captions.json apps/hyperframe/src/episodes/<slug>/assets/captions.json
