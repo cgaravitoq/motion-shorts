@@ -372,6 +372,18 @@ const main = async () => {
   ensureSymlink(path.join(workDir, "lib"), path.resolve("src/lib"));
   ensureSymlink(path.join(workDir, "assets"), assetsDir);
 
+  // 1x1 transparent GIF served as favicon.ico. Chromium auto-fetches
+  // /favicon.ico on every page load; without this, each render worker logs
+  // a `[non-blocking] 404` line. Pure console noise — has no effect on the
+  // mp4 — but it surfaces on every public-clone render.
+  fs.writeFileSync(
+    path.join(workDir, "favicon.ico"),
+    Buffer.from(
+      "47494638396101000100800000ffffff00000021f90401000000002c00000000010001000002024401003b",
+      "hex",
+    ),
+  );
+
   const durationLog = hasVoice
     ? `${totalSeconds}s [voice=${voiceSeconds.toFixed(2)}s + tail=${tailSeconds}s from ${tailSource}]`
     : `${totalSeconds}s [silent, stage data-duration]`;
