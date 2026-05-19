@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="map-route preview">
+  <rect width="720" height="405" fill="#0d1117"/>
+  <path d="M100 318 L158 134 L334 78 L562 110 L640 276 L552 334 L300 350 Z" fill="#192233" stroke="#fff" stroke-opacity=".14"/>
+  <path d="M154 286 C254 152 392 210 532 130" fill="none" stroke="#f8d66d" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="154" cy="286" r="15" fill="#ff5c7a"/>
+  <circle cx="532" cy="130" r="15" fill="#ff5c7a"/>
+  <text x="48" y="58" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">map-route</text>
+</svg>

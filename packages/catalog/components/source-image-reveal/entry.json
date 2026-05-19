@@ -1,0 +1,47 @@
+{
+  "id": "source-image-reveal",
+  "type": "component",
+  "status": "first-class",
+  "intentTags": [
+    "informative",
+    "source",
+    "hook"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/source-image-reveal.html"
+  ],
+  "requiredTracks": [],
+  "timingGuidance": "Use as a fast source visual reveal when an external image should enter with proof-like intent.",
+  "dependencies": [],
+  "usageRules": [
+    "Use with source.json assets when source attribution is required.",
+    "Keep the reveal under one second so it reads as a beat, not the whole scene.",
+    "Avoid stacking with shimmer-sweep unless the source image is low contrast."
+  ],
+  "validationRules": [
+    "requires .source-image-reveal",
+    "requires .source-image-reveal__image"
+  ],
+  "platformTargets": [
+    "youtube-shorts",
+    "tiktok",
+    "instagram-reels",
+    "linkedin"
+  ],
+  "density": "low",
+  "formatTargets": [
+    "portrait",
+    "square",
+    "landscape"
+  ],
+  "assetKinds": [
+    "image",
+    "screenshot"
+  ],
+  "motionRoles": [
+    "reveal",
+    "proof"
+  ],
+  "previewAssetPath": "packages/catalog/previews/source-image-reveal.svg"
+}

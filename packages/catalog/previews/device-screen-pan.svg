@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="device-screen-pan preview">
+  <rect width="720" height="405" fill="#0d1117"/>
+  <rect x="242" y="44" width="236" height="318" rx="32" fill="#080a0f"/>
+  <rect x="262" y="72" width="196" height="262" rx="18" fill="#182235"/>
+  <rect x="284" y="102" width="152" height="18" fill="#5eead4"/>
+  <rect x="284" y="148" width="152" height="88" fill="#fff" opacity=".12"/>
+  <rect x="284" y="252" width="118" height="12" fill="#f8d66d"/>
+  <text x="48" y="58" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">device-screen-pan</text>
+</svg>

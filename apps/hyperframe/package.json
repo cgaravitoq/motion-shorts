@@ -1,0 +1,31 @@
+{
+  "name": "@cgaravitoq/hyperframe",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vertical 9:16 motion-graphics shorts pipeline (YouTube Shorts, Reels, TikTok) with HTML + GSAP + Hyperframes, ElevenLabs TTS + word-level karaoke captions.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "bun run scripts/dev.mjs",
+    "catalog:check": "bun run ../../packages/catalog/scripts/check.ts",
+    "catalog:check:all": "bun run scripts/catalog-check-all.mjs",
+    "catalog:list": "bun run ../../packages/catalog/scripts/list.ts",
+    "preview": "bunx hyperframes preview",
+    "render": "bunx hyperframes render",
+    "render:episode": "bun run scripts/render-episode.mjs",
+    "capture:source": "bun run scripts/capture-source.mjs",
+    "hydrate:episode": "bun run scripts/hydrate-episode.mjs",
+    "new-episode": "bun run scripts/new-episode.mjs",
+    "new:episode": "bun run scripts/new-episode.mjs",
+    "templates:list": "bun run scripts/list-templates.mjs",
+    "audio": "bun run scripts/generate-audio.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cgaravitoq/audio": "workspace:*",
+    "@cgaravitoq/catalog": "workspace:*"
+  },
+  "devDependencies": {
+    "hyperframes": "0.6.7"
+  }
+}

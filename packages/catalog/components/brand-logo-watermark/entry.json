@@ -1,0 +1,26 @@
+{
+  "id": "brand-logo-watermark",
+  "type": "brand",
+  "status": "required",
+  "intentTags": [
+    "brand"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-with-logo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/brand-logo-watermark.html"
+  ],
+  "requiredTracks": [
+    97
+  ],
+  "timingGuidance": "Persistent track-97 watermark throughout branded shorts; fade before brand-logo-outro to avoid double-logo.",
+  "dependencies": [],
+  "usageRules": [
+    "Use on branded shorts unless explicitly disabled.",
+    "Keep on track 97 and outside scene-local tracks.",
+    "Position: top-right safe area (top: 96px, right: 96px)."
+  ],
+  "validationRules": [
+    "requires #brand-corner element",
+    "requires data-track-index 97"
+  ]
+}

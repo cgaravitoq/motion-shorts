@@ -1,0 +1,14 @@
+<style>
+  .hf-grid-pixelate-wipe { position: absolute; inset: 0; pointer-events: none; display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(18, 1fr); }
+  .hf-grid-pixelate-wipe__cell { background: var(--grid-color, #050814); transform: scale(0); transform-origin: center; }
+</style>
+<div class="hf-grid-pixelate-wipe" id="pixel-grid"></div>
+<script>
+  const pixelGrid = document.getElementById("pixel-grid");
+  for (let i = 0; i < 216; i++) {
+    const cell = document.createElement("div");
+    cell.className = "hf-grid-pixelate-wipe__cell";
+    pixelGrid.appendChild(cell);
+  }
+  tl.to("#pixel-grid .hf-grid-pixelate-wipe__cell", { scale: 1, duration: 0.45, stagger: { amount: 0.55, grid: [18, 12], from: "center" }, ease: "power2.inOut" }, start);
+</script>

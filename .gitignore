@@ -1,0 +1,73 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build artefacts
+dist
+.tsbuildinfo
+*.tsbuildinfo
+
+# Turborepo cache
+.turbo
+
+# Agent review-state machinery (per-branch, regenerated)
+.opencode/state/
+
+# Claude Code sub-agent worktrees (managed by the harness, never tracked)
+.claude/worktrees/
+
+# Hyperframes / render output (large, regenerable)
+out
+renders
+.hyperframes
+
+# Generated/heavy per-episode media mirrored to R2 via assets.remote.json.
+apps/hyperframe/src/episodes/*/assets/*.mp4
+apps/hyperframe/src/episodes/*/assets/*.mov
+apps/hyperframe/src/episodes/*/assets/*.webm
+apps/hyperframe/src/episodes/*/assets/*.mp3
+apps/hyperframe/src/episodes/*/assets/*.wav
+apps/hyperframe/src/episodes/*/assets/*.m4a
+apps/hyperframe/src/episodes/*/assets/*.png
+apps/hyperframe/src/episodes/*/assets/*.jpg
+apps/hyperframe/src/episodes/*/assets/*.jpeg
+apps/hyperframe/src/episodes/*/assets/*.gif
+apps/hyperframe/src/episodes/*/assets/*.webp
+apps/hyperframe/src/episodes/*/assets/*.avif
+apps/hyperframe/src/episodes/*/assets/*.woff2
+apps/hyperframe/src/episodes/*/assets/captions.json
+
+# Diagnostic snapshots from `hyperframes inspect` / `snapshot`.
+apps/hyperframe/src/episodes/*/snapshots/
+# Hyperframes Studio cache dirs (regenerated on preview).
+apps/hyperframe/src/episodes/*/.thumbnails/
+apps/hyperframe/src/episodes/*/.waveform-cache/
+
+# Public voice assets are large binaries; tracked separately if needed (LFS).
+apps/hyperframe/public/voice/
+
+# Voice library samples — short comparison clips for picking presets.
+apps/hyperframe/samples/
+
+# Editor / OS noise
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.cache
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Claude Code per-user overrides (must not be committed)
+.claude/settings.local.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

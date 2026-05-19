@@ -1,0 +1,33 @@
+{
+  "id": "source-knowledge-pipeline",
+  "type": "block",
+  "status": "first-class",
+  "intentTags": [
+    "workflow",
+    "informative",
+    "source"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/source-knowledge-pipeline.html"
+  ],
+  "requiredTracks": [
+    6
+  ],
+  "timingGuidance": "6-8s workflow scene; reveal nodes left-to-right, draw connectors, then lock final action node with tl.set.",
+  "dependencies": [
+    "source-attribution-strip"
+  ],
+  "usageRules": [
+    "Use instead of generic flowchart for source theses that convert raw knowledge into context, format, and action.",
+    "Keep connectors deterministic and avoid async or random layout.",
+    "Use as an open canvas or full-scene frame when the pipeline has more than four nodes."
+  ],
+  "validationRules": [
+    "requires .hf-source-knowledge-pipeline",
+    "requires .hf-source-attribution-strip",
+    "requires .hf-source-knowledge-pipeline__edge",
+    "requires tl.set for discrete labels",
+    "forbidden data-composition-src"
+  ]
+}

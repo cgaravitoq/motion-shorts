@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- catalog: [] disabled: [brand-logo-watermark, brand-logo-outro] reason: "generic MCP template" -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      body { margin: 0; background: #0f172a; font-family: Inter, system-ui, sans-serif; }
+      #stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; color: #fff7ed; background: linear-gradient(145deg, #7c2d12, #be123c 52%, #581c87); }
+      #card { position: absolute; inset: 108px; border-radius: 64px; background: rgba(255, 247, 237, 0.14); border: 2px solid rgba(255, 237, 213, 0.32); }
+      #headline { position: absolute; left: 168px; right: 168px; top: 300px; font-size: 84px; font-weight: 850; line-height: 0.98; letter-spacing: -0.05em; text-align: center; }
+      #badge { position: absolute; left: 390px; top: 690px; width: 300px; height: 82px; border-radius: 999px; display: grid; place-items: center; background: #fed7aa; color: #7c2d12; font-size: 32px; font-weight: 800; }
+    </style>
+  </head>
+  <body>
+    <div id="stage" class="clip" data-composition-id="square-social-template" data-width="1080" data-height="1080" data-start="0" data-duration="5">
+      <div id="card" data-track="1"></div>
+      <div id="headline" data-track="2">Square social template</div>
+      <div id="badge" data-track="3">NO AUDIO</div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#card", { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: "power2.out" }, 0);
+      tl.fromTo("#headline", { y: 52, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, 0.2);
+      tl.fromTo("#badge", { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.8);
+      window.__timelines["square-social-template"] = tl;
+    </script>
+  </body>
+</html>

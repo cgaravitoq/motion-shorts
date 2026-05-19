@@ -1,0 +1,10 @@
+# bun configuration — replaces .npmrc
+# Docs: https://bun.com/docs/runtime/bunfig
+
+[install]
+# Pin exact versions (no `^` or `~`) — same intent as npm's save-exact=true.
+exact = true
+
+# Skip telemetry / fluff — analogous to npm fund=false / audit=false
+optional = true
+peer = true

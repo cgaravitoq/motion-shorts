@@ -1,0 +1,30 @@
+{
+  "id": "source-attribution-strip",
+  "type": "reference",
+  "status": "first-class",
+  "intentTags": [
+    "informative",
+    "data",
+    "workflow",
+    "source"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/source-attribution-strip.html"
+  ],
+  "requiredTracks": [
+    4
+  ],
+  "timingGuidance": "Persistent or scene-local 2-6s strip; fade in after primary content and fade before cgaravitoq outro when used near the ending.",
+  "dependencies": [],
+  "usageRules": [
+    "Use as compact source attribution inside source-driven scenes and outro support beats.",
+    "Never replace the required cgaravitoq watermark or final brand outro.",
+    "Keep URL labels short, readable, and secondary to the main scene hierarchy."
+  ],
+  "validationRules": [
+    "requires .hf-source-attribution-strip",
+    "forbidden tracks 97..99",
+    "forbidden data-composition-src"
+  ]
+}

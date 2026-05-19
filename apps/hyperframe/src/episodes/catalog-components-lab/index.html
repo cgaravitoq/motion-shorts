@@ -1,0 +1,259 @@
+<!doctype html>
+<!-- catalog: [brand-logo-watermark, grain-overlay, shimmer-sweep, grid-pixelate-wipe] disabled: [brand-logo-outro] reason: "component lab without closing outro" -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="stylesheet" href="lib/theme.css" />
+    <link rel="stylesheet" href="lib/easings.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ink: #050814;
+        --paper: #f8fafc;
+        --muted: #94a3b8;
+        --cyan: #22d3ee;
+        --violet: #a78bfa;
+        --amber: #fbbf24;
+        --rose: #fb7185;
+        --emerald: #34d399;
+      }
+
+      html, body {
+        width: 1080px; height: 1920px; margin: 0; padding: 0;
+        background: var(--ink); overflow: hidden;
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--paper); -webkit-font-smoothing: antialiased;
+      }
+      #ep-stage { width: 1080px; height: 1920px; position: relative; overflow: hidden; }
+
+      .bg-mesh {
+        background-color: var(--ink);
+        background-image:
+          radial-gradient(circle at 22% 18%, rgba(34, 211, 238, 0.26) 0%, transparent 42%),
+          radial-gradient(circle at 82% 78%, rgba(167, 139, 250, 0.30) 0%, transparent 44%),
+          radial-gradient(circle at 52% 52%, rgba(251, 191, 36, 0.10) 0%, transparent 54%);
+      }
+      .bg-grid {
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 72px 72px;
+        opacity: 0.75;
+      }
+      .vignette { background: radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.58) 100%); }
+
+      .scene { opacity: 0; will-change: opacity, transform, filter; }
+      .scene-pad { padding: 118px 88px; box-sizing: border-box; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 34px; }
+      .label {
+        align-self: flex-start;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 28px; font-weight: 800; letter-spacing: 5px;
+        text-transform: uppercase;
+        padding: 13px 22px; border-radius: 999px;
+        background: rgba(255, 255, 255, 0.065);
+        border: 1.5px solid rgba(255, 255, 255, 0.18);
+        color: var(--cyan);
+      }
+      .headline { font-size: 96px; font-weight: 900; line-height: 0.96; letter-spacing: -4px; margin: 0; }
+      .subcopy { font-family: "JetBrains Mono", monospace; font-size: 30px; line-height: 1.35; color: var(--muted); margin: 0; max-width: 830px; }
+      .demo-card {
+        position: relative;
+        min-height: 620px;
+        border-radius: 42px;
+        border: 1.5px solid rgba(255, 255, 255, 0.13);
+        background: rgba(255, 255, 255, 0.045);
+        overflow: hidden;
+        box-shadow: 0 34px 110px rgba(0, 0, 0, 0.34);
+      }
+
+      #brand-corner {
+        position: absolute; right: 96px; top: 96px;
+        width: 96px;
+        color: rgba(248, 250, 252, 0.30);
+        z-index: 60; pointer-events: none; white-space: nowrap;
+      }
+      #brand-corner svg { display: block; width: 100%; height: auto; fill: currentColor; }
+
+      .hf-grain-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; mix-blend-mode: overlay; opacity: 0.18; }
+      .hf-grain-overlay__texture {
+        position: absolute; inset: -50%;
+        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        transform: translate(var(--grain-x, 0%), var(--grain-y, 0%));
+      }
+      .grain-panel { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(251, 191, 36, 0.28), rgba(251, 113, 133, 0.18), rgba(34, 211, 238, 0.18)); }
+      .grain-title { position: absolute; left: 52px; right: 52px; bottom: 52px; font-size: 72px; font-weight: 900; line-height: 0.95; letter-spacing: -3px; }
+
+      .hf-shimmer-sweep { position: relative; display: inline-block; overflow: hidden; border-radius: inherit; }
+      .hf-shimmer-sweep__mask {
+        position: absolute; inset: 0; pointer-events: none;
+        background: linear-gradient(120deg, transparent 0%, transparent calc(var(--shimmer-pos, -20%) - 12%), rgba(255,255,255,0.82) var(--shimmer-pos, -20%), transparent calc(var(--shimmer-pos, -20%) + 12%), transparent 100%);
+        mix-blend-mode: overlay;
+      }
+      /* Text variant: shimmer travels through the glyphs themselves via background-clip: text. Use on text-only elements where there is no container background to overlay. */
+      .hf-shimmer-sweep--text {
+        display: inline-block;
+        background-image: linear-gradient(
+          100deg,
+          var(--shimmer-base, #f8fafc) 0%,
+          var(--shimmer-base, #f8fafc) calc(var(--shimmer-pos, -30%) - 14%),
+          var(--shimmer-highlight, #ffffff) var(--shimmer-pos, -30%),
+          var(--shimmer-base, #f8fafc) calc(var(--shimmer-pos, -30%) + 14%),
+          var(--shimmer-base, #f8fafc) 100%
+        );
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+      }
+      .shimmer-word { font-size: 128px; font-weight: 900; letter-spacing: -6px; line-height: 0.9; --shimmer-base: var(--paper); --shimmer-highlight: var(--cyan); }
+      .shimmer-word-glow { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-start; pointer-events: none; font-size: 128px; font-weight: 900; letter-spacing: -6px; line-height: 0.9; color: transparent; text-shadow: 0 0 54px rgba(34, 211, 238, 0.35); z-index: -1; }
+      .shimmer-pills { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 46px; }
+      .shimmer-pill { font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 800; padding: 18px 22px; border-radius: 18px; background: rgba(34,211,238,0.09); border: 1.5px solid rgba(34,211,238,0.32); color: var(--cyan); }
+
+      .hf-grid-pixelate-wipe { position: absolute; inset: 0; pointer-events: none; display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(18, 1fr); }
+      .hf-grid-pixelate-wipe__cell { background: var(--grid-color, #050814); transform: scale(0); transform-origin: center; }
+      .grid-preview-a, .grid-preview-b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 100px; font-weight: 900; letter-spacing: -4px; }
+      .grid-preview-a { background: linear-gradient(135deg, rgba(167,139,250,0.52), rgba(34,211,238,0.20)); }
+      .grid-preview-b { background: linear-gradient(135deg, rgba(52,211,153,0.38), rgba(251,191,36,0.24)); opacity: 0; }
+
+      #captions {
+        position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 60px; font-weight: 900; line-height: 1.1; letter-spacing: -1px;
+        color: var(--paper); text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(0, 0, 0, 0.7);
+        text-align: center; padding: 0 64px; box-sizing: border-box; pointer-events: none; z-index: 50;
+      }
+      #captions .hf-caption-token { opacity: 0.78; transition: color 0.06s linear, opacity 0.06s linear, transform 0.06s ease-out; }
+      #captions .hf-caption-token.--active { color: var(--cyan); opacity: 1; transform: scale(1.04); }
+    </style>
+  </head>
+  <body>
+    <div id="ep-stage" data-composition-id="catalog-components-lab" data-start="0" data-duration="21" data-width="1080" data-height="1920">
+      <div id="brand-corner" class="clip" data-start="0" data-duration="21" data-track-index="97"><svg viewBox="0 0 64 64" aria-label="Logo mark watermark"><path d="M8 8h18v18H8zM38 8h18v18H38zM23 38h18v18H23z" /></svg></div>
+      <div id="bg-mesh" class="bg-mesh clip" data-start="0" data-duration="21" data-track-index="0" style="position: absolute; inset: 0;"></div>
+      <div id="bg-grid" class="bg-grid clip" data-start="0" data-duration="21" data-track-index="1" style="position: absolute; inset: 0;"></div>
+      <div id="bg-vignette" class="vignette clip" data-start="0" data-duration="21" data-track-index="2" style="position: absolute; inset: 0;"></div>
+
+      <div id="scene-grain" class="scene clip" data-start="0" data-duration="21" data-track-index="5" style="position: absolute; inset: 0;">
+        <div class="scene-pad">
+          <div class="label">grain-overlay</div>
+          <p class="headline">Analog texture as a safe overlay.</p>
+          <div class="demo-card">
+            <div class="grain-panel"></div>
+            <div class="grain-title">film grain<br />without assets</div>
+            <div class="hf-grain-overlay"><div class="hf-grain-overlay__texture"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene-shimmer" class="scene clip" data-start="0" data-duration="21" data-track-index="6" style="position: absolute; inset: 0;">
+        <div class="scene-pad">
+          <div class="label">shimmer-sweep</div>
+          <p class="headline">A light pass for premium reveals.</p>
+          <div class="demo-card" style="display: flex; flex-direction: column; justify-content: center; padding: 58px; box-sizing: border-box;">
+            <div style="position: relative;">
+              <div class="shimmer-word-glow" aria-hidden="true">CATALOG</div>
+              <div class="hf-shimmer-sweep--text shimmer-word">CATALOG</div>
+            </div>
+            <div class="shimmer-pills">
+              <div class="shimmer-pill hf-shimmer-sweep">INLINE<div class="hf-shimmer-sweep__mask"></div></div>
+              <div class="shimmer-pill hf-shimmer-sweep">SEEK SAFE<div class="hf-shimmer-sweep__mask"></div></div>
+              <div class="shimmer-pill hf-shimmer-sweep">GSAP<div class="hf-shimmer-sweep__mask"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene-grid" class="scene clip" data-start="0" data-duration="21" data-track-index="7" style="position: absolute; inset: 0;">
+        <div class="scene-pad">
+          <div class="label">grid-pixelate-wipe</div>
+          <p class="headline">Tile transitions with deterministic stagger.</p>
+          <div class="demo-card">
+            <div class="grid-preview-a">SCENE A</div>
+            <div class="grid-preview-b">SCENE B</div>
+            <div class="hf-grid-pixelate-wipe" id="pixel-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <audio id="voiceover" class="clip" data-start="0" data-duration="21" data-track-index="98" data-volume="1" src="assets/voice.mp3"></audio>
+      <div id="captions" class="clip" data-start="0" data-duration="21" data-track-index="99"></div>
+    </div>
+
+    <script type="application/json" id="captions-data">[{"text":"Grain","start":0.2,"end":0.7,"confidence":1},{"text":" overlay","start":0.7,"end":1.35,"confidence":1},{"text":" adds","start":1.35,"end":1.75,"confidence":1},{"text":" analog","start":1.75,"end":2.35,"confidence":1},{"text":" texture.","start":2.35,"end":3.1,"confidence":1},{"text":"Shimmer","start":7.2,"end":7.85,"confidence":1},{"text":" sweep","start":7.85,"end":8.35,"confidence":1},{"text":" highlights","start":8.35,"end":9.05,"confidence":1},{"text":" premium","start":9.05,"end":9.65,"confidence":1},{"text":" text.","start":9.65,"end":10.2,"confidence":1},{"text":"Grid","start":14.2,"end":14.65,"confidence":1},{"text":" pixelate","start":14.65,"end":15.35,"confidence":1},{"text":" wipes","start":15.35,"end":15.85,"confidence":1},{"text":" between","start":15.85,"end":16.35,"confidence":1},{"text":" scenes.","start":16.35,"end":17.0,"confidence":1},{"text":"Texture","start":21.2,"end":21.85,"confidence":1},{"text":" masks","start":21.85,"end":22.35,"confidence":1},{"text":" turn","start":22.35,"end":22.75,"confidence":1},{"text":" type","start":22.75,"end":23.2,"confidence":1},{"text":" material.","start":23.2,"end":24.0,"confidence":1}]</script>
+    <script src="lib/timeline-helpers.js"></script>
+    <script src="lib/captions-karaoke.js"></script>
+    <script>
+      const pixelGrid = document.getElementById("pixel-grid");
+      for (let i = 0; i < 216; i++) {
+        const cell = document.createElement("div");
+        cell.className = "hf-grid-pixelate-wipe__cell";
+        pixelGrid.appendChild(cell);
+      }
+
+      const tl = gsap.timeline({ paused: true });
+      const T = {
+        grain: { in: 0, out: 7 },
+        shimmer: { in: 7, out: 14 },
+        grid: { in: 14, out: 21 },
+      };
+      const FADE = 0.55;
+
+      tl.fromTo(".bg-mesh", { scale: 1 }, { scale: 1.05, duration: 10.5, ease: "sine.inOut" }, 0);
+      tl.to(".bg-mesh", { scale: 1, duration: 10.5, ease: "sine.inOut" }, 10.5);
+
+      tl.set("#scene-grain", { autoAlpha: 0 }, 0);
+      tl.to("#scene-grain", { autoAlpha: 1, duration: FADE, ease: "power2.out" }, T.grain.in);
+      tl.from("#scene-grain .label", { x: -42, opacity: 0, duration: 0.45, ease: "back.out(1.7)" }, T.grain.in + 0.1);
+      tl.from("#scene-grain .headline", { y: 34, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, T.grain.in + 0.3);
+      tl.from("#scene-grain .demo-card", { y: 36, opacity: 0, scale: 0.96, duration: 0.7, ease: "power2.out" }, T.grain.in + 0.7);
+      // Deterministic grain offsets distributed across the full scene visibility (~6s)
+      // for a continuously-moving film-grain feel. tl.set is seek-safe.
+      const grainOffsets = [
+        [-5, 4], [6, -3], [-8, 1], [3, 7], [-2, -5], [9, 2], [-4, -7], [5, 5],
+        [-9, -1], [2, 6], [-6, -3], [7, 4], [-1, 8], [4, -6], [-7, 0], [8, -2],
+        [-3, 5], [6, 7], [-5, -4], [1, 3], [-8, 6], [5, -1], [-2, 7], [7, -5],
+        [-6, 2], [3, 8], [-9, -3], [4, 4], [-1, -7], [8, 1], [-4, 6], [5, -8],
+      ];
+      grainOffsets.forEach(([gx, gy], i) => {
+        tl.set(".hf-grain-overlay__texture", { "--grain-x": `${gx}%`, "--grain-y": `${gy}%` }, T.grain.in + 0.4 + i * 0.18);
+      });
+      tl.to("#scene-grain", { autoAlpha: 0, scale: 0.96, filter: "blur(8px)", duration: FADE, ease: "power2.in" }, T.grain.out - FADE);
+
+      tl.set("#scene-shimmer", { autoAlpha: 0, scale: 1.04, filter: "blur(8px)" }, 0);
+      tl.to("#scene-shimmer", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: FADE, ease: "power2.out" }, T.shimmer.in);
+      tl.from("#scene-shimmer .label", { x: -42, opacity: 0, duration: 0.45, ease: "back.out(1.7)" }, T.shimmer.in + 0.1);
+      tl.from("#scene-shimmer .headline", { y: 34, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, T.shimmer.in + 0.3);
+      tl.from("#scene-shimmer .demo-card", { y: 36, opacity: 0, scale: 0.96, duration: 0.7, ease: "power2.out" }, T.shimmer.in + 0.7);
+      tl.fromTo("#scene-shimmer .hf-shimmer-sweep--text", { "--shimmer-pos": "-30%" }, { "--shimmer-pos": "130%", duration: 1.6, ease: "power2.inOut" }, T.shimmer.in + 1.35);
+      tl.fromTo("#scene-shimmer .hf-shimmer-sweep", { "--shimmer-pos": "-20%" }, { "--shimmer-pos": "120%", duration: 1.2, ease: "power2.inOut", stagger: 0.15 }, T.shimmer.in + 2.0);
+      tl.to("#scene-shimmer", { autoAlpha: 0, scale: 0.96, filter: "blur(8px)", duration: FADE, ease: "power2.in" }, T.shimmer.out - FADE);
+
+      tl.set("#scene-grid", { autoAlpha: 0, scale: 1.04, filter: "blur(8px)" }, 0);
+      tl.to("#scene-grid", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: FADE, ease: "power2.out" }, T.grid.in);
+      tl.from("#scene-grid .label", { x: -42, opacity: 0, duration: 0.45, ease: "back.out(1.7)" }, T.grid.in + 0.1);
+      tl.from("#scene-grid .headline", { y: 34, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, T.grid.in + 0.3);
+      tl.from("#scene-grid .demo-card", { y: 36, opacity: 0, scale: 0.96, duration: 0.7, ease: "power2.out" }, T.grid.in + 0.7);
+      tl.to("#pixel-grid .hf-grid-pixelate-wipe__cell", { scale: 1, duration: 0.45, stagger: { amount: 0.55, grid: [18, 12], from: "center" }, ease: "power2.inOut", overwrite: "auto" }, T.grid.in + 2.2);
+      tl.set(".grid-preview-a", { autoAlpha: 0 }, T.grid.in + 2.95);
+      tl.set(".grid-preview-b", { autoAlpha: 1 }, T.grid.in + 2.95);
+      tl.to("#pixel-grid .hf-grid-pixelate-wipe__cell", { scale: 0, duration: 0.45, stagger: { amount: 0.55, grid: [18, 12], from: "edges" }, ease: "power2.inOut", overwrite: "auto" }, T.grid.in + 2.95);
+      tl.to("#scene-grid", { autoAlpha: 0, scale: 0.96, filter: "blur(8px)", duration: FADE, ease: "power2.in" }, T.grid.out - FADE);
+
+      const captionsData = JSON.parse(document.getElementById("captions-data").textContent || "[]");
+      if (captionsData.length > 0) {
+        window.__hf.karaoke(tl, "#captions", captionsData, { maxChars: 24, maxTokens: 5 });
+      }
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["catalog-components-lab"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+<div class="product-turntable-lite clip" data-track-index="4">
+  <img class="product-turntable-lite__image" src="assets/product.png" alt="" />
+  <span class="product-turntable-lite__shadow"></span>
+</div>
+<style>
+  .product-turntable-lite {
+    position: absolute;
+    inset: 210px 130px 250px;
+    display: grid;
+    place-items: center;
+    perspective: 1000px;
+  }
+  .product-turntable-lite__image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 36px 70px rgb(0 0 0 / 0.4));
+  }
+  .product-turntable-lite__shadow {
+    position: absolute;
+    bottom: 26px;
+    width: 62%;
+    height: 26px;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.32);
+    filter: blur(18px);
+  }
+</style>
+<script>
+  tl.from(".product-turntable-lite__image", { autoAlpha: 0, y: 32, rotateY: -22, duration: 0.7, ease: "power3.out" }, 0);
+  tl.to(".product-turntable-lite__image", { rotateY: 18, x: 18, duration: 4.2, ease: "sine.inOut" }, 0.7);
+</script>

@@ -1,0 +1,15 @@
+<style>
+  .hf-grain-overlay { position: absolute; inset: 0; pointer-events: none; overflow: hidden; mix-blend-mode: overlay; opacity: 0.18; }
+  .hf-grain-overlay__texture {
+    position: absolute; inset: -50%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    transform: translate(var(--grain-x, 0%), var(--grain-y, 0%));
+  }
+</style>
+<div class="hf-grain-overlay"><div class="hf-grain-overlay__texture"></div></div>
+<script>
+  const grainOffsets = [[-5, 4], [6, -3], [-8, 1]];
+  grainOffsets.forEach(([gx, gy], i) => {
+    tl.set(".hf-grain-overlay__texture", { "--grain-x": `${gx}%`, "--grain-y": `${gy}%` }, start + i * 0.18);
+  });
+</script>

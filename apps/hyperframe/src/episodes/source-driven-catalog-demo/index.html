@@ -1,0 +1,636 @@
+<!doctype html>
+<!-- catalog: [brand-logo-watermark, brand-logo-outro, source-article-hero, source-stat-comparison, source-friction-grid, source-knowledge-pipeline, source-proof-card, source-attribution-strip] -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ink: #07090f;
+        --paper: #f8fafc;
+        --muted: rgba(248, 250, 252, 0.62);
+        --line: rgba(248, 250, 252, 0.15);
+        --panel: rgba(248, 250, 252, 0.06);
+        --source-accent: #5e6ad2;
+        --source-accent-2: #24c8db;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      #ep-stage {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 20% 16%, rgba(94, 106, 210, 0.32), transparent 36%),
+          radial-gradient(circle at 82% 70%, rgba(36, 200, 219, 0.18), transparent 32%),
+          linear-gradient(180deg, #080b12 0%, #07090f 64%, #020307 100%);
+      }
+      .bg-grid {
+        background-image:
+          linear-gradient(rgba(248, 250, 252, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(248, 250, 252, 0.045) 1px, transparent 1px);
+        background-size: 72px 72px;
+        opacity: 0.6;
+        mask-image: radial-gradient(circle at center, black 0%, transparent 76%);
+      }
+      .vignette {
+        background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.72) 100%);
+      }
+      .scene {
+        opacity: 0;
+        will-change: opacity, transform, filter;
+      }
+      .scene-pad {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        padding: 128px 78px 176px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .eyebrow {
+        margin: 0 0 26px;
+        color: var(--muted);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 23px;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+      .headline {
+        margin: 0;
+        max-width: 910px;
+        font-size: 78px;
+        line-height: 1.02;
+        font-weight: 850;
+        letter-spacing: 0;
+        text-wrap: balance;
+      }
+      .headline strong {
+        color: var(--source-accent-2);
+        font-weight: 900;
+      }
+      .subcopy {
+        margin: 34px 0 0;
+        max-width: 840px;
+        color: var(--muted);
+        font-size: 32px;
+        line-height: 1.24;
+        font-weight: 540;
+        text-wrap: balance;
+      }
+      .hf-source-attribution-strip {
+        display: inline-flex;
+        align-items: center;
+        align-self: flex-start;
+        gap: 12px;
+        width: fit-content;
+        max-width: min(100%, 720px);
+        padding: 13px 18px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(248, 250, 252, 0.06);
+        color: var(--muted);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 21px;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+      .hf-source-attribution-strip__mark {
+        display: grid;
+        place-items: center;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--source-accent-2);
+        color: transparent;
+        font-family: "Inter", system-ui, sans-serif;
+        font-size: 0;
+        font-weight: 900;
+      }
+      .hf-source-attribution-strip__label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .hf-source-article-hero {
+        position: relative;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        box-sizing: border-box;
+        width: 900px;
+        min-height: 660px;
+        padding: 34px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: linear-gradient(160deg, rgba(248, 250, 252, 0.1), rgba(248, 250, 252, 0.035));
+        box-shadow: 0 34px 120px rgba(0, 0, 0, 0.42);
+        overflow: hidden;
+      }
+      .hf-source-article-hero__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        margin-bottom: 36px;
+      }
+      .hf-source-article-hero__publisher {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: rgba(248, 250, 252, 0.82);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 21px;
+        font-weight: 800;
+      }
+      .hf-source-article-hero__logo {
+        display: grid;
+        place-items: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: var(--source-accent);
+        color: #fff;
+        font-weight: 900;
+      }
+      .hf-source-article-hero__path {
+        color: rgba(248, 250, 252, 0.5);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .hf-source-article-hero__title {
+        margin: 0;
+        max-width: 770px;
+        color: var(--paper);
+        font-size: 58px;
+        line-height: 1.02;
+        font-weight: 850;
+        letter-spacing: 0;
+      }
+      .hf-source-article-hero__image {
+        position: relative;
+        margin-top: 42px;
+        height: 270px;
+        border-radius: 22px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 30% 24%, rgba(94, 106, 210, 0.72), transparent 36%),
+          radial-gradient(circle at 74% 68%, rgba(36, 200, 219, 0.35), transparent 34%),
+          linear-gradient(135deg, rgba(248, 250, 252, 0.13), rgba(248, 250, 252, 0.02));
+      }
+      .hf-source-article-hero__image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(110deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+        transform: translateX(var(--source-scan, -120%));
+      }
+      .hf-source-article-hero .hf-source-attribution-strip {
+        margin-top: 28px;
+      }
+      .hf-source-stat-comparison {
+        box-sizing: border-box;
+        width: 900px;
+        display: grid;
+        gap: 22px;
+        margin-top: 54px;
+      }
+      .hf-source-stat-comparison__row {
+        position: relative;
+        min-height: 112px;
+        padding: 24px 26px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--panel);
+        overflow: hidden;
+      }
+      .hf-source-stat-comparison__bar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: var(--bar-width, 50%);
+        transform: scaleX(0);
+        transform-origin: left center;
+        background: linear-gradient(90deg, var(--source-accent), rgba(94, 106, 210, 0));
+        opacity: 0.48;
+      }
+      .hf-source-stat-comparison__content {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+      }
+      .hf-source-stat-comparison__label {
+        color: var(--paper);
+        font-size: 34px;
+        line-height: 1.04;
+        font-weight: 820;
+      }
+      .hf-source-stat-comparison__value {
+        color: var(--source-accent-2);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 42px;
+        font-weight: 900;
+      }
+      .hf-source-stat-comparison .hf-source-attribution-strip {
+        margin-top: 10px;
+      }
+      .hf-source-friction-grid {
+        box-sizing: border-box;
+        width: 900px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 54px;
+      }
+      .hf-source-friction-grid__cell {
+        box-sizing: border-box;
+        min-height: 190px;
+        padding: 25px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--panel);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+      }
+      .hf-source-friction-grid__kicker {
+        display: block;
+        margin-bottom: 18px;
+        color: rgba(248, 250, 252, 0.52);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+      .hf-source-friction-grid__text {
+        display: block;
+        color: var(--paper);
+        font-size: 34px;
+        line-height: 1.04;
+        font-weight: 820;
+        letter-spacing: 0;
+      }
+      .hf-source-friction-grid__cell--accent {
+        background: var(--source-accent);
+        border-color: transparent;
+      }
+      .hf-source-friction-grid__cell--accent .hf-source-friction-grid__kicker {
+        color: rgba(255, 255, 255, 0.68);
+      }
+      .hf-source-knowledge-pipeline {
+        position: relative;
+        box-sizing: border-box;
+        width: 900px;
+        height: 610px;
+        margin-top: 52px;
+      }
+      .hf-source-knowledge-pipeline__edge-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .hf-source-knowledge-pipeline__edge {
+        fill: none;
+        stroke: var(--source-accent-2);
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 520;
+        stroke-dashoffset: 520;
+        opacity: 0.86;
+        filter: drop-shadow(0 0 12px rgba(36, 200, 219, 0.18));
+      }
+      .hf-source-knowledge-pipeline__node {
+        position: absolute;
+        width: 210px;
+        min-height: 132px;
+        padding: 22px;
+        box-sizing: border-box;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(8, 12, 18, 0.82);
+      }
+      .hf-source-knowledge-pipeline__node strong {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--paper);
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 850;
+      }
+      .hf-source-knowledge-pipeline__node span {
+        display: block;
+        color: rgba(248, 250, 252, 0.6);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 18px;
+        line-height: 1.2;
+        font-weight: 700;
+      }
+      .hf-source-knowledge-pipeline__node--a {
+        left: 0;
+        top: 210px;
+      }
+      .hf-source-knowledge-pipeline__node--b {
+        left: 230px;
+        top: 74px;
+      }
+      .hf-source-knowledge-pipeline__node--c {
+        right: 230px;
+        bottom: 74px;
+      }
+      .hf-source-knowledge-pipeline__node--d {
+        right: 0;
+        top: 210px;
+        background: var(--source-accent);
+      }
+      .hf-source-proof-card {
+        box-sizing: border-box;
+        width: 820px;
+        padding: 32px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+        margin-top: 44px;
+      }
+      .hf-source-proof-card__header {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 30px;
+      }
+      .hf-source-proof-card__avatar {
+        display: grid;
+        place-items: center;
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: var(--source-accent);
+        color: #fff;
+        font-size: 28px;
+        font-weight: 900;
+      }
+      .hf-source-proof-card__name {
+        display: block;
+        color: var(--paper);
+        font-size: 28px;
+        font-weight: 850;
+      }
+      .hf-source-proof-card__role {
+        display: block;
+        margin-top: 4px;
+        color: rgba(248, 250, 252, 0.54);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .hf-source-proof-card__claim {
+        margin: 0;
+        color: var(--paper);
+        font-size: 34px;
+        line-height: 1.12;
+        font-weight: 760;
+        letter-spacing: 0;
+      }
+      .hf-source-proof-card .hf-source-attribution-strip {
+        margin-top: 38px;
+      }
+      #grid-attribution {
+        margin-top: 32px;
+      }
+      .outro {
+        align-items: center;
+        text-align: center;
+      }
+      .brand-outro__lockup {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 540px;
+        height: 300px;
+        margin-bottom: 34px;
+      }
+      .brand-outro__aura {
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(36, 200, 219, 0.16), transparent 62%);
+        opacity: 0;
+        transform: scale(0.72);
+      }
+      .brand-outro__mark {
+        position: relative;
+        width: 420px;
+        height: auto;
+        overflow: visible;
+        filter: drop-shadow(0 26px 80px rgba(0, 0, 0, 0.5));
+      }
+      .brand-outro__piece {
+        transform-box: fill-box;
+        transform-origin: center;
+        opacity: 0;
+        fill: var(--paper);
+      }
+      .brand-outro__name {
+        margin: 0;
+        font-size: 72px;
+        line-height: 1.02;
+        font-weight: 790;
+        letter-spacing: 0;
+      }
+      .brand-outro__tagline {
+        margin: 28px 0 0;
+        max-width: 780px;
+        color: var(--muted);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 30px;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      #brand-corner {
+        position: absolute;
+        right: 96px;
+        top: 96px;
+        width: 96px;
+        opacity: 0.42;
+        z-index: 60;
+        pointer-events: none;
+      }
+      #brand-corner svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        fill: var(--paper);
+      }
+      #captions { position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%; z-index: 80; pointer-events: none; display: flex; align-items: center; justify-content: center; font-family: "Inter", system-ui, sans-serif; font-size: 60px; font-weight: 900; line-height: 1.1; color: var(--paper); text-align: center; text-shadow: 0 2px 24px rgba(0,0,0,0.80); }
+      #captions .hf-caption-token { opacity: 0.70; transition: color 0.06s linear, opacity 0.06s linear; }
+      #captions .hf-caption-token.--active { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div id="ep-stage" data-composition-id="source-driven-catalog-demo" data-start="0" data-duration="28" data-width="1080" data-height="1920">
+      <div id="bg-grid" class="bg-grid clip" data-start="0" data-duration="28" data-track-index="0" style="position:absolute; inset:0;"></div>
+      <div id="bg-vignette" class="vignette clip" data-start="0" data-duration="28" data-track-index="1" style="position:absolute; inset:0;"></div>
+      <div id="brand-corner" class="clip" data-start="0" data-duration="28" data-track-index="97"><svg viewBox="0 0 578 320" role="img" aria-label="cgaravitoq logo mark"><path d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div>
+
+      <section id="scene-article" class="scene clip" data-start="0" data-duration="5.7" data-track-index="4" style="position:absolute; inset:0;">
+        <div class="scene-pad">
+          <article id="article-card" class="hf-source-article-hero">
+            <div class="hf-source-article-hero__top"><div class="hf-source-article-hero__publisher"><span class="hf-source-article-hero__logo">L</span><span>Example case study</span></div><span class="hf-source-article-hero__path">/case-study</span></div>
+            <h1 class="hf-source-article-hero__title">Source-driven shorts need source-native visual patterns.</h1>
+            <div class="hf-source-article-hero__image"></div>
+            <div class="hf-source-attribution-strip"><span class="hf-source-attribution-strip__mark">L</span><span class="hf-source-attribution-strip__label">Source: example.com/case-study</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="scene-stat" class="scene clip" data-start="5.7" data-duration="5.2" data-track-index="5" style="position:absolute; inset:0;">
+        <div class="scene-pad">
+          <p id="stat-eyebrow" class="eyebrow">Proof beat</p>
+          <h2 id="stat-headline" class="headline">Make the source claim <strong>scan</strong> in one scene.</h2>
+          <div id="stat-block" class="hf-source-stat-comparison">
+            <div class="hf-source-stat-comparison__row"><div class="hf-source-stat-comparison__bar" style="--bar-width: 84%;"></div><div class="hf-source-stat-comparison__content"><span class="hf-source-stat-comparison__label">Agent-authored PRs</span><span class="hf-source-stat-comparison__value">60%</span></div></div>
+            <div class="hf-source-stat-comparison__row"><div class="hf-source-stat-comparison__bar" style="--bar-width: 44%;"></div><div class="hf-source-stat-comparison__content"><span class="hf-source-stat-comparison__label">Review bottleneck</span><span class="hf-source-stat-comparison__value">Human</span></div></div>
+            <div class="hf-source-attribution-strip"><span class="hf-source-attribution-strip__mark">L</span><span class="hf-source-attribution-strip__label">Claim label: Example case study</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-grid" class="scene clip" data-start="10.9" data-duration="5.1" data-track-index="6" style="position:absolute; inset:0;">
+        <div class="scene-pad">
+          <p id="grid-eyebrow" class="eyebrow">Business argument</p>
+          <h2 id="grid-headline" class="headline">Show friction before inventing a diagram.</h2>
+          <div id="friction-grid" class="hf-source-friction-grid">
+            <div class="hf-source-friction-grid__cell"><span class="hf-source-friction-grid__kicker">Before</span><span class="hf-source-friction-grid__text">Generic cards hide the source shape</span></div>
+            <div class="hf-source-friction-grid__cell"><span class="hf-source-friction-grid__kicker">Before</span><span class="hf-source-friction-grid__text">Every episode rebuilds proof blocks</span></div>
+            <div class="hf-source-friction-grid__cell hf-source-friction-grid__cell--accent"><span class="hf-source-friction-grid__kicker">After</span><span class="hf-source-friction-grid__text">Source components carry repeatable patterns</span></div>
+            <div class="hf-source-friction-grid__cell"><span class="hf-source-friction-grid__kicker">After</span><span class="hf-source-friction-grid__text">Attribution stays clear and secondary</span></div>
+          </div>
+          <div id="grid-attribution" class="hf-source-attribution-strip"><span class="hf-source-attribution-strip__mark">S</span><span class="hf-source-attribution-strip__label">Source: external article thesis</span></div>
+        </div>
+      </section>
+
+      <section id="scene-pipeline" class="scene clip" data-start="16" data-duration="4.2" data-track-index="6" style="position:absolute; inset:0;">
+        <div class="scene-pad">
+          <p id="pipeline-eyebrow" class="eyebrow">Workflow pattern</p>
+          <h2 id="pipeline-headline" class="headline">Map source material into a production path.</h2>
+          <div id="pipeline" class="hf-source-knowledge-pipeline">
+            <svg class="hf-source-knowledge-pipeline__edge-layer" viewBox="0 0 900 610" aria-hidden="true"><path class="hf-source-knowledge-pipeline__edge" d="M210 276 C268 210 300 170 348 150" /><path class="hf-source-knowledge-pipeline__edge" d="M440 206 C478 314 512 382 558 430" /><path class="hf-source-knowledge-pipeline__edge" d="M668 430 C722 366 748 314 690 276" /></svg>
+            <div class="hf-source-knowledge-pipeline__node hf-source-knowledge-pipeline__node--a"><strong>Raw source</strong><span>article, docs, story</span></div>
+            <div class="hf-source-knowledge-pipeline__node hf-source-knowledge-pipeline__node--b"><strong>Context</strong><span>claims and proof</span></div>
+            <div class="hf-source-knowledge-pipeline__node hf-source-knowledge-pipeline__node--c"><strong>Format</strong><span>short scenes</span></div>
+            <div class="hf-source-knowledge-pipeline__node hf-source-knowledge-pipeline__node--d"><strong>Action</strong><span>review and ship</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-proof" class="scene clip" data-start="20.2" data-duration="4.4" data-track-index="7" style="position:absolute; inset:0;">
+        <div class="scene-pad">
+          <p id="proof-eyebrow" class="eyebrow">Source proof</p>
+          <h2 id="proof-headline" class="headline">Support the claim without stealing the scene.</h2>
+          <aside id="proof-card" class="hf-source-proof-card">
+            <div class="hf-source-proof-card__header"><div class="hf-source-proof-card__avatar">S</div><div><span class="hf-source-proof-card__name">Source proof</span><span class="hf-source-proof-card__role">Paraphrased and attributed</span></div></div>
+            <p class="hf-source-proof-card__claim">External brands can inform a proof beat. They should never replace the final brand moment.</p>
+            <div class="hf-source-attribution-strip"><span class="hf-source-attribution-strip__mark">C</span><span class="hf-source-attribution-strip__label">cgaravitoq remains watermark and outro</span></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="scene-brand-outro" class="scene clip" data-start="24.6" data-duration="3.4" data-track-index="8" style="position:absolute; inset:0;">
+        <div class="scene-pad outro brand-outro">
+          <div class="brand-outro__lockup">
+            <div id="brand-aura" class="brand-outro__aura"></div>
+            <svg id="brand-mark" class="brand-outro__mark" viewBox="0 0 578 320" role="img" aria-label="cgaravitoq logo">
+              <path id="brand-piece-left" class="brand-outro__piece" d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" />
+              <path id="brand-piece-top-left" class="brand-outro__piece" d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" />
+              <path id="brand-piece-bridge" class="brand-outro__piece" d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" />
+              <path id="brand-piece-bottom-right" class="brand-outro__piece" d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" />
+              <path id="brand-piece-right" class="brand-outro__piece" d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" />
+            </svg>
+          </div>
+          <h2 id="brand-name" class="brand-outro__name">cgaravitoq</h2>
+          <p id="brand-tagline" class="brand-outro__tagline">AI Engineering</p>
+        </div>
+      </section>
+
+      <audio id="voiceover" class="clip" data-start="0" data-duration="28" data-track-index="98" data-volume="0" src="assets/voice.mp3"></audio>
+      <div id="captions" class="clip" data-start="0" data-duration="28" data-track-index="99"></div>
+    </div>
+    <script type="application/json" id="captions-data">[]</script>
+    <script src="lib/captions-karaoke.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const scenes = ["#scene-article", "#scene-stat", "#scene-grid", "#scene-pipeline", "#scene-proof", "#scene-brand-outro"];
+      tl.set(scenes, { autoAlpha: 0, scale: 1.02, filter: "blur(8px)" }, 0);
+      tl.set("#scene-article", { autoAlpha: 1, scale: 1, filter: "blur(0px)" }, 0);
+      tl.set(["#brand-name", "#brand-tagline"], { autoAlpha: 0, scale: 0.88, filter: "blur(16px)", transformOrigin: "50% 50%" }, 0);
+      tl.from("#article-card", { y: 46, opacity: 0, duration: 0.62, ease: "power2.out" }, 0.18);
+      tl.fromTo(".hf-source-article-hero__image", { "--source-scan": "-120%" }, { "--source-scan": "120%", duration: 1.2, ease: "power2.inOut" }, 1.0);
+
+      tl.to("#scene-article", { autoAlpha: 0, scale: 0.985, filter: "blur(8px)", duration: 0.45, ease: "power2.in" }, 5.25);
+      tl.set("#scene-article", { autoAlpha: 0 }, 5.7);
+      tl.to("#scene-stat", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power2.out" }, 5.7);
+      tl.from("#stat-eyebrow", { y: 18, opacity: 0, duration: 0.35, ease: "power2.out" }, 5.9);
+      tl.from("#stat-headline", { y: 38, opacity: 0, duration: 0.5, ease: "power2.out" }, 6.12);
+      tl.to(".hf-source-stat-comparison__bar", { scaleX: 1, duration: 0.72, stagger: 0.18, ease: "power2.out" }, 6.65);
+      tl.set("#stat-block .hf-source-attribution-strip", { autoAlpha: 1 }, 7.2);
+
+      tl.to("#scene-stat", { autoAlpha: 0, scale: 0.985, filter: "blur(8px)", duration: 0.45, ease: "power2.in" }, 10.45);
+      tl.set("#scene-stat", { autoAlpha: 0 }, 10.9);
+      tl.to("#scene-grid", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power2.out" }, 10.9);
+      tl.from("#grid-eyebrow", { y: 18, opacity: 0, duration: 0.35, ease: "power2.out" }, 11.08);
+      tl.from("#grid-headline", { y: 38, opacity: 0, duration: 0.5, ease: "power2.out" }, 11.28);
+      tl.from(".hf-source-friction-grid__cell", { y: 26, opacity: 0, duration: 0.44, stagger: 0.12, ease: "power2.out" }, 11.9);
+      tl.set("#grid-attribution", { autoAlpha: 1 }, 12.8);
+
+      tl.to("#scene-grid", { autoAlpha: 0, scale: 0.985, filter: "blur(8px)", duration: 0.45, ease: "power2.in" }, 15.55);
+      tl.set("#scene-grid", { autoAlpha: 0 }, 16);
+      tl.to("#scene-pipeline", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power2.out" }, 16);
+      tl.from("#pipeline-eyebrow", { y: 18, opacity: 0, duration: 0.35, ease: "power2.out" }, 16.16);
+      tl.from("#pipeline-headline", { y: 36, opacity: 0, duration: 0.5, ease: "power2.out" }, 16.35);
+      tl.from(".hf-source-knowledge-pipeline__node", { y: 26, opacity: 0, duration: 0.42, stagger: 0.12, ease: "back.out(1.45)" }, 16.9);
+      tl.to(".hf-source-knowledge-pipeline__edge", { strokeDashoffset: 0, duration: 0.78, stagger: 0.16, ease: "power2.out" }, 17.45);
+
+      tl.to("#scene-pipeline", { autoAlpha: 0, scale: 0.985, filter: "blur(8px)", duration: 0.45, ease: "power2.in" }, 19.75);
+      tl.set("#scene-pipeline", { autoAlpha: 0 }, 20.2);
+      tl.to("#scene-proof", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power2.out" }, 20.2);
+      tl.from("#proof-eyebrow", { y: 18, opacity: 0, duration: 0.35, ease: "power2.out" }, 20.36);
+      tl.from("#proof-headline", { y: 36, opacity: 0, duration: 0.5, ease: "power2.out" }, 20.58);
+      tl.from("#proof-card", { y: 28, opacity: 0, duration: 0.48, ease: "power2.out" }, 21.08);
+
+      tl.to("#scene-proof", { autoAlpha: 0, scale: 0.985, filter: "blur(8px)", duration: 0.45, ease: "power2.in" }, 24.15);
+      tl.set("#scene-proof", { autoAlpha: 0 }, 24.6);
+      tl.to("#brand-corner", { autoAlpha: 0, duration: 0.35, ease: "power2.in" }, 24.15);
+      tl.to("#scene-brand-outro", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power2.out" }, 24.6);
+      tl.to("#brand-aura", { autoAlpha: 1, scale: 1, duration: 0.55, ease: "power2.out" }, 24.75);
+      tl.to(".brand-outro__piece", { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.45, stagger: 0.06, ease: "back.out(1.6)", startAt: { x: -18, y: 14, scale: 0.94 } }, 24.9);
+      tl.to(["#brand-name", "#brand-tagline"], { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.62, stagger: 0.1, ease: "power3.out" }, 25.22);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["source-driven-catalog-demo"] = tl;
+    </script>
+  </body>
+</html>

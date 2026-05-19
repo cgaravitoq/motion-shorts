@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="asset-stack-parallax preview">
+  <rect width="720" height="405" fill="#10151f"/>
+  <rect x="212" y="82" width="320" height="206" rx="8" fill="#26334a" opacity=".58"/>
+  <rect x="184" y="112" width="320" height="206" rx="8" fill="#314462" opacity=".82"/>
+  <rect x="156" y="142" width="320" height="206" rx="8" fill="#5eead4" opacity=".8"/>
+  <path d="M156 302 256 220l74 52 82-70 64 58v88H156Z" fill="#f8d66d" opacity=".52"/>
+  <text x="48" y="58" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">asset-stack-parallax</text>
+</svg>

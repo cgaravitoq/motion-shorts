@@ -1,0 +1,47 @@
+{
+  "id": "svg-path-draw",
+  "type": "component",
+  "status": "first-class",
+  "intentTags": [
+    "workflow",
+    "data",
+    "vfx"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-blocks/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/svg-path-draw.html"
+  ],
+  "requiredTracks": [],
+  "timingGuidance": "Use for route, dependency, or trend-line reveals when the line itself is the point.",
+  "dependencies": [],
+  "usageRules": [
+    "Use stroke-dashoffset animation instead of path morphing for deterministic renders.",
+    "Use with fixed paths only; no runtime-generated random path data.",
+    "Keep node labels separate from the SVG when text needs responsive fitting."
+  ],
+  "validationRules": [
+    "requires .svg-path-draw",
+    "requires .svg-path-draw__path"
+  ],
+  "platformTargets": [
+    "youtube-shorts",
+    "tiktok",
+    "instagram-reels",
+    "linkedin"
+  ],
+  "density": "medium",
+  "formatTargets": [
+    "portrait",
+    "square",
+    "landscape"
+  ],
+  "assetKinds": [
+    "svg",
+    "other"
+  ],
+  "motionRoles": [
+    "reveal",
+    "proof"
+  ],
+  "previewAssetPath": "packages/catalog/previews/svg-path-draw.svg"
+}

@@ -1,0 +1,39 @@
+<!doctype html>
+<!-- catalog: [] disabled: [brand-logo-watermark, brand-logo-outro] reason: "generic MCP template" -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      body { margin: 0; background: #07111f; font-family: Inter, system-ui, sans-serif; }
+      #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; color: #f8fafc; background: linear-gradient(160deg, #07111f, #1e3a8a); }
+      .orb { position: absolute; width: 680px; height: 680px; border-radius: 50%; filter: blur(12px); opacity: 0.75; }
+      #orb-a { left: -220px; top: 180px; background: #38bdf8; }
+      #orb-b { right: -260px; bottom: 220px; background: #a78bfa; }
+      #title { position: absolute; left: 96px; right: 96px; top: 560px; font-size: 112px; font-weight: 800; line-height: 0.95; letter-spacing: -0.06em; }
+      #subtitle { position: absolute; left: 104px; right: 104px; top: 860px; font-size: 42px; line-height: 1.2; color: #bfdbfe; }
+      #captions { position: absolute; left: 96px; right: 96px; bottom: 160px; min-height: 120px; padding: 34px 42px; border-radius: 34px; background: rgba(15, 23, 42, 0.72); font-size: 44px; line-height: 1.15; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div id="stage" class="clip" data-composition-id="canonical-short-template" data-width="1080" data-height="1920" data-start="0" data-duration="8">
+      <div id="orb-a" class="orb" data-track="0"></div>
+      <div id="orb-b" class="orb" data-track="1"></div>
+      <div id="title" data-track="2">Canonical Short</div>
+      <div id="subtitle" data-track="3">Vertical composition with audio and captions.</div>
+      <div id="captions" data-track="99">Caption text appears here.</div>
+      <audio id="voice" data-track="98" data-start="0" data-duration="8" src="voice.mp3">
+        <track kind="captions" label="English captions" srclang="en" />
+      </audio>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#title", { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" }, 0);
+      tl.fromTo("#subtitle", { y: 48, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, 0.5);
+      tl.to("#orb-a", { x: 120, y: 80, duration: 8, ease: "none" }, 0);
+      tl.to("#orb-b", { x: -120, y: -80, duration: 8, ease: "none" }, 0);
+      window.__timelines["canonical-short-template"] = tl;
+    </script>
+  </body>
+</html>

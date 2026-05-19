@@ -1,0 +1,47 @@
+{
+  "id": "brand-logo-cloud",
+  "type": "block",
+  "status": "first-class",
+  "intentTags": [
+    "brand",
+    "social",
+    "source"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/brand-logo-cloud.html"
+  ],
+  "requiredTracks": [],
+  "timingGuidance": "Use for partner/customer/source logo proof beats where multiple logos need equal visual treatment.",
+  "dependencies": [],
+  "usageRules": [
+    "Use only when logo use is publishable or review-approved.",
+    "Keep all logos optically balanced inside equal cells.",
+    "Do not use this as the episode watermark or final outro."
+  ],
+  "validationRules": [
+    "requires .brand-logo-cloud",
+    "requires .brand-logo-cloud__logo"
+  ],
+  "platformTargets": [
+    "youtube-shorts",
+    "tiktok",
+    "instagram-reels",
+    "linkedin"
+  ],
+  "density": "medium",
+  "formatTargets": [
+    "portrait",
+    "landscape"
+  ],
+  "assetKinds": [
+    "logo",
+    "svg",
+    "image"
+  ],
+  "motionRoles": [
+    "brand",
+    "proof"
+  ],
+  "previewAssetPath": "packages/catalog/previews/brand-logo-cloud.svg"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "reddit-post",
+  "type": "reference",
+  "status": "copy-paste",
+  "intentTags": [
+    "social"
+  ],
+  "sourceDemo": "",
+  "snippetPaths": [
+    "packages/catalog/snippets/reddit-post.html"
+  ],
+  "requiredTracks": [],
+  "timingGuidance": "Upstream-only reference; fetch the source block when authoring and convert to inline seek-safe markup.",
+  "dependencies": [],
+  "usageRules": [
+    "Use for community-commentary beats or anonymized discussion prompts.",
+    "Do not import remote composition at runtime."
+  ],
+  "validationRules": [
+    "sourceDemo empty allowed only for reference entries",
+    "forbidden data-composition-src"
+  ]
+}

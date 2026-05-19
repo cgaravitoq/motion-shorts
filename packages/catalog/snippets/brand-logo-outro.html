@@ -1,0 +1,24 @@
+<style>
+  .brand-outro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .brand-outro__lockup { position: relative; display: grid; place-items: center; width: 540px; height: 300px; margin-bottom: 34px; }
+  .brand-outro__aura { position: absolute; width: 520px; height: 520px; border-radius: 999px; background: radial-gradient(circle, rgba(233,255,0,0.16), transparent 62%); opacity: 0; transform: scale(0.72); }
+  .brand-outro__mark { position: relative; width: 420px; height: auto; overflow: visible; filter: drop-shadow(0 26px 80px rgba(0,0,0,0.5)); }
+  .brand-outro__piece { transform-box: fill-box; transform-origin: center; opacity: 0; fill: var(--paper); }
+  .brand-outro__name { margin: 0; font-size: 72px; line-height: 1.02; font-weight: 790; letter-spacing: 0; color: var(--paper); }
+  .brand-outro__tagline { margin: 28px 0 0; max-width: 780px; color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 30px; line-height: 1.2; font-weight: 590; letter-spacing: 3px; text-transform: uppercase; }
+  .brand-outro__source { margin: 42px 0 0; color: rgba(244,246,251,0.58); font-family: "JetBrains Mono", monospace; font-size: 22px; line-height: 1.25; letter-spacing: 0.8px; }
+  .brand-outro__name, .brand-outro__tagline, .brand-outro__source { will-change: opacity, transform, filter; }
+</style>
+<section id="scene-brand-outro" class="scene clip" data-start="<OUTRO_START>" data-duration="<OUTRO_DURATION>" data-track-index="7" style="position:absolute; inset:0;"><div class="brand-outro"><div class="brand-outro__lockup"><div id="brand-aura" class="brand-outro__aura"></div><svg id="brand-mark" class="brand-outro__mark" viewBox="0 0 578 320" role="img" aria-labelledby="brand-outro-title"><title id="brand-outro-title">cgaravitoq logo</title><path id="brand-piece-left" class="brand-outro__piece" d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-top-left" class="brand-outro__piece" d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bridge" class="brand-outro__piece" d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bottom-right" class="brand-outro__piece" d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-right" class="brand-outro__piece" d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div><h1 id="brand-name" class="brand-outro__name">cgaravitoq</h1><p id="brand-tagline" class="brand-outro__tagline">AI Engineering</p><p id="brand-source" class="brand-outro__source">Fuente: &lt;SOURCE_LABEL&gt;</p></div></section>
+<script>
+  // Copy into the episode timeline after declaring `const tl = gsap.timeline({ paused: true });`.
+  // Replace OUTRO_START with the final scene start in seconds.
+  tl.set(["#brand-name", "#brand-tagline", "#brand-source"], { autoAlpha: 0, scale: 0.88, filter: "blur(16px)", transformOrigin: "50% 50%" }, 0);
+  tl.to("#brand-corner", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, OUTRO_START - 0.55);
+  tl.to("#scene-brand-outro", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, OUTRO_START);
+  tl.to("#brand-aura", { autoAlpha: 1, scale: 1, duration: 0.65, ease: "power2.out" }, OUTRO_START + 0.2);
+  tl.to(".brand-outro__piece", { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.55, stagger: 0.08, ease: "back.out(1.6)", startAt: { x: -24, y: 20, scale: 0.92 } }, OUTRO_START + 0.3);
+  tl.to(["#brand-name", "#brand-tagline", "#brand-source"], { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.62, stagger: 0.1, ease: "power3.out" }, OUTRO_START + 0.62);
+  tl.to("#brand-mark", { scale: 1.04, duration: 0.32, ease: "power2.out", overwrite: "auto" }, OUTRO_START + 0.8);
+  tl.to("#brand-mark", { scale: 1, duration: 0.34, ease: "power2.inOut", overwrite: "auto" }, OUTRO_START + 1.12);
+</script>

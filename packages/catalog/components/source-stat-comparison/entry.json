@@ -1,0 +1,32 @@
+{
+  "id": "source-stat-comparison",
+  "type": "block",
+  "status": "first-class",
+  "intentTags": [
+    "informative",
+    "data",
+    "source"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/source-stat-comparison.html"
+  ],
+  "requiredTracks": [
+    5
+  ],
+  "timingGuidance": "5-8s proof scene; reveal rows, grow bars, then hold highlighted source-backed metric and citation label.",
+  "dependencies": [
+    "source-attribution-strip"
+  ],
+  "usageRules": [
+    "Use when a public source contains a numeric comparison, adoption claim, benchmark, or timeline delta.",
+    "Keep labels short enough for 9:16 scanning and attach a compact citation label inside the component.",
+    "Use seek-safe timeline tweens for bar scale and tl.set for discrete emphasis states."
+  ],
+  "validationRules": [
+    "requires .hf-source-stat-comparison",
+    "requires .hf-source-attribution-strip",
+    "requires tl.set for discrete labels",
+    "forbidden data-composition-src"
+  ]
+}

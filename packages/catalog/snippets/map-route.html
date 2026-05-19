@@ -1,0 +1,36 @@
+<svg class="map-route clip" data-track-index="4" viewBox="0 0 780 620" aria-hidden="true">
+  <path class="map-route__land" d="M80 490 L140 230 L330 120 L560 160 L700 390 L610 530 L330 560 Z" />
+  <path class="map-route__line" d="M154 430 C270 260 390 320 520 205" />
+  <circle class="map-route__pin" cx="154" cy="430" r="14" />
+  <circle class="map-route__pin" cx="520" cy="205" r="14" />
+</svg>
+<style>
+  .map-route {
+    position: absolute;
+    inset: 240px 72px auto;
+    width: calc(100% - 144px);
+  }
+  .map-route__land {
+    fill: #192233;
+    stroke: rgb(255 255 255 / 0.12);
+    stroke-width: 2;
+  }
+  .map-route__line {
+    fill: none;
+    stroke: #f8d66d;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 560;
+    stroke-dashoffset: 560;
+  }
+  .map-route__pin {
+    fill: #ff5c7a;
+    opacity: 0;
+    filter: drop-shadow(0 0 18px rgb(255 92 122 / 0.45));
+  }
+</style>
+<script>
+  tl.from(".map-route__land", { autoAlpha: 0, scale: 0.96, transformOrigin: "center", duration: 0.5, ease: "power3.out" }, 0);
+  tl.to(".map-route__line", { strokeDashoffset: 0, duration: 1.1, ease: "power2.out" }, 0.25);
+  tl.to(".map-route__pin", { autoAlpha: 1, scale: 1.25, transformOrigin: "center", stagger: 0.18, duration: 0.45, ease: "back.out(1.7)" }, 0.55);
+</script>

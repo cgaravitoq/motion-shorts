@@ -1,0 +1,34 @@
+<div class="asset-stack-parallax clip" data-track-index="4">
+  <img class="asset-stack-parallax__card asset-stack-parallax__card--back" src="assets/source-image-3.jpg" alt="" />
+  <img class="asset-stack-parallax__card asset-stack-parallax__card--mid" src="assets/source-image-2.jpg" alt="" />
+  <img class="asset-stack-parallax__card asset-stack-parallax__card--front" src="assets/source-image-1.jpg" alt="" />
+</div>
+<style>
+  .asset-stack-parallax {
+    position: absolute;
+    inset: 220px 100px 250px;
+    transform-style: preserve-3d;
+  }
+  .asset-stack-parallax__card {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 24px 80px rgb(0 0 0 / 0.35);
+  }
+  .asset-stack-parallax__card--back {
+    transform: translate(36px, -34px) scale(0.9);
+    opacity: 0.56;
+  }
+  .asset-stack-parallax__card--mid {
+    transform: translate(12px, -12px) scale(0.95);
+    opacity: 0.78;
+  }
+</style>
+<script>
+  tl.from(".asset-stack-parallax__card", { autoAlpha: 0, y: 42, scale: 0.9, stagger: 0.12, duration: 0.75, ease: "power3.out" }, 0);
+  tl.to(".asset-stack-parallax__card--front", { x: -24, y: 18, duration: 3.8, ease: "none" }, 0.7);
+  tl.to(".asset-stack-parallax__card--mid", { x: 24, y: -8, duration: 3.8, ease: "none" }, 0.7);
+</script>

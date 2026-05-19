@@ -1,0 +1,26 @@
+{
+  "id": "data-chart",
+  "type": "block",
+  "status": "first-class",
+  "intentTags": [
+    "informative",
+    "data"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-blocks/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/data-chart.html"
+  ],
+  "requiredTracks": [
+    5
+  ],
+  "timingGuidance": "7–9s scene; reveal shell, grow bars, draw line, then reveal labels and KPI.",
+  "dependencies": [],
+  "usageRules": [
+    "Use for compact proof points or before/after metrics.",
+    "Keep chart inside a scene-local clip."
+  ],
+  "validationRules": [
+    "requires .hf-data-chart",
+    "requires seek-safe metric onUpdate"
+  ]
+}

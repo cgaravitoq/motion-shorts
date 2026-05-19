@@ -1,0 +1,25 @@
+{
+  "id": "instagram-follow",
+  "type": "overlay",
+  "status": "first-class",
+  "intentTags": [
+    "social"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/demo-social-overlays/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/instagram-follow.html"
+  ],
+  "requiredTracks": [
+    5
+  ],
+  "timingGuidance": "5–7s beat; slide follow pill after scene context, pulse button once.",
+  "dependencies": [],
+  "usageRules": [
+    "Use for quick follow CTAs.",
+    "Keep handle and avatar generic until final brand pass."
+  ],
+  "validationRules": [
+    "requires #ig-follow or scene-local equivalent",
+    "forbidden data-composition-src"
+  ]
+}

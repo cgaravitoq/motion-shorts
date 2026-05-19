@@ -1,0 +1,25 @@
+{
+  "id": "grid-pixelate-wipe",
+  "type": "transition",
+  "status": "first-class",
+  "intentTags": [
+    "vfx"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/grid-pixelate-wipe.html"
+  ],
+  "requiredTracks": [
+    7
+  ],
+  "timingGuidance": "Use a deterministic center/edges stagger around the scene swap point.",
+  "dependencies": [],
+  "usageRules": [
+    "Use for tile cover/reveal transitions between already-mounted scenes.",
+    "Never use random stagger origins."
+  ],
+  "validationRules": [
+    "requires #pixel-grid",
+    "forbidden stagger from random"
+  ]
+}

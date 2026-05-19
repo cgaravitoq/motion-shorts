@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="logo-orbit preview">
+  <rect width="720" height="405" fill="#0b1020"/>
+  <circle cx="360" cy="210" r="116" fill="none" stroke="#ffffff" opacity=".22"/>
+  <circle cx="456" cy="146" r="10" fill="#5eead4"/>
+  <circle cx="262" cy="258" r="10" fill="#f8d66d"/>
+  <path d="M360 122 438 167v90l-78 46-78-46v-90Z" fill="#ffffff" opacity=".92"/>
+  <path d="M360 156 407 183v54l-47 27-47-27v-54Z" fill="#0b1020"/>
+  <text x="48" y="68" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">logo-orbit</text>
+  <text x="48" y="96" fill="#b8c3d6" font-family="Inter,Arial,sans-serif" font-size="15">Scene-local logo emphasis.</text>
+</svg>

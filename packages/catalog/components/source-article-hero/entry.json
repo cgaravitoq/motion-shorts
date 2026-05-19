@@ -1,0 +1,31 @@
+{
+  "id": "source-article-hero",
+  "type": "block",
+  "status": "first-class",
+  "intentTags": [
+    "informative",
+    "hook",
+    "source"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/source-article-hero.html"
+  ],
+  "requiredTracks": [
+    4
+  ],
+  "timingGuidance": "5-7s opening scene; reveal source badge, headline, metadata, and image crop before moving into proof.",
+  "dependencies": [
+    "source-attribution-strip"
+  ],
+  "usageRules": [
+    "Use for source URL hooks where the audience must recognize the publisher, URL path, and thesis quickly.",
+    "Keep publisher identity secondary to the short's own cgaravitoq brand system.",
+    "Use repo fonts only; source brands can influence color and public assets but not typography."
+  ],
+  "validationRules": [
+    "requires .hf-source-article-hero",
+    "requires .hf-source-attribution-strip",
+    "forbidden data-composition-src"
+  ]
+}

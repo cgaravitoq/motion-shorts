@@ -1,0 +1,26 @@
+{
+  "id": "flowchart",
+  "type": "block",
+  "status": "first-class",
+  "intentTags": [
+    "informative",
+    "workflow"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-blocks/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/flowchart.html"
+  ],
+  "requiredTracks": [
+    6
+  ],
+  "timingGuidance": "7–9s scene; reveal nodes first, draw SVG edges, then reveal labels with tl.set.",
+  "dependencies": [],
+  "usageRules": [
+    "Use for decision trees, branching processes, or agent workflows.",
+    "Keep nodes and connectors in one scene-local clip."
+  ],
+  "validationRules": [
+    "requires .hf-flowchart__edge",
+    "requires tl.set for discrete labels"
+  ]
+}

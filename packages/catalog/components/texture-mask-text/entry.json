@@ -1,0 +1,21 @@
+{
+  "id": "texture-mask-text",
+  "type": "vfx",
+  "status": "deprecated",
+  "intentTags": [
+    "vfx"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+  "snippetPaths": [],
+  "requiredTracks": [],
+  "timingGuidance": "Deprecated; evaluated and dropped due to unstable readability.",
+  "dependencies": [],
+  "usageRules": [
+    "Do not use until a stable masking technique is validated.",
+    "Prefer shimmer-sweep for text emphasis."
+  ],
+  "validationRules": [
+    "deprecated replacement shimmer-sweep",
+    "forbidden in new episodes"
+  ]
+}

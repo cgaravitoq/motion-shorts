@@ -1,0 +1,32 @@
+{
+  "id": "source-proof-card",
+  "type": "reference",
+  "status": "first-class",
+  "intentTags": [
+    "informative",
+    "source",
+    "social"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/source-proof-card.html"
+  ],
+  "requiredTracks": [
+    5
+  ],
+  "timingGuidance": "4-6s support beat; reveal publisher/author identity first, then paraphrased proof and attribution.",
+  "dependencies": [
+    "source-attribution-strip"
+  ],
+  "usageRules": [
+    "Use for author, customer, or brand proof where a paraphrased claim needs visible attribution.",
+    "Do not quote long copyrighted text; keep proof copy paraphrased and use a short source label.",
+    "Use repo fonts and cgaravitoq watermark/outro even when the card references an external brand.",
+    "Never place this component inside the final brand outro scene; it is a support beat, not a closing brand element."
+  ],
+  "validationRules": [
+    "requires .hf-source-proof-card",
+    "requires .hf-source-attribution-strip",
+    "forbidden data-composition-src"
+  ]
+}

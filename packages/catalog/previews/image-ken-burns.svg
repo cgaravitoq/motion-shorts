@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="image-ken-burns preview">
+  <rect width="720" height="405" fill="#0d1117"/>
+  <rect x="34" y="34" width="652" height="337" rx="8" fill="#203149"/>
+  <path d="M34 286 194 150l92 86 82-116 318 251H34Z" fill="#5eead4" opacity=".32"/>
+  <path d="M34 320 222 222l104 70 126-94 234 150v23H34Z" fill="#f8d66d" opacity=".35"/>
+  <rect x="34" y="34" width="652" height="337" rx="8" fill="none" stroke="#ffffff" opacity=".18"/>
+  <text x="48" y="68" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">image-ken-burns</text>
+  <text x="48" y="96" fill="#b8c3d6" font-family="Inter,Arial,sans-serif" font-size="15">Slow source-image push with safe crop.</text>
+</svg>

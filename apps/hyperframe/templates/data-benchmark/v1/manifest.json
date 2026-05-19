@@ -1,0 +1,82 @@
+{
+  "id": "data-benchmark@1",
+  "family": "data-benchmark",
+  "version": 1,
+  "status": "first-class",
+  "description": "Exact 9:16 data template for comparisons, benchmarks, source stats, and metric-first shorts.",
+  "referenceEpisode": "apps/hyperframe/src/episodes/source-driven-editorial-demo/index.html",
+  "catalogIds": [
+    "brand-logo-watermark",
+    "brand-logo-outro",
+    "scene-blur-crossfade",
+    "grain-overlay",
+    "shimmer-sweep",
+    "source-article-hero",
+    "source-proof-card",
+    "source-stat-comparison",
+    "source-attribution-strip"
+  ],
+  "recommendedCatalogIds": [
+    "data-chart",
+    "svg-path-draw"
+  ],
+  "fonts": {
+    "primary": "Inter",
+    "mono": "Berkeley Mono",
+    "fallbackMono": "JetBrains Mono"
+  },
+  "defaults": {
+    "width": 1080,
+    "height": 1920,
+    "totalDuration": 41,
+    "audioDuration": 38,
+    "outroStart": 35.75,
+    "outroDuration": 5.25
+  },
+  "requiredTracks": {
+    "background": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "scenes": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "brandCorner": 97,
+    "audio": 98,
+    "captions": 99
+  },
+  "slots": [
+    "source.mark",
+    "source.publisher",
+    "source.path",
+    "source.label",
+    "source.accent",
+    "source.accent2",
+    "hook.titleHtml",
+    "hook.subtitle",
+    "proof.metric",
+    "proof.metricSuffix",
+    "proof.title",
+    "proof.body",
+    "support.name",
+    "support.role",
+    "support.claim",
+    "comparison.rows",
+    "payoff.title",
+    "payoff.before",
+    "payoff.after"
+  ],
+  "validation": [
+    "generated episode remains monolithic",
+    "no data-composition-src",
+    "paused GSAP timeline registered in window.__timelines",
+    "catalog:check passes",
+    "hyperframes lint passes"
+  ]
+}

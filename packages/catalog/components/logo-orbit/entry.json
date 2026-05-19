@@ -1,0 +1,47 @@
+{
+  "id": "logo-orbit",
+  "type": "component",
+  "status": "first-class",
+  "intentTags": [
+    "brand",
+    "hook",
+    "vfx"
+  ],
+  "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-with-logo/index.html",
+  "snippetPaths": [
+    "packages/catalog/snippets/logo-orbit.html"
+  ],
+  "requiredTracks": [],
+  "timingGuidance": "Use as a short brand or partner-logo emphasis beat before a proof or payoff scene.",
+  "dependencies": [],
+  "usageRules": [
+    "Use for one primary logo only; use brand-logo-cloud for multiple logos.",
+    "Do not replace the required brand-logo-outro.",
+    "Keep it scene-local, not persistent like brand-logo-watermark."
+  ],
+  "validationRules": [
+    "requires .logo-orbit",
+    "requires .logo-orbit__mark"
+  ],
+  "platformTargets": [
+    "youtube-shorts",
+    "tiktok",
+    "instagram-reels",
+    "linkedin"
+  ],
+  "density": "medium",
+  "formatTargets": [
+    "portrait",
+    "square"
+  ],
+  "assetKinds": [
+    "logo",
+    "svg",
+    "image"
+  ],
+  "motionRoles": [
+    "brand",
+    "hook"
+  ],
+  "previewAssetPath": "packages/catalog/previews/logo-orbit.svg"
+}

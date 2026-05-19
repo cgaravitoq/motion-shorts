@@ -1,0 +1,23 @@
+{
+  "id": "macos-notification",
+  "type": "reference",
+  "status": "copy-paste",
+  "intentTags": [
+    "informative"
+  ],
+  "sourceDemo": "",
+  "snippetPaths": [
+    "packages/catalog/snippets/macos-notification.html"
+  ],
+  "requiredTracks": [],
+  "timingGuidance": "Upstream-only reference; fetch on demand and use as a small punctuation overlay.",
+  "dependencies": [],
+  "usageRules": [
+    "Use for system-alert metaphors or task reminders.",
+    "Keep it subordinate to the main scene."
+  ],
+  "validationRules": [
+    "sourceDemo empty allowed only for reference entries",
+    "forbidden data-composition-src"
+  ]
+}

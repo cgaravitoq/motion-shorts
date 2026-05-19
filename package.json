@@ -1,0 +1,60 @@
+{
+  "name": "motion-shorts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first monorepo for vertical motion-graphics shorts (YouTube, TikTok, LinkedIn, Reels) with Hyperframes, GSAP, ElevenLabs TTS, MCP tooling, and a catalog-driven authoring pipeline.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Carlos Garavito <cg9822@gmail.com>",
+  "homepage": "https://github.com/cgaravitoq/motion-shorts#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cgaravitoq/motion-shorts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cgaravitoq/motion-shorts/issues"
+  },
+  "keywords": [
+    "monorepo",
+    "turborepo",
+    "motion-graphics",
+    "shorts",
+    "hyperframes",
+    "elevenlabs"
+  ],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "bun@1.3.14",
+  "scripts": {
+    "dev": "turbo run dev",
+    "mcp:dev": "bun run --watch apps/mcp/src/index.ts",
+    "mcp:inspector": "bunx -y @modelcontextprotocol/inspector bun run apps/mcp/src/index.ts",
+    "mcp:start": "bun run apps/mcp/src/index.ts",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "biome lint .",
+    "lint:env": "bash scripts/check-no-process-env.sh",
+    "catalog:check-generated": "bunx turbo run --filter @cgaravitoq/catalog build && git diff --exit-code packages/catalog/manifest.json .agents/skills/canonical-short/references/inline-components-catalog.md",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@types/bun": "1.3.14",
+    "turbo": "2.9.14",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "bun": ">=1.3.0",
+    "node": ">=22"
+  },
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "esbuild"
+  ]
+}

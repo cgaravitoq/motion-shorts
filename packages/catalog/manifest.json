@@ -1,0 +1,1092 @@
+[
+  {
+    "id": "asset-stack-parallax",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "source",
+      "hook"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/asset-stack-parallax.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for three related source images or screenshots when the scene needs depth but not a generic card stack.",
+    "dependencies": [],
+    "usageRules": [
+      "Use only with assets that share a visual family.",
+      "Limit to three layers in 9:16 so captions and watermark keep room.",
+      "Prefer source-image-reveal for a single asset."
+    ],
+    "validationRules": [
+      "requires .asset-stack-parallax",
+      "requires .asset-stack-parallax__card"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "high",
+    "formatTargets": [
+      "portrait",
+      "square"
+    ],
+    "assetKinds": [
+      "image",
+      "screenshot"
+    ],
+    "motionRoles": [
+      "hook",
+      "proof"
+    ],
+    "previewAssetPath": "packages/catalog/previews/asset-stack-parallax.svg"
+  },
+  {
+    "id": "brand-logo-cloud",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "brand",
+      "social",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/brand-logo-cloud.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for partner/customer/source logo proof beats where multiple logos need equal visual treatment.",
+    "dependencies": [],
+    "usageRules": [
+      "Use only when logo use is publishable or review-approved.",
+      "Keep all logos optically balanced inside equal cells.",
+      "Do not use this as the episode watermark or final outro."
+    ],
+    "validationRules": [
+      "requires .brand-logo-cloud",
+      "requires .brand-logo-cloud__logo"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "medium",
+    "formatTargets": [
+      "portrait",
+      "landscape"
+    ],
+    "assetKinds": [
+      "logo",
+      "svg",
+      "image"
+    ],
+    "motionRoles": [
+      "brand",
+      "proof"
+    ],
+    "previewAssetPath": "packages/catalog/previews/brand-logo-cloud.svg"
+  },
+  {
+    "id": "brand-logo-outro",
+    "type": "brand",
+    "status": "required",
+    "intentTags": [
+      "brand",
+      "outro"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/brand-logo-outro.html"
+    ],
+    "requiredTracks": [
+      7
+    ],
+    "timingGuidance": "Use for final 4–6 seconds of standard shorts unless explicitly disabled. The penultimate scene must blur/scale crossfade into this outro, then the brand text reveals with blur-to-sharp scale-up after the logo pieces start assembling.",
+    "dependencies": [],
+    "usageRules": [
+      "Use as the standard closing brand lockup.",
+      "Fade persistent watermark before outro begins.",
+      "Transition from the penultimate scene with scene-level blur/crossfade into #scene-brand-outro.",
+      "Animate cgaravitoq, AI Engineering, and any source attribution with the standard blur scale-up reveal; keep the text synchronized as one grouped outro reveal, not as a separate CTA card.",
+      "Source branding can appear only as attribution, never as the watermark or primary outro brand."
+    ],
+    "validationRules": [
+      "requires #scene-brand-outro",
+      "requires final scene-brand-outro",
+      "requires .brand-outro",
+      "requires .brand-outro__lockup",
+      "requires #brand-aura",
+      "requires .brand-outro__aura",
+      "requires #brand-mark",
+      "requires .brand-outro__mark",
+      "requires .brand-outro__piece",
+      "requires five brand-outro pieces",
+      "requires #brand-name",
+      "requires .brand-outro__name",
+      "requires #brand-tagline",
+      "requires .brand-outro__tagline",
+      "requires brand-corner fade before outro",
+      "requires outro text blur scale reveal",
+      "requires paused GSAP timeline",
+      "requires brand mark SVG paths"
+    ]
+  },
+  {
+    "id": "brand-logo-watermark",
+    "type": "brand",
+    "status": "required",
+    "intentTags": [
+      "brand"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-with-logo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/brand-logo-watermark.html"
+    ],
+    "requiredTracks": [
+      97
+    ],
+    "timingGuidance": "Persistent track-97 watermark throughout branded shorts; fade before brand-logo-outro to avoid double-logo.",
+    "dependencies": [],
+    "usageRules": [
+      "Use on branded shorts unless explicitly disabled.",
+      "Keep on track 97 and outside scene-local tracks.",
+      "Position: top-right safe area (top: 96px, right: 96px)."
+    ],
+    "validationRules": [
+      "requires #brand-corner element",
+      "requires data-track-index 97"
+    ]
+  },
+  {
+    "id": "data-chart",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "data"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-blocks/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/data-chart.html"
+    ],
+    "requiredTracks": [
+      5
+    ],
+    "timingGuidance": "7–9s scene; reveal shell, grow bars, draw line, then reveal labels and KPI.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for compact proof points or before/after metrics.",
+      "Keep chart inside a scene-local clip."
+    ],
+    "validationRules": [
+      "requires .hf-data-chart",
+      "requires seek-safe metric onUpdate"
+    ]
+  },
+  {
+    "id": "device-screen-pan",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "workflow",
+      "informative",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/device-screen-pan.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for app or website screenshots that need a physical-device read without requiring a full 3D model.",
+    "dependencies": [],
+    "usageRules": [
+      "Treat the device as the primary self-framed object.",
+      "Animate the screen inside the bezel rather than animating raw width or height.",
+      "Use only when the screenshot has enough vertical content to pan."
+    ],
+    "validationRules": [
+      "requires .device-screen-pan",
+      "requires .device-screen-pan__screen"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels"
+    ],
+    "density": "medium",
+    "formatTargets": [
+      "portrait"
+    ],
+    "assetKinds": [
+      "screenshot",
+      "image"
+    ],
+    "motionRoles": [
+      "proof",
+      "reveal"
+    ],
+    "previewAssetPath": "packages/catalog/previews/device-screen-pan.svg"
+  },
+  {
+    "id": "flowchart",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "workflow"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-blocks/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/flowchart.html"
+    ],
+    "requiredTracks": [
+      6
+    ],
+    "timingGuidance": "7–9s scene; reveal nodes first, draw SVG edges, then reveal labels with tl.set.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for decision trees, branching processes, or agent workflows.",
+      "Keep nodes and connectors in one scene-local clip."
+    ],
+    "validationRules": [
+      "requires .hf-flowchart__edge",
+      "requires tl.set for discrete labels"
+    ]
+  },
+  {
+    "id": "grain-overlay",
+    "type": "vfx",
+    "status": "first-class",
+    "intentTags": [
+      "vfx"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/grain-overlay.html"
+    ],
+    "requiredTracks": [
+      5
+    ],
+    "timingGuidance": "Drive fixed grain offsets from the paused timeline across the scene duration.",
+    "dependencies": [],
+    "usageRules": [
+      "Use when a flat scene needs subtle analog texture.",
+      "Do not use infinite CSS animation."
+    ],
+    "validationRules": [
+      "requires .hf-grain-overlay__texture",
+      "forbidden repeat:-1"
+    ]
+  },
+  {
+    "id": "grid-pixelate-wipe",
+    "type": "transition",
+    "status": "first-class",
+    "intentTags": [
+      "vfx"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/grid-pixelate-wipe.html"
+    ],
+    "requiredTracks": [
+      7
+    ],
+    "timingGuidance": "Use a deterministic center/edges stagger around the scene swap point.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for tile cover/reveal transitions between already-mounted scenes.",
+      "Never use random stagger origins."
+    ],
+    "validationRules": [
+      "requires #pixel-grid",
+      "forbidden stagger from random"
+    ]
+  },
+  {
+    "id": "image-ken-burns",
+    "type": "component",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "source",
+      "hook"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/image-ken-burns.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for a 4-6 second source image beat when a static image needs editorial motion without becoming a generic card.",
+    "dependencies": [],
+    "usageRules": [
+      "Use only with high-resolution images that can tolerate safe 9:16 cropping.",
+      "Keep the movement slow enough to preserve source legibility.",
+      "Pair with source-attribution-strip when the image came from a public source."
+    ],
+    "validationRules": [
+      "requires .image-ken-burns",
+      "requires .image-ken-burns__media"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "low",
+    "formatTargets": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "assetKinds": [
+      "image",
+      "screenshot"
+    ],
+    "motionRoles": [
+      "hook",
+      "proof"
+    ],
+    "previewAssetPath": "packages/catalog/previews/image-ken-burns.svg"
+  },
+  {
+    "id": "instagram-follow",
+    "type": "overlay",
+    "status": "first-class",
+    "intentTags": [
+      "social"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-social-overlays/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/instagram-follow.html"
+    ],
+    "requiredTracks": [
+      5
+    ],
+    "timingGuidance": "5–7s beat; slide follow pill after scene context, pulse button once.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for quick follow CTAs.",
+      "Keep handle and avatar generic until final brand pass."
+    ],
+    "validationRules": [
+      "requires #ig-follow or scene-local equivalent",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "legacy-text-watermark",
+    "type": "brand",
+    "status": "deprecated",
+    "intentTags": [
+      "brand"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+    "snippetPaths": [],
+    "requiredTracks": [
+      97
+    ],
+    "timingGuidance": "Deprecated text watermark pattern; replace with brand-logo-watermark.",
+    "dependencies": [],
+    "usageRules": [
+      "Do not use in new shorts.",
+      "Keep only for migration context."
+    ],
+    "validationRules": [
+      "deprecated replacement brand-logo-watermark",
+      "forbidden in new episodes"
+    ]
+  },
+  {
+    "id": "logo-orbit",
+    "type": "component",
+    "status": "first-class",
+    "intentTags": [
+      "brand",
+      "hook",
+      "vfx"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-with-logo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/logo-orbit.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use as a short brand or partner-logo emphasis beat before a proof or payoff scene.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for one primary logo only; use brand-logo-cloud for multiple logos.",
+      "Do not replace the required brand-logo-outro.",
+      "Keep it scene-local, not persistent like brand-logo-watermark."
+    ],
+    "validationRules": [
+      "requires .logo-orbit",
+      "requires .logo-orbit__mark"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "medium",
+    "formatTargets": [
+      "portrait",
+      "square"
+    ],
+    "assetKinds": [
+      "logo",
+      "svg",
+      "image"
+    ],
+    "motionRoles": [
+      "brand",
+      "hook"
+    ],
+    "previewAssetPath": "packages/catalog/previews/logo-orbit.svg"
+  },
+  {
+    "id": "macos-notification",
+    "type": "reference",
+    "status": "copy-paste",
+    "intentTags": [
+      "informative"
+    ],
+    "sourceDemo": "",
+    "snippetPaths": [
+      "packages/catalog/snippets/macos-notification.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Upstream-only reference; fetch on demand and use as a small punctuation overlay.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for system-alert metaphors or task reminders.",
+      "Keep it subordinate to the main scene."
+    ],
+    "validationRules": [
+      "sourceDemo empty allowed only for reference entries",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "map-route",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "data",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-blocks/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/map-route.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for geography, logistics, migration, or coverage beats where a simple map route communicates the story faster than text.",
+    "dependencies": [],
+    "usageRules": [
+      "Use simplified maps unless precise cartography is required.",
+      "Keep the path deterministic with static SVG coordinates.",
+      "Pair with source-attribution-strip when based on an external map or dataset."
+    ],
+    "validationRules": [
+      "requires .map-route",
+      "requires .map-route__line"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "medium",
+    "formatTargets": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "assetKinds": [
+      "svg",
+      "other"
+    ],
+    "motionRoles": [
+      "proof",
+      "reveal"
+    ],
+    "previewAssetPath": "packages/catalog/previews/map-route.svg"
+  },
+  {
+    "id": "product-turntable-lite",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "brand",
+      "hook",
+      "vfx"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-with-logo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/product-turntable-lite.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for a product/app/object hero when a 2.5D turntable is enough and full WebGL is not justified.",
+    "dependencies": [],
+    "usageRules": [
+      "Use transparent PNG/WebP assets when possible.",
+      "Do not use for screenshots; use device-screen-pan instead.",
+      "Keep the rotation subtle so it remains seek-stable and readable."
+    ],
+    "validationRules": [
+      "requires .product-turntable-lite",
+      "requires .product-turntable-lite__image"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "low",
+    "formatTargets": [
+      "portrait",
+      "square"
+    ],
+    "assetKinds": [
+      "image",
+      "logo"
+    ],
+    "motionRoles": [
+      "hook",
+      "brand"
+    ],
+    "previewAssetPath": "packages/catalog/previews/product-turntable-lite.svg"
+  },
+  {
+    "id": "reddit-post",
+    "type": "reference",
+    "status": "copy-paste",
+    "intentTags": [
+      "social"
+    ],
+    "sourceDemo": "",
+    "snippetPaths": [
+      "packages/catalog/snippets/reddit-post.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Upstream-only reference; fetch the source block when authoring and convert to inline seek-safe markup.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for community-commentary beats or anonymized discussion prompts.",
+      "Do not import remote composition at runtime."
+    ],
+    "validationRules": [
+      "sourceDemo empty allowed only for reference entries",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "scene-blur-crossfade",
+    "type": "transition",
+    "status": "first-class",
+    "intentTags": [
+      "vfx"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-editorial-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/scene-blur-crossfade.html"
+    ],
+    "requiredTracks": [
+      7
+    ],
+    "timingGuidance": "Use for 0.45–0.7s scene handoffs, especially before the final brand outro.",
+    "dependencies": [],
+    "usageRules": [
+      "Set outgoing and incoming scenes with autoAlpha, scale, and filter:blur instead of removing them from the DOM.",
+      "For the final brand outro, combine the scene handoff with the required grouped blur scale-up text reveal from brand-logo-outro."
+    ],
+    "validationRules": [
+      "requires paused GSAP timeline"
+    ]
+  },
+  {
+    "id": "screenshot-spotlight",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "workflow",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/screenshot-spotlight.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for a source screenshot or product UI when only one region matters and the rest should recede.",
+    "dependencies": [],
+    "usageRules": [
+      "Animate the screenshot object directly; do not wrap it in a second generic card.",
+      "Use a focus mask to direct attention instead of cropping away context.",
+      "Keep labels outside the screenshot unless they are part of the captured source."
+    ],
+    "validationRules": [
+      "requires .screenshot-spotlight",
+      "requires .screenshot-spotlight__focus"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "medium",
+    "formatTargets": [
+      "portrait",
+      "landscape"
+    ],
+    "assetKinds": [
+      "screenshot",
+      "image"
+    ],
+    "motionRoles": [
+      "proof",
+      "reveal"
+    ],
+    "previewAssetPath": "packages/catalog/previews/screenshot-spotlight.svg"
+  },
+  {
+    "id": "shimmer-sweep",
+    "type": "vfx",
+    "status": "first-class",
+    "intentTags": [
+      "vfx",
+      "hook"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/shimmer-sweep.html"
+    ],
+    "requiredTracks": [
+      6
+    ],
+    "timingGuidance": "Run a 1.2–1.6s highlight pass after the target is visible.",
+    "dependencies": [],
+    "usageRules": [
+      "Use container variant on pills, buttons, or cards.",
+      "Use text variant on display type without a container background."
+    ],
+    "validationRules": [
+      "requires --shimmer-pos timeline tween",
+      "forbidden repeat:-1"
+    ]
+  },
+  {
+    "id": "source-article-hero",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "hook",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/source-article-hero.html"
+    ],
+    "requiredTracks": [
+      4
+    ],
+    "timingGuidance": "5-7s opening scene; reveal source badge, headline, metadata, and image crop before moving into proof.",
+    "dependencies": [
+      "source-attribution-strip"
+    ],
+    "usageRules": [
+      "Use for source URL hooks where the audience must recognize the publisher, URL path, and thesis quickly.",
+      "Keep publisher identity secondary to the short's own cgaravitoq brand system.",
+      "Use repo fonts only; source brands can influence color and public assets but not typography."
+    ],
+    "validationRules": [
+      "requires .hf-source-article-hero",
+      "requires .hf-source-attribution-strip",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "source-attribution-strip",
+    "type": "reference",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "data",
+      "workflow",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/source-attribution-strip.html"
+    ],
+    "requiredTracks": [
+      4
+    ],
+    "timingGuidance": "Persistent or scene-local 2-6s strip; fade in after primary content and fade before cgaravitoq outro when used near the ending.",
+    "dependencies": [],
+    "usageRules": [
+      "Use as compact source attribution inside source-driven scenes and outro support beats.",
+      "Never replace the required cgaravitoq watermark or final brand outro.",
+      "Keep URL labels short, readable, and secondary to the main scene hierarchy."
+    ],
+    "validationRules": [
+      "requires .hf-source-attribution-strip",
+      "forbidden tracks 97..99",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "source-friction-grid",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "workflow",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/source-friction-grid.html"
+    ],
+    "requiredTracks": [
+      6
+    ],
+    "timingGuidance": "5-7s before/after or pain-point scene; reveal cells in a deterministic order and spotlight the chosen source thesis.",
+    "dependencies": [
+      "source-attribution-strip"
+    ],
+    "usageRules": [
+      "Use for business-process arguments such as stale docs, version drift, low adoption, or long training cycles.",
+      "Keep the grid scene-local; do not wrap it in another generic card unless the grid is loose unframed content.",
+      "Use source colors only as accents, not as the persistent brand identity."
+    ],
+    "validationRules": [
+      "requires .hf-source-friction-grid",
+      "requires .hf-source-attribution-strip",
+      "requires tl.set for discrete labels",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "source-image-reveal",
+    "type": "component",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "source",
+      "hook"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/source-image-reveal.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use as a fast source visual reveal when an external image should enter with proof-like intent.",
+    "dependencies": [],
+    "usageRules": [
+      "Use with source.json assets when source attribution is required.",
+      "Keep the reveal under one second so it reads as a beat, not the whole scene.",
+      "Avoid stacking with shimmer-sweep unless the source image is low contrast."
+    ],
+    "validationRules": [
+      "requires .source-image-reveal",
+      "requires .source-image-reveal__image"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "low",
+    "formatTargets": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "assetKinds": [
+      "image",
+      "screenshot"
+    ],
+    "motionRoles": [
+      "reveal",
+      "proof"
+    ],
+    "previewAssetPath": "packages/catalog/previews/source-image-reveal.svg"
+  },
+  {
+    "id": "source-knowledge-pipeline",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "workflow",
+      "informative",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/source-knowledge-pipeline.html"
+    ],
+    "requiredTracks": [
+      6
+    ],
+    "timingGuidance": "6-8s workflow scene; reveal nodes left-to-right, draw connectors, then lock final action node with tl.set.",
+    "dependencies": [
+      "source-attribution-strip"
+    ],
+    "usageRules": [
+      "Use instead of generic flowchart for source theses that convert raw knowledge into context, format, and action.",
+      "Keep connectors deterministic and avoid async or random layout.",
+      "Use as an open canvas or full-scene frame when the pipeline has more than four nodes."
+    ],
+    "validationRules": [
+      "requires .hf-source-knowledge-pipeline",
+      "requires .hf-source-attribution-strip",
+      "requires .hf-source-knowledge-pipeline__edge",
+      "requires tl.set for discrete labels",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "source-proof-card",
+    "type": "reference",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "source",
+      "social"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/source-proof-card.html"
+    ],
+    "requiredTracks": [
+      5
+    ],
+    "timingGuidance": "4-6s support beat; reveal publisher/author identity first, then paraphrased proof and attribution.",
+    "dependencies": [
+      "source-attribution-strip"
+    ],
+    "usageRules": [
+      "Use for author, customer, or brand proof where a paraphrased claim needs visible attribution.",
+      "Do not quote long copyrighted text; keep proof copy paraphrased and use a short source label.",
+      "Use repo fonts and cgaravitoq watermark/outro even when the card references an external brand.",
+      "Never place this component inside the final brand outro scene; it is a support beat, not a closing brand element."
+    ],
+    "validationRules": [
+      "requires .hf-source-proof-card",
+      "requires .hf-source-attribution-strip",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "source-stat-comparison",
+    "type": "block",
+    "status": "first-class",
+    "intentTags": [
+      "informative",
+      "data",
+      "source"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/source-driven-catalog-demo/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/source-stat-comparison.html"
+    ],
+    "requiredTracks": [
+      5
+    ],
+    "timingGuidance": "5-8s proof scene; reveal rows, grow bars, then hold highlighted source-backed metric and citation label.",
+    "dependencies": [
+      "source-attribution-strip"
+    ],
+    "usageRules": [
+      "Use when a public source contains a numeric comparison, adoption claim, benchmark, or timeline delta.",
+      "Keep labels short enough for 9:16 scanning and attach a compact citation label inside the component.",
+      "Use seek-safe timeline tweens for bar scale and tl.set for discrete emphasis states."
+    ],
+    "validationRules": [
+      "requires .hf-source-stat-comparison",
+      "requires .hf-source-attribution-strip",
+      "requires tl.set for discrete labels",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "spotify-card",
+    "type": "reference",
+    "status": "copy-paste",
+    "intentTags": [
+      "social"
+    ],
+    "sourceDemo": "",
+    "snippetPaths": [
+      "packages/catalog/snippets/spotify-card.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Upstream-only reference; fetch on demand for audio, podcast, playlist, or creator-media scenes.",
+    "dependencies": [],
+    "usageRules": [
+      "Use when a compact media card is enough.",
+      "Do not represent it as a full player UI unless the script needs that."
+    ],
+    "validationRules": [
+      "sourceDemo empty allowed only for reference entries",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "svg-path-draw",
+    "type": "component",
+    "status": "first-class",
+    "intentTags": [
+      "workflow",
+      "data",
+      "vfx"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-explainer-blocks/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/svg-path-draw.html"
+    ],
+    "requiredTracks": [],
+    "timingGuidance": "Use for route, dependency, or trend-line reveals when the line itself is the point.",
+    "dependencies": [],
+    "usageRules": [
+      "Use stroke-dashoffset animation instead of path morphing for deterministic renders.",
+      "Use with fixed paths only; no runtime-generated random path data.",
+      "Keep node labels separate from the SVG when text needs responsive fitting."
+    ],
+    "validationRules": [
+      "requires .svg-path-draw",
+      "requires .svg-path-draw__path"
+    ],
+    "platformTargets": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "linkedin"
+    ],
+    "density": "medium",
+    "formatTargets": [
+      "portrait",
+      "square",
+      "landscape"
+    ],
+    "assetKinds": [
+      "svg",
+      "other"
+    ],
+    "motionRoles": [
+      "reveal",
+      "proof"
+    ],
+    "previewAssetPath": "packages/catalog/previews/svg-path-draw.svg"
+  },
+  {
+    "id": "texture-mask-text",
+    "type": "vfx",
+    "status": "deprecated",
+    "intentTags": [
+      "vfx"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/catalog-components-lab/index.html",
+    "snippetPaths": [],
+    "requiredTracks": [],
+    "timingGuidance": "Deprecated; evaluated and dropped due to unstable readability.",
+    "dependencies": [],
+    "usageRules": [
+      "Do not use until a stable masking technique is validated.",
+      "Prefer shimmer-sweep for text emphasis."
+    ],
+    "validationRules": [
+      "deprecated replacement shimmer-sweep",
+      "forbidden in new episodes"
+    ]
+  },
+  {
+    "id": "tiktok-follow",
+    "type": "overlay",
+    "status": "first-class",
+    "intentTags": [
+      "social"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-social-overlays/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/tiktok-follow.html"
+    ],
+    "requiredTracks": [
+      6
+    ],
+    "timingGuidance": "5–7s beat; pop overlay and add fixed steps(1) glitch offsets.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for faster high-contrast follow beats.",
+      "Avoid infinite CSS animations."
+    ],
+    "validationRules": [
+      "requires fixed glitch offsets",
+      "forbidden repeat:-1"
+    ]
+  },
+  {
+    "id": "x-post",
+    "type": "component",
+    "status": "copy-paste",
+    "intentTags": [
+      "social"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-social-overlays/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/x-post.html"
+    ],
+    "requiredTracks": [
+      7
+    ],
+    "timingGuidance": "Use as a short social-proof card; reveal after surrounding scene context.",
+    "dependencies": [],
+    "usageRules": [
+      "Use when the post content is the visual beat.",
+      "Keep handles and content generic unless attribution is cleared."
+    ],
+    "validationRules": [
+      "requires .x-post-card",
+      "forbidden data-composition-src"
+    ]
+  },
+  {
+    "id": "yt-lower-third",
+    "type": "overlay",
+    "status": "first-class",
+    "intentTags": [
+      "social"
+    ],
+    "sourceDemo": "apps/hyperframe/src/episodes/demo-social-overlays/index.html",
+    "snippetPaths": [
+      "packages/catalog/snippets/yt-lower-third.html"
+    ],
+    "requiredTracks": [
+      9
+    ],
+    "timingGuidance": "5–7s lower-third; slide up after context and pulse subscribe CTA once.",
+    "dependencies": [],
+    "usageRules": [
+      "Use for YouTube-style channel context.",
+      "Place above scene-local layers without colliding with tracks 97–99."
+    ],
+    "validationRules": [
+      "requires #yt-lower-third",
+      "forbidden tracks 97..99"
+    ]
+  }
+]

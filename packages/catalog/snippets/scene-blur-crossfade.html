@@ -1,0 +1,13 @@
+<style>
+  .scene { opacity: 0; visibility: hidden; transform: scale(1.02); filter: blur(8px); }
+</style>
+<script>
+  // Use inside the paused, registered episode timeline.
+  // `fromScene` and `toScene` are CSS selectors, `at` is seconds.
+  const blurCrossfade = (fromScene, toScene, at) => {
+    tl.to(fromScene, { autoAlpha: 0, scale: 0.985, filter: "blur(10px)", duration: 0.48, ease: "power2.inOut" }, at);
+    tl.to(toScene, { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.58, ease: "power2.out" }, at + 0.28);
+  };
+
+  blurCrossfade("#scene-previous", "#scene-next", START);
+</script>

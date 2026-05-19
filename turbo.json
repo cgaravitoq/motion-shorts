@@ -1,0 +1,30 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "tasks": {
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "test": {
+      "dependsOn": ["^typecheck", "build"]
+    },
+    "lint": {
+      "dependsOn": ["^typecheck"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [
+        "dist/**",
+        "manifest.json",
+        "../../.agents/skills/canonical-short/references/inline-components-catalog.md"
+      ]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "render:episode": {
+      "dependsOn": ["^typecheck"],
+      "cache": false
+    }
+  }
+}

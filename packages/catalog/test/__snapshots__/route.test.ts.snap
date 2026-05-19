@@ -1,0 +1,105 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`route > routes brand intent 1`] = `
+{
+  "deprecatedAvoid": [
+    "legacy-text-watermark",
+  ],
+  "recommendedComponents": [
+    "logo-orbit",
+    "product-turntable-lite",
+  ],
+  "requiredComponents": [
+    "brand-logo-outro",
+    "brand-logo-watermark",
+  ],
+  "skillPath": ".agents/skills/short-brand-system",
+}
+`;
+
+exports[`route > routes data intent 1`] = `
+{
+  "deprecatedAvoid": [],
+  "recommendedComponents": [
+    "data-chart",
+    "svg-path-draw",
+  ],
+  "requiredComponents": [
+    "brand-logo-outro",
+    "brand-logo-watermark",
+  ],
+  "skillPath": ".agents/skills/short-data-visual",
+}
+`;
+
+exports[`route > routes informative intent 1`] = `
+{
+  "deprecatedAvoid": [],
+  "recommendedComponents": [
+    "data-chart",
+    "flowchart",
+    "macos-notification",
+  ],
+  "requiredComponents": [
+    "brand-logo-outro",
+    "brand-logo-watermark",
+  ],
+  "skillPath": ".agents/skills/short-informative",
+}
+`;
+
+exports[`route > routes social intent 1`] = `
+{
+  "deprecatedAvoid": [],
+  "recommendedComponents": [
+    "instagram-follow",
+    "tiktok-follow",
+    "yt-lower-third",
+    "reddit-post",
+    "spotify-card",
+    "x-post",
+  ],
+  "requiredComponents": [
+    "brand-logo-outro",
+    "brand-logo-watermark",
+  ],
+  "skillPath": ".agents/skills/short-social-overlay",
+}
+`;
+
+exports[`route > routes vfx intent 1`] = `
+{
+  "deprecatedAvoid": [
+    "texture-mask-text",
+  ],
+  "recommendedComponents": [
+    "grain-overlay",
+    "grid-pixelate-wipe",
+    "logo-orbit",
+    "product-turntable-lite",
+    "scene-blur-crossfade",
+    "shimmer-sweep",
+    "svg-path-draw",
+  ],
+  "requiredComponents": [
+    "brand-logo-outro",
+    "brand-logo-watermark",
+  ],
+  "skillPath": ".agents/skills/short-vfx-experimental",
+}
+`;
+
+exports[`route > routes workflow intent 1`] = `
+{
+  "deprecatedAvoid": [],
+  "recommendedComponents": [
+    "flowchart",
+    "svg-path-draw",
+  ],
+  "requiredComponents": [
+    "brand-logo-outro",
+    "brand-logo-watermark",
+  ],
+  "skillPath": ".agents/skills/short-workflow-explainer",
+}
+`;

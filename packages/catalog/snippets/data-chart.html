@@ -1,0 +1,16 @@
+<style>
+  .hf-data-chart { position: absolute; inset: 54px 50px 50px; display: grid; grid-template-columns: 92px 1fr; grid-template-rows: 1fr 70px; gap: 18px 22px; }
+  .hf-data-chart__axis-y { display: flex; flex-direction: column; justify-content: space-between; color: rgba(248,250,252,0.5); font-family: "JetBrains Mono", monospace; font-size: 22px; text-align: right; }
+  .hf-data-chart__plot { position: relative; border-left: 1.5px solid rgba(248,250,252,0.22); border-bottom: 1.5px solid rgba(248,250,252,0.22); background-image: linear-gradient(rgba(248,250,252,0.08) 1px, transparent 1px); background-size: 100% 25%; }
+  .hf-data-chart__bar { position: absolute; bottom: 0; width: 88px; border-radius: 18px 18px 0 0; background: linear-gradient(180deg, var(--cyan), rgba(34,211,238,0.18)); transform: scaleY(0); transform-origin: bottom center; }
+  .hf-data-chart__bar--a { left: 58px; height: 38%; }
+  .hf-data-chart__bar--b { left: 258px; height: 66%; }
+  .hf-data-chart__bar--c { left: 458px; height: 84%; }
+  .hf-data-chart__value { position: absolute; left: 50%; bottom: calc(100% + 16px); transform: translateX(-50%); font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 800; color: var(--paper); opacity: 0; }
+  .hf-data-chart__line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .hf-data-chart__path { fill: none; stroke: var(--amber); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 720; stroke-dashoffset: 720; filter: drop-shadow(0 0 18px rgba(251,191,36,0.28)); }
+  .hf-data-chart__dot { fill: var(--amber); stroke: var(--ink); stroke-width: 8; transform-box: fill-box; transform-origin: center; }
+  .hf-data-chart__axis-x { grid-column: 2; display: flex; justify-content: space-around; color: rgba(248,250,252,0.66); font-family: "JetBrains Mono", monospace; font-size: 24px; font-weight: 800; }
+  .hf-data-chart__kpi { position: absolute; right: 52px; top: 48px; font-family: "JetBrains Mono", monospace; font-size: 38px; font-weight: 800; color: var(--emerald); }
+</style>
+<div class="hf-data-chart"><div class="hf-data-chart__axis-y"><span>90</span><span>60</span><span>30</span><span>0</span></div><div class="hf-data-chart__plot"><div id="chart-bar-a" class="hf-data-chart__bar hf-data-chart__bar--a"><span id="chart-value-a" class="hf-data-chart__value">38</span></div><div id="chart-bar-b" class="hf-data-chart__bar hf-data-chart__bar--b"><span id="chart-value-b" class="hf-data-chart__value">66</span></div><div id="chart-bar-c" class="hf-data-chart__bar hf-data-chart__bar--c"><span id="chart-value-c" class="hf-data-chart__value">84</span></div><svg class="hf-data-chart__line" viewBox="0 0 694 528" aria-hidden="true"><path id="chart-line" class="hf-data-chart__path" d="M102 327 C184 304 220 180 302 180 S420 84 502 84" /><circle id="chart-dot-a" class="hf-data-chart__dot" cx="102" cy="327" r="15" /><circle id="chart-dot-b" class="hf-data-chart__dot" cx="302" cy="180" r="15" /><circle id="chart-dot-c" class="hf-data-chart__dot" cx="502" cy="84" r="15" /></svg></div><div></div><div class="hf-data-chart__axis-x"><span>Baseline</span><span>Pilot</span><span>Scaled</span></div><div id="chart-kpi" class="hf-data-chart__kpi">+0%</div></div>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="screenshot-spotlight preview">
+  <rect width="720" height="405" fill="#10151f"/>
+  <rect x="76" y="74" width="568" height="260" rx="8" fill="#151d2b" stroke="#fff" opacity=".9"/>
+  <rect x="108" y="112" width="220" height="20" fill="#5eead4"/>
+  <rect x="108" y="154" width="452" height="14" fill="#fff" opacity=".24"/>
+  <rect x="108" y="184" width="382" height="14" fill="#fff" opacity=".18"/>
+  <circle cx="516" cy="176" r="92" fill="none" stroke="#f8d66d" stroke-width="4"/>
+  <rect x="76" y="74" width="568" height="260" rx="8" fill="#000" opacity=".38"/>
+  <circle cx="516" cy="176" r="98" fill="#fff" opacity=".08"/>
+  <text x="48" y="48" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">screenshot-spotlight</text>
+</svg>
