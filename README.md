@@ -3,14 +3,6 @@
 [![YouTube Channel](https://img.shields.io/badge/YouTube-@cgaravitoq--ai-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/@cgaravitoq-ai)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-[![GSAP](https://img.shields.io/badge/gsap-3.15.x-88CE02?logo=greensock&logoColor=white)](https://gsap.com/)
-[![Hyperframes](https://img.shields.io/badge/hyperframes-0.6.x-8B5CF6)](https://hyperframes.heygen.com/)
-[![ElevenLabs](https://img.shields.io/badge/elevenlabs-TTS%20%2B%20STT-000000?logo=elevenlabs&logoColor=white)](https://elevenlabs.io/)
-[![Turborepo](https://img.shields.io/badge/turborepo-monorepo-EF4444?logo=turborepo&logoColor=white)](https://turbo.build/repo)
-[![Monorepo](https://img.shields.io/badge/monorepo-bun%20%2B%20turbo-F472B6?logo=bun&logoColor=white)](https://bun.sh/)
-[![Motion Graphics](https://img.shields.io/badge/motion--graphics-vertical%209%3A16-A78BFA)](#)
-[![Shorts](https://img.shields.io/badge/shorts-YouTube%20%E2%80%A2%20TikTok%20%E2%80%A2%20Reels-FF0033)](#)
-
 Turborepo monorepo for producing vertical 9:16 motion-graphics shorts
 (YouTube Shorts, LinkedIn, TikTok, Instagram Reels) entirely from text
 scripts — [Hyperframes](https://hyperframes.heygen.com/) +
