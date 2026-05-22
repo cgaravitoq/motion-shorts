@@ -136,6 +136,20 @@ Hyperframes seeks the timeline (does not "play" it). `onStart`/`onComplete`/`tl.
 Use `tl.set(target, props, t)` (zero-duration tween) for discrete transitions — materialises at any seek position.
 `onUpdate` IS seek-safe — works for animated counters, bar fills, ctx-bar saturating.
 
+Run `bun run lint:seek-safe` from `apps/hyperframe/` to catch these antipatterns before render. The local linter
+(`apps/hyperframe/scripts/lint-seek-safe.mjs`) scans inline `<script>` blocks in every episode's `index.html` and
+enforces this rule plus rules 2 and 8:
+
+| Pattern | Severity | Rewrite |
+|---|---|---|
+| `onStart` / `onComplete` / `onRepeat` / `onReverseComplete` in any tween config | error | `tl.set(target, props, t)` |
+| `tl.call(...)` | error | `tl.set(target, props, t)` |
+| `repeat: -1` | error | restructure the scene (rule 8) |
+| `repeat: <n>` with `n > 0` | warning | rarely intended for a fixed-duration short |
+| `setTimeout` / `setInterval` / `requestAnimationFrame` in timeline construction | error | restructure with explicit timeline positions |
+| `gsap.timeline()` missing `paused: true` | error | add `paused: true` (rule 2) |
+| Missing `window.__timelines["<id>"]` registration | error | register the timeline (rule 2) |
+
 ## 22. Track-index convention
 
 Production shorts: `0..8` for BG layers + scenes, `97` for `#brand-corner`, `98` for audio, `99` for captions.
