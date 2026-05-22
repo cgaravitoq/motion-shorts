@@ -1,4 +1,15 @@
+// Caption sidecar exporters (SRT / WebVTT) for accessibility + multilingual rollouts.
+export {
+  type CaptionExportOptions,
+  type CaptionSidecarFormat,
+  parseCaptionFormats,
+  toSrt,
+  toVtt,
+} from "./captions-export";
+export { DEFAULT_ELEVENLABS_MODEL_ID, resolveElevenLabsModelId } from "./elevenlabs";
 export { getTTSProvider } from "./factory";
+// ffprobe helper — duration probing shared by render-episode + generate-audio + Scribe.
+export { getAudioDurationSeconds } from "./ffprobe";
 export {
   DEFAULT_PACING,
   injectElevenV3Pauses,
@@ -9,14 +20,6 @@ export {
   type PacingResult,
   type PacingSyntax,
 } from "./script-pacing";
-export { DEFAULT_ELEVENLABS_MODEL_ID, resolveElevenLabsModelId } from "./elevenlabs";
-export {
-  MAX_TTS_CHARS,
-  type Lang,
-  type SynthesizeOptions,
-  type TTSProvider,
-} from "./types";
-
 // STT (Hyperframes-shape captions: { text, start, end, confidence? })
 export { getSTTProvider, type STTProviderName } from "./stt-factory";
 export {
@@ -25,6 +28,9 @@ export {
   type STTProvider,
   type TranscribeOptions,
 } from "./stt-types";
-
-// ffprobe helper — duration probing shared by render-episode + generate-audio + Scribe.
-export { getAudioDurationSeconds } from "./ffprobe";
+export {
+  type Lang,
+  MAX_TTS_CHARS,
+  type SynthesizeOptions,
+  type TTSProvider,
+} from "./types";
