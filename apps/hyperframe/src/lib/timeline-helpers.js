@@ -109,9 +109,19 @@
 
     let size = baseFontSize;
     el.style.fontSize = `${size}px`;
+    const MAX_ITERATIONS = 100;
+    let iterations = 0;
     while (el.scrollWidth > maxWidth && size > minFontSize) {
+      if (iterations >= MAX_ITERATIONS) {
+        const ident = el.id ? `#${el.id}` : el.className ? `.${el.className}` : el.tagName;
+        console.warn(
+          `[hf] fitText: hit ${MAX_ITERATIONS}-iteration cap on ${ident}; shorten text or widen container. text="${el.textContent}"`,
+        );
+        break;
+      }
       size -= 1;
       el.style.fontSize = `${size}px`;
+      iterations += 1;
     }
   };
 
