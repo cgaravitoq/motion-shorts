@@ -68,9 +68,13 @@ export const ensureOutputDir = async (): Promise<string> => {
   return outputDir;
 };
 
-const materialiseProject = async (jobId: string, html: string, assets: RenderAsset[]) => {
-  const projectDir = join(tmpdir(), "motion-shorts-mcp", jobId);
+const projectDirFor = (jobId: string): string => join(tmpdir(), "motion-shorts-mcp", jobId);
 
+const materialiseProject = async (
+  projectDir: string,
+  html: string,
+  assets: RenderAsset[],
+): Promise<void> => {
   await rm(projectDir, { recursive: true, force: true });
   await mkdir(projectDir, { recursive: true });
   await writeFile(join(projectDir, "index.html"), html);
@@ -87,8 +91,6 @@ const materialiseProject = async (jobId: string, html: string, assets: RenderAss
     await mkdir(dirname(outputPath), { recursive: true });
     await writeFile(outputPath, asset.data, "base64");
   }
-
-  return projectDir;
 };
 
 export const renderCompositionToFile = async ({
@@ -108,9 +110,11 @@ export const renderCompositionToFile = async ({
   quality: "draft" | "standard" | "high";
   outputPath: string;
 }): Promise<void> => {
-  const projectDir = await materialiseProject(jobId, html, assets);
+  const projectDir = projectDirFor(jobId);
 
   try {
+    await materialiseProject(projectDir, html, assets);
+
     const catalogCheck = checkEpisode(join(projectDir, "index.html"), catalogManifest);
     if (!catalogCheck.ok) {
       throw new CatalogCheckError(catalogCheck.failures);
