@@ -42,6 +42,10 @@
         const text = typeof c.text === "string" ? c.text : "";
         if (!text) return null;
         if (typeof c.start !== "number" || typeof c.end !== "number") return null;
+        if (c.start >= c.end) {
+          console.warn("[hf] karaoke: dropping caption with reversed or zero-length timestamps", c);
+          return null;
+        }
         const out = { text, start: c.start, end: c.end };
         if (typeof c.confidence === "number") out.confidence = c.confidence;
         return out;
