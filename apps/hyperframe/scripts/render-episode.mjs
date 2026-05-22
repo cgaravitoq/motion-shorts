@@ -37,6 +37,15 @@ import {
   publishEpisodeArtifacts,
   resolveR2PublishOptions,
 } from "./lib/r2-artifacts.mjs";
+import {
+  appendLedger,
+  buildRecord,
+  collectAssetInventory,
+  createTimer,
+  formatSummaryLine,
+} from "./lib/telemetry.mjs";
+
+const LEDGER_PATH = path.resolve(".metrics/runs.ndjson");
 
 // CWD guard — paths in this script (`src/episodes/`, `src/lib/`, `out/`,
 // `brands/`, `renders/`) all resolve relative to process.cwd(). The
@@ -247,6 +256,9 @@ const main = async () => {
     process.exit(1);
   }
 
+  const timer = createTimer();
+  timer.start("materialise");
+
   const indexPath = path.join(episodeDir, "index.html");
   const metaPath = path.join(episodeDir, "meta.json");
   const hfConfigPath = path.join(episodeDir, "hyperframes.json");
@@ -415,6 +427,9 @@ const main = async () => {
     `[render-episode] prepared ${workDir} (duration=${durationLog}, captions=${captionsCount}${brand ? `, brand=${brand.slug}` : ""})`,
   );
 
+  const inventory = collectAssetInventory(assetsDir);
+  timer.end("materialise");
+
   // ── Run hyperframes render ────────────────────────────────────────────
   const outPath = values.output ?? `renders/${slug}.${fmt}`;
   fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
@@ -439,7 +454,9 @@ const main = async () => {
     renderArgs.push("--crf", values.crf);
   }
 
+  timer.start("render");
   const result = spawnSync("bunx", renderArgs, { stdio: "inherit" });
+  timer.end("render");
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
@@ -454,8 +471,10 @@ const main = async () => {
   }
 
   let localDeleted = false;
+  let uploaded = false;
   if (publishOptions.upload) {
     console.log("[render-episode] uploading verified artifacts to R2");
+    timer.start("upload");
     const publishResult = await publishEpisodeArtifacts({
       slug,
       episodeDir,
@@ -463,6 +482,8 @@ const main = async () => {
       runId: values["run-id"],
       deleteLocal: publishOptions.deleteLocal,
     });
+    timer.end("upload");
+    uploaded = true;
     console.log(
       `[render-episode] uploaded ${publishResult.uploaded.length} artifact(s) to R2 run ${publishResult.runId}`,
     );
@@ -478,6 +499,31 @@ const main = async () => {
   } else {
     console.log(`\n[render-episode] done — ${outPath}`);
   }
+
+  const durations = timer.durations();
+  const totalMs = timer.totalMs();
+  // Best-effort: ledger writes never fail the render. Telemetry is
+  // observability, not a correctness signal.
+  try {
+    appendLedger(
+      LEDGER_PATH,
+      buildRecord({
+        slug,
+        format: fmt,
+        quality: values.quality,
+        fps: fpsParsed,
+        durations,
+        totalMs,
+        inventory,
+        uploaded,
+      }),
+    );
+  } catch (err) {
+    console.warn(`[render-episode] telemetry ledger write failed: ${err.message}`);
+  }
+  console.log(
+    formatSummaryLine({ slug, durations, totalMs, totalBytes: inventory.totalBytes }),
+  );
 };
 
 main().catch((err) => {
