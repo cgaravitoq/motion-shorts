@@ -28,5 +28,8 @@
     "requires .hf-source-proof-card",
     "requires .hf-source-attribution-strip",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

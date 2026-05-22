@@ -43,5 +43,8 @@
     "brand",
     "proof"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/brand-logo-cloud.svg"
 }

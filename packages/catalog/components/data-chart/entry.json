@@ -13,7 +13,7 @@
   "requiredTracks": [
     5
   ],
-  "timingGuidance": "7–9s scene; reveal shell, grow bars, draw line, then reveal labels and KPI.",
+  "timingGuidance": "7\u20139s scene; reveal shell, grow bars, draw line, then reveal labels and KPI.",
   "dependencies": [],
   "usageRules": [
     "Use for compact proof points or before/after metrics.",
@@ -22,5 +22,8 @@
   "validationRules": [
     "requires .hf-data-chart",
     "requires seek-safe metric onUpdate"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

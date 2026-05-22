@@ -17,5 +17,8 @@
   "validationRules": [
     "deprecated replacement shimmer-sweep",
     "forbidden in new episodes"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

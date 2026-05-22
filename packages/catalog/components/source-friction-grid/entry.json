@@ -28,5 +28,8 @@
     "requires .hf-source-attribution-strip",
     "requires tl.set for discrete labels",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

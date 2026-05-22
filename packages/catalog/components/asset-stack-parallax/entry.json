@@ -42,5 +42,8 @@
     "hook",
     "proof"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/asset-stack-parallax.svg"
 }

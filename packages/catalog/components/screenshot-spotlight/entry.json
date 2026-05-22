@@ -42,5 +42,8 @@
     "proof",
     "reveal"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/screenshot-spotlight.svg"
 }

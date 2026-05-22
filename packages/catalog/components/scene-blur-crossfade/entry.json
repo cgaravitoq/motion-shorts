@@ -12,7 +12,7 @@
   "requiredTracks": [
     7
   ],
-  "timingGuidance": "Use for 0.45–0.7s scene handoffs, especially before the final brand outro.",
+  "timingGuidance": "Use for 0.45\u20130.7s scene handoffs, especially before the final brand outro.",
   "dependencies": [],
   "usageRules": [
     "Set outgoing and incoming scenes with autoAlpha, scale, and filter:blur instead of removing them from the DOM.",
@@ -20,5 +20,8 @@
   ],
   "validationRules": [
     "requires paused GSAP timeline"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

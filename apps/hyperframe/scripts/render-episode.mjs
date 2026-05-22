@@ -9,6 +9,7 @@
  * read-only — no more git-dirty surprises after a render.
  *
  *   bun run scripts/render-episode.mjs <slug> [--format=mp4|mov|webm]
+ *                                              [--variant=short|desktop-1080p]
  *                                              [--quality=draft|standard|high]
  *                                              [--output=<path>]
  *                                              [--fps=30]
@@ -19,9 +20,10 @@
  *                                              [--keep-local]
  *
  * Episode layout expected:
- *   src/episodes/<slug>/index.html       # root composition
- *   src/episodes/<slug>/meta.json        # { id, name, ... }
- *   src/episodes/<slug>/hyperframes.json # config
+ *   src/episodes/<slug>/index.html         # root 9:16 composition (variant=short)
+ *   src/episodes/<slug>/index.desktop.html # optional 16:9 composition (variant=desktop-1080p)
+ *   src/episodes/<slug>/meta.json          # { id, name, ... }
+ *   src/episodes/<slug>/hyperframes.json   # config
  *   src/episodes/<slug>/assets/voice.mp3
  *   src/episodes/<slug>/assets/captions.json
  */
@@ -64,11 +66,18 @@ if (path.resolve(process.cwd()) !== expectedCwd) {
 const HELP = `Usage: bun run scripts/render-episode.mjs <slug> [options]
 
 Options:
-  --format=mp4|mov|webm    Output format. Default mp4 (h264 yuv420p). mov gives
-                           ProRes 4444 + alpha; webm gives VP9 + alpha.
+  --format=mp4|mov|webm    Output container format. Default mp4 (h264 yuv420p).
+                           mov gives ProRes 4444 + alpha; webm gives VP9 + alpha.
+  --variant=short|desktop-1080p
+                           Composition variant. Default short (9:16, reads
+                           index.html). desktop-1080p (16:9, reads
+                           index.desktop.html) renders 1920x1080 for YouTube
+                           long-form, LinkedIn desktop, X landscape, Vimeo.
   --quality=draft|standard|high
                            Render quality preset. Default standard.
-  --output=<path>          Output file. Default renders/<slug>.<format>.
+  --output=<path>          Output file. Default renders/<slug>.<format> for
+                           short, renders/<slug>.desktop.<format> for
+                           desktop-1080p.
   --fps=24|30|60           Frame rate. Default 30.
   --tail=<seconds>         Padding past end-of-audio so the final frame can
                            hold for reading. Resolution order: CLI flag >
@@ -86,7 +95,14 @@ Options:
 `;
 
 const VALID_FORMATS = ["mp4", "mov", "webm"];
+const VALID_VARIANTS = ["short", "desktop-1080p"];
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
+
+// Variant resolves to the source HTML filename inside the episode dir. The
+// short default keeps the canonical "index.html" — existing render behavior is
+// byte-identical when --variant is omitted.
+const variantIndexFilename = (variant) =>
+  variant === "desktop-1080p" ? "index.desktop.html" : "index.html";
 
 const stampDuration = (html, totalSeconds, voiceSeconds) => {
   // Anchor on the canonical identifier (`data-composition-id`), then rewrite
@@ -223,6 +239,7 @@ const main = async () => {
     args: process.argv.slice(2),
     options: {
       format: { type: "string", default: "mp4" },
+      variant: { type: "string", default: "short" },
       quality: { type: "string", default: "standard" },
       output: { type: "string" },
       fps: { type: "string", default: "30" },
@@ -256,10 +273,17 @@ const main = async () => {
     process.exit(1);
   }
 
+  const variant = values.variant;
+  if (!VALID_VARIANTS.includes(variant)) {
+    console.error(`render-episode: --variant must be one of ${VALID_VARIANTS.join(", ")}`);
+    process.exit(1);
+  }
+
   const timer = createTimer();
   timer.start("materialise");
 
-  const indexPath = path.join(episodeDir, "index.html");
+  const indexFilename = variantIndexFilename(variant);
+  const indexPath = path.join(episodeDir, indexFilename);
   const metaPath = path.join(episodeDir, "meta.json");
   const hfConfigPath = path.join(episodeDir, "hyperframes.json");
   const assetsDir = path.join(episodeDir, "assets");
@@ -267,7 +291,11 @@ const main = async () => {
   const captionsPath = path.join(assetsDir, "captions.json");
 
   if (!fs.existsSync(indexPath)) {
-    console.error(`render-episode: missing required file ${indexPath}`);
+    const hint =
+      variant === "desktop-1080p"
+        ? " Scaffold one with `bun run new:episode <slug> --with-desktop` or copy templates/desktop-1080p.html (see docs/formats.md)."
+        : "";
+    console.error(`render-episode: missing required file ${indexPath} for variant=${variant}.${hint}`);
     process.exit(1);
   }
 
@@ -352,8 +380,14 @@ const main = async () => {
     );
   }
 
-  // ── Build working copy under out/episodes/<slug>/ ─────────────────────
-  const workDir = path.resolve("out/episodes", slug);
+  // ── Build working copy under out/episodes/<slug>[/<variant>] ──────────
+  // Short variant keeps the historical layout (out/episodes/<slug>/) so the
+  // default render path is byte-identical. Non-default variants nest under
+  // out/episodes/<slug>/<variant>/ so they don't clobber each other.
+  const workDir =
+    variant === "short"
+      ? path.resolve("out/episodes", slug)
+      : path.resolve("out/episodes", slug, variant);
   fs.mkdirSync(workDir, { recursive: true });
 
   const srcHtml = fs.readFileSync(indexPath, "utf8");
@@ -431,7 +465,9 @@ const main = async () => {
   timer.end("materialise");
 
   // ── Run hyperframes render ────────────────────────────────────────────
-  const outPath = values.output ?? `renders/${slug}.${fmt}`;
+  const defaultOut =
+    variant === "short" ? `renders/${slug}.${fmt}` : `renders/${slug}.${variant}.${fmt}`;
+  const outPath = values.output ?? defaultOut;
   fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
 
   console.log(
@@ -510,6 +546,7 @@ const main = async () => {
       buildRecord({
         slug,
         format: fmt,
+        variant,
         quality: values.quality,
         fps: fpsParsed,
         durations,

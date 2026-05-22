@@ -36,6 +36,12 @@ export const CatalogDensitySchema = z.enum(["low", "medium", "high"]);
 
 export const CatalogFormatSchema = z.enum(["portrait", "square", "landscape"]);
 
+// Render variants the component is safe in. `short` = vertical 9:16 (1080×1920,
+// default). `desktop-1080p` = 16:9 (1920×1080) for YouTube long-form, LinkedIn
+// desktop, X landscape, Vimeo, web heroes. Picker scopes by variant; absence is
+// treated as `["short"]` for back-compat with pre-variant components.
+export const CatalogSafeForSchema = z.enum(["short", "desktop-1080p"]);
+
 export const CatalogAssetKindSchema = z.enum([
   "image",
   "font",
@@ -77,6 +83,7 @@ export const CatalogEntrySchema = z
     formatTargets: z.array(CatalogFormatSchema).optional(),
     assetKinds: z.array(CatalogAssetKindSchema).optional(),
     motionRoles: z.array(CatalogMotionRoleSchema).optional(),
+    safeFor: z.array(CatalogSafeForSchema).optional(),
     previewAssetPath: z.string().min(1).optional(),
   })
   .refine((entry) => entry.type === "reference" || entry.sourceDemo !== "", {

@@ -27,5 +27,8 @@
     "requires .hf-source-article-hero",
     "requires .hf-source-attribution-strip",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

@@ -43,5 +43,8 @@
     "hook",
     "proof"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/image-ken-burns.svg"
 }

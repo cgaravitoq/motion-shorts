@@ -40,5 +40,8 @@
     "proof",
     "reveal"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/device-screen-pan.svg"
 }

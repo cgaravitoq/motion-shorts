@@ -13,7 +13,7 @@
   "requiredTracks": [
     6
   ],
-  "timingGuidance": "Run a 1.2–1.6s highlight pass after the target is visible.",
+  "timingGuidance": "Run a 1.2\u20131.6s highlight pass after the target is visible.",
   "dependencies": [],
   "usageRules": [
     "Use container variant on pills, buttons, or cards.",
@@ -22,5 +22,8 @@
   "validationRules": [
     "requires --shimmer-pos timeline tween",
     "forbidden repeat:-1"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

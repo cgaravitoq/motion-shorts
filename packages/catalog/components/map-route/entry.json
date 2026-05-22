@@ -43,5 +43,8 @@
     "proof",
     "reveal"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/map-route.svg"
 }

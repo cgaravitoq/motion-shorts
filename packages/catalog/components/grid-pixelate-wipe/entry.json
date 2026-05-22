@@ -21,5 +21,8 @@
   "validationRules": [
     "requires #pixel-grid",
     "forbidden stagger from random"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

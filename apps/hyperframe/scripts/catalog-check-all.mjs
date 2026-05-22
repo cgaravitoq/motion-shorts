@@ -14,18 +14,25 @@ for (const name of readdirSync(episodesDir).sort()) {
   const episodeDir = path.join(episodesDir, name);
   if (!statSync(episodeDir).isDirectory()) continue;
 
-  const htmlPath = path.join(episodeDir, "index.html");
-  if (!existsSync(htmlPath)) continue;
+  // Validate both the 9:16 short and the optional 16:9 desktop variant against
+  // the same catalog manifest. The desktop variant carries its own catalog
+  // declaration on line 2.
+  const candidates = ["index.html", "index.desktop.html"]
+    .map((name) => path.join(episodeDir, name))
+    .filter((p) => existsSync(p));
+  if (candidates.length === 0) continue;
 
-  const result = checkEpisode(htmlPath, manifest);
-  if (result.ok) {
-    console.log(`${htmlPath}: catalog check passed`);
-    continue;
-  }
+  for (const htmlPath of candidates) {
+    const result = checkEpisode(htmlPath, manifest);
+    if (result.ok) {
+      console.log(`${htmlPath}: catalog check passed`);
+      continue;
+    }
 
-  failed = true;
-  for (const item of result.failures) {
-    console.error(`${item.episode}: ${item.rule}: ${item.fix}`);
+    failed = true;
+    for (const item of result.failures) {
+      console.error(`${item.episode}: ${item.rule}: ${item.fix}`);
+    }
   }
 }
 

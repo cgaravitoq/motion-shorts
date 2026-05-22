@@ -19,5 +19,8 @@
   "validationRules": [
     "sourceDemo empty allowed only for reference entries",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

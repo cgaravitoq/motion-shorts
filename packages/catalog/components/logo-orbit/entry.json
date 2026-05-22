@@ -43,5 +43,8 @@
     "brand",
     "hook"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/logo-orbit.svg"
 }

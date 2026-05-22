@@ -26,5 +26,8 @@
     "requires .hf-source-attribution-strip",
     "forbidden tracks 97..99",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

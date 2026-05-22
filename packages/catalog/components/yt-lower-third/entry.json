@@ -12,14 +12,17 @@
   "requiredTracks": [
     9
   ],
-  "timingGuidance": "5–7s lower-third; slide up after context and pulse subscribe CTA once.",
+  "timingGuidance": "5\u20137s lower-third; slide up after context and pulse subscribe CTA once.",
   "dependencies": [],
   "usageRules": [
     "Use for YouTube-style channel context.",
-    "Place above scene-local layers without colliding with tracks 97–99."
+    "Place above scene-local layers without colliding with tracks 97\u201399."
   ],
   "validationRules": [
     "requires #yt-lower-third",
     "forbidden tracks 97..99"
+  ],
+  "safeFor": [
+    "short"
   ]
 }
