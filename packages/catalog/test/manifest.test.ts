@@ -26,6 +26,7 @@ const expectedStatuses = {
   "source-proof-card": "first-class",
   "source-stat-comparison": "first-class",
   "svg-path-draw": "first-class",
+  "talking-head-cutout": "first-class",
   "instagram-follow": "first-class",
   "tiktok-follow": "first-class",
   "yt-lower-third": "first-class",

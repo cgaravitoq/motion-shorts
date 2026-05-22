@@ -1,0 +1,103 @@
+<!doctype html>
+<!-- catalog: [brand-logo-watermark, talking-head-cutout] disabled: [brand-logo-outro] reason: "presenter-cutout integration demo; not a full short" -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="stylesheet" href="lib/theme.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@600;800&display=swap" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root { --ink: #050814; --paper: #f8fafc; --muted: #94a3b8; --cyan: #22d3ee; --violet: #a78bfa; }
+      html, body { width: 1080px; height: 1920px; margin: 0; padding: 0; overflow: hidden; background: var(--ink); color: var(--paper); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+      #ep-stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: radial-gradient(circle at 24% 16%, rgba(167,139,250,0.20), transparent 38%), radial-gradient(circle at 78% 78%, rgba(34,211,238,0.22), transparent 42%), #050814; }
+      .bg-grid { opacity: 0.55; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 72px 72px; }
+      .vignette { background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.66) 100%); }
+
+      /* Talking-head-cutout component CSS (mirrors packages/catalog/snippets/talking-head-cutout.html).
+         Wrappers are NON-timed (no data-start, no `clip`) so the runtime leaves their layout alone.
+         The <video> elements ARE timed (Hyperframes owns alpha decode), so they become tracked
+         children of the wrapper and inherit the runtime's force-applied position:absolute/inset:0/100%x100%.
+         GSAP tweens target the wrapper IDs — never the <video> — so opacity/scale animations stay
+         on a stable, untouched layout box. */
+      .talking-head-cutout { position: absolute; inset: 0; }
+      .talking-head-cutout__plate-wrap,
+      .talking-head-cutout__subject-wrap { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+      .talking-head-cutout__plate,
+      .talking-head-cutout__subject { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+
+      .headline-card { position: absolute; left: 82px; right: 82px; top: 240px; display: flex; flex-direction: column; gap: 28px; pointer-events: none; }
+      .headline-card__label { align-self: flex-start; padding: 13px 22px; border: 1.5px solid rgba(255,255,255,0.18); border-radius: 999px; background: rgba(5,8,20,0.55); color: var(--cyan); font-family: "JetBrains Mono", monospace; font-size: 26px; font-weight: 800; letter-spacing: 5px; text-transform: uppercase; }
+      .headline-card__title { margin: 0; max-width: 880px; font-size: 96px; font-weight: 900; line-height: 0.94; letter-spacing: -4px; }
+      .headline-card__sub { margin: 0; max-width: 820px; color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 28px; line-height: 1.35; }
+
+      #brand-corner { position: absolute; right: 96px; top: 96px; width: 96px; color: rgba(248,250,252,0.32); z-index: 60; pointer-events: none; }
+      #brand-corner svg { display: block; width: 100%; height: auto; fill: currentColor; }
+
+      #captions { position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%; z-index: 80; pointer-events: none; display: flex; align-items: center; justify-content: center; font-family: "Inter", system-ui, sans-serif; font-size: 60px; font-weight: 900; line-height: 1.1; color: var(--paper); text-align: center; text-shadow: 0 2px 24px rgba(0,0,0,0.80); }
+      #captions .hf-caption-token { opacity: 0.70; transition: color 0.06s linear, opacity 0.06s linear; }
+      #captions .hf-caption-token.--active { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div id="ep-stage" class="talking-head-cutout" data-composition-id="demo-talking-head" data-start="0" data-duration="10" data-width="1080" data-height="1920">
+      <div id="brand-corner" class="clip" data-start="0" data-duration="10" data-track-index="97"><svg viewBox="0 0 64 64" aria-label="Logo mark watermark"><path d="M8 8h18v18H8zM38 8h18v18H38zM23 38h18v18H23z" /></svg></div>
+
+      <!-- Track 0: inverse-alpha plate — the presenter's silhouette is cut OUT, so the
+           background mesh + vignette here read as the "hole" the headline sits inside.
+           Wrapper is non-timed (just a layout box for the GSAP target); the <video> is timed
+           so Hyperframes owns alpha-frame decoding under seek.
+           run hyperframes remove-background to generate assets/plate.webm -->
+      <div id="thc-plate" class="talking-head-cutout__plate-wrap">
+        <video id="thc-plate-video" class="talking-head-cutout__plate" src="assets/plate.webm" data-start="0" data-duration="10" data-track-index="0" playsinline muted preload="auto"></video>
+      </div>
+
+      <div id="bg-grid" class="bg-grid clip" data-start="0" data-duration="10" data-track-index="1" style="position:absolute; inset:0;"></div>
+      <div id="bg-vignette" class="vignette clip" data-start="0" data-duration="10" data-track-index="2" style="position:absolute; inset:0;"></div>
+
+      <!-- Track 4: HTML headline sits BETWEEN the plate (0) and the subject (5), so
+           the presenter visually occludes the lower edge of the copy. -->
+      <section id="scene-headline" class="clip" data-start="0" data-duration="10" data-track-index="4" style="position:absolute; inset:0;">
+        <div class="headline-card">
+          <div id="th-label" class="headline-card__label">talking-head-cutout</div>
+          <h1 id="th-title" class="headline-card__title">Presenter hole-cut into the composition.</h1>
+          <p id="th-sub" class="headline-card__sub">Inverse-alpha plate on track 0, transparent VP9-alpha subject on track 5, HTML headline on track 4.</p>
+        </div>
+      </section>
+
+      <!-- Track 5: subject cutout (transparent VP9-alpha). Same wrapper pattern as the plate:
+           non-timed wrapper for GSAP, timed <video> for seek-safe alpha decode.
+           run hyperframes remove-background to generate assets/speaker.webm -->
+      <div id="thc-subject" class="talking-head-cutout__subject-wrap">
+        <video id="thc-subject-video" class="talking-head-cutout__subject" src="assets/speaker.webm" data-start="0" data-duration="10" data-track-index="5" playsinline muted preload="auto"></video>
+      </div>
+
+      <audio id="voiceover" class="clip" data-start="0" data-duration="10" data-track-index="98" data-volume="0" src="assets/voice.mp3"></audio>
+      <div id="captions" class="clip" data-start="0" data-duration="10" data-track-index="99"></div>
+    </div>
+    <script type="application/json" id="captions-data">[]</script>
+    <script src="lib/captions-karaoke.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#thc-plate", { autoAlpha: 0 }, 0);
+      tl.set("#thc-subject", { autoAlpha: 0 }, 0);
+      tl.set("#scene-headline", { autoAlpha: 0 }, 0);
+
+      tl.to("#thc-plate", { autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+      tl.to("#thc-subject", { autoAlpha: 1, duration: 0.6, ease: "power2.out" }, 0.35);
+      tl.to("#scene-headline", { autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0.55);
+
+      tl.from("#th-label", { x: -42, opacity: 0, duration: 0.45, ease: "back.out(1.7)" }, 0.7);
+      tl.from("#th-title", { y: 36, opacity: 0, duration: 0.62, ease: "back.out(1.5)" }, 0.92);
+      tl.from("#th-sub", { y: 24, opacity: 0, duration: 0.48, ease: "power2.out" }, 1.18);
+
+      tl.to("#thc-subject", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, 9.0);
+      tl.to("#thc-plate", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, 9.05);
+      tl.to("#scene-headline", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, 9.1);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["demo-talking-head"] = tl;
+    </script>
+  </body>
+</html>

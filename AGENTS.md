@@ -71,6 +71,7 @@ For diagrams, choose the frame based on density. Compact charts or small decisio
 | Generate audio + captions | `.agents/skills/audio-pipeline/SKILL.md` |
 | Scaffold a new episode | `.agents/skills/new-episode/SKILL.md` |
 | Produce from Notion brief | `.agents/skills/produce-from-notion/SKILL.md` |
+| Composite a talking-head presenter cutout (Hyperframes avatar workflow) | `.agents/skills/short-talking-head/SKILL.md` |
 
 ## Environment
 
