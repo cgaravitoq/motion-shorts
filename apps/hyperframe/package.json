@@ -26,6 +26,6 @@
     "@cgaravitoq/catalog": "workspace:*"
   },
   "devDependencies": {
-    "hyperframes": "0.6.7"
+    "hyperframes": "0.6.29"
   }
 }

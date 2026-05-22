@@ -19,7 +19,7 @@
         "@cgaravitoq/catalog": "workspace:*",
       },
       "devDependencies": {
-        "hyperframes": "0.6.7",
+        "hyperframes": "0.6.29",
       },
     },
     "apps/mcp": {
@@ -625,7 +625,7 @@
 
     "https-proxy-agent": ["https-proxy-agent@7.0.6", "", { "dependencies": { "agent-base": "^7.1.2", "debug": "4" } }, "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw=="],
 
-    "hyperframes": ["hyperframes@0.6.7", "", { "dependencies": { "@hono/node-server": "^1.8.0", "@puppeteer/browsers": "^2.13.0", "adm-zip": "^0.5.16", "citty": "^0.2.1", "compare-versions": "^6.1.1", "esbuild": "^0.25.12", "giget": "^3.2.0", "hono": "^4.0.0", "mime-types": "^3.0.2", "onnxruntime-node": "^1.20.0", "open": "^10.0.0", "postcss": "^8.5.8", "prettier": "^3.8.1", "puppeteer-core": "^24.39.1", "sharp": "^0.34.0" }, "optionalDependencies": { "@google/genai": "^1.50.1" }, "bin": { "hyperframes": "dist/cli.js" } }, "sha512-6PMA4TeOSrBQLQWNHYcq1vWcz00k0/82ANw9lwUU5w0JVA1GTs/Eq2PC0grSjDjJCnny8Raau9KJ3lppgLD68g=="],
+    "hyperframes": ["hyperframes@0.6.29", "", { "dependencies": { "@hono/node-server": "^1.8.0", "@puppeteer/browsers": "^2.13.0", "adm-zip": "^0.5.16", "citty": "^0.2.1", "compare-versions": "^6.1.1", "esbuild": "^0.25.12", "giget": "^3.2.0", "hono": "^4.0.0", "onnxruntime-node": "^1.20.0", "open": "^10.0.0", "postcss": "^8.5.8", "prettier": "^3.8.1", "puppeteer-core": "^24.39.1", "sharp": "^0.34.0" }, "optionalDependencies": { "@google/genai": "^1.50.1" }, "bin": { "hyperframes": "dist/cli.js" } }, "sha512-OprwZFgnrPaib76OzQpICYkCYONRVEZJY4xHopkzvy0db2QpETI5rdw8qEU5j2y7pme9zJNq/XYFGGuIbPS7/w=="],
 
     "iconv-lite": ["iconv-lite@0.7.2", "", { "dependencies": { "safer-buffer": ">= 2.1.2 < 3.0.0" } }, "sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw=="],
 
