@@ -33,6 +33,9 @@ const resolveVoiceId = (lang: Lang, override?: string): string | undefined => {
   return lang === "es" ? env.ELEVENLABS_VOICE_ID_ES : env.ELEVENLABS_VOICE_ID_EN;
 };
 
+export const resolveElevenLabsVoiceId = (lang: Lang, override?: string): string | undefined =>
+  resolveVoiceId(lang, override);
+
 export const resolveElevenLabsModelId = (override?: string): string =>
   override ?? env.ELEVENLABS_MODEL_ID ?? DEFAULT_ELEVENLABS_MODEL_ID;
 

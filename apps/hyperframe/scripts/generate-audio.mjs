@@ -19,8 +19,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import {
+  cacheEntryPaths,
+  computeTtsCacheKey,
   DEFAULT_PACING,
   getAudioDurationSeconds,
+  getCacheRoot,
   getSTTProvider,
   getTTSProvider,
   injectElevenV3Pauses,
@@ -29,9 +32,13 @@ import {
   MAX_BREAK_MS,
   MAX_TTS_CHARS,
   parseCaptionFormats,
+  readCachedTts,
+  resolveCacheMode,
   resolveElevenLabsModelId,
+  resolveElevenLabsVoiceId,
   toSrt,
   toVtt,
+  writeCachedTts,
 } from "@cgaravitoq/audio";
 
 const HELP = `Usage: bun run scripts/generate-audio.mjs <script.txt> [options]
@@ -71,6 +78,13 @@ Options:
                          formats to emit alongside captions.json. Supported:
                          "srt", "vtt". Example: --caption-format=srt,vtt.
                          When omitted, behavior is unchanged (JSON only).
+  --cache=use|refresh|off
+                         TTS cache control. Default "use": look up
+                         sha256(script+voice+model+tuning) in the local cache
+                         and skip the ElevenLabs call on hit. "refresh"
+                         bypasses the cache for reads but writes a fresh
+                         entry. "off" disables the cache entirely.
+                         Cache lives at ~/.cache/motion-shorts/tts/<hash>/.
   -h, --help             Show this help.
 `;
 
@@ -91,6 +105,7 @@ const main = async () => {
       "pause-clause": { type: "string" },
       "no-pause-injection": { type: "boolean", default: false },
       "caption-format": { type: "string" },
+      cache: { type: "string" },
       help: { type: "boolean", short: "h" },
     },
     allowPositionals: true,
@@ -198,36 +213,109 @@ const main = async () => {
 
   const startedAt = Date.now();
 
+  // ── Cache lookup ───────────────────────────────────────────────────────
+  // Hash the post-pause-injection text — that's what we'd send to the API.
+  // Resolve voiceId at the CLI layer so the cache key matches what the
+  // provider will actually use (otherwise per-language env defaults would
+  // sit outside the key).
+  let cacheMode;
+  try {
+    cacheMode = resolveCacheMode({ flag: values.cache });
+  } catch (err) {
+    console.error(`generate-audio: ${err.message}`);
+    process.exit(1);
+  }
+
+  const resolvedVoiceId = resolveElevenLabsVoiceId(lang, values.voice);
+  const cacheHash =
+    cacheMode === "off" || !resolvedVoiceId
+      ? null
+      : computeTtsCacheKey({
+          text: finalText,
+          voiceId: resolvedVoiceId,
+          modelId,
+          speed,
+          stability,
+          similarityBoost,
+        });
+
+  let audioBuffer = null;
+  let captions = null;
+  let cacheStatus = "disabled";
+  let ttsProviderName = null;
+  let sttProviderName = null;
+  let ttsMs = 0;
+  let sttMs = 0;
+
+  if (cacheMode === "use" && cacheHash) {
+    const hit = readCachedTts(cacheHash);
+    if (hit) {
+      audioBuffer = hit.audio;
+      captions = hit.captions;
+      cacheStatus = "hit";
+      const { dir } = cacheEntryPaths(cacheHash);
+      console.log(`[generate-audio] cache hit hash=${cacheHash.slice(0, 12)} (${dir})`);
+    } else {
+      cacheStatus = "miss";
+      console.log(`[generate-audio] cache miss hash=${cacheHash.slice(0, 12)}`);
+    }
+  } else if (cacheMode === "refresh" && cacheHash) {
+    cacheStatus = "refresh";
+    console.log(`[generate-audio] cache refresh hash=${cacheHash.slice(0, 12)} (bypassing read)`);
+  }
+
   // ── TTS ────────────────────────────────────────────────────────────────
-  const ttsProvider = getTTSProvider();
-  console.log(
-    `[generate-audio] TTS provider="${ttsProvider.name}" lang=${lang} model=${modelId} chars=${finalText.length}${tuningRecap ? ` ${tuningRecap}` : ""}`,
-  );
-  const ttsStartedAt = Date.now();
-  const audioBuffer = await ttsProvider.synthesize(finalText, {
-    lang,
-    voiceId: values.voice,
-    modelId,
-    stability,
-    similarityBoost,
-    style,
-    speed,
-  });
+  if (!audioBuffer) {
+    const ttsProvider = getTTSProvider();
+    ttsProviderName = ttsProvider.name;
+    console.log(
+      `[generate-audio] TTS provider="${ttsProvider.name}" lang=${lang} model=${modelId} chars=${finalText.length}${tuningRecap ? ` ${tuningRecap}` : ""}`,
+    );
+    const ttsStartedAt = Date.now();
+    audioBuffer = await ttsProvider.synthesize(finalText, {
+      lang,
+      voiceId: values.voice,
+      modelId,
+      stability,
+      similarityBoost,
+      style,
+      speed,
+    });
+    ttsMs = Date.now() - ttsStartedAt;
+  }
   fs.writeFileSync(voicePath, audioBuffer);
-  const ttsMs = Date.now() - ttsStartedAt;
   const audioKiB = (audioBuffer.length / 1024).toFixed(1);
-  console.log(`[generate-audio] wrote ${voicePath} (${audioKiB} KiB, ${ttsMs}ms)`);
+  if (ttsProviderName) {
+    console.log(`[generate-audio] wrote ${voicePath} (${audioKiB} KiB, ${ttsMs}ms)`);
+  } else {
+    console.log(`[generate-audio] wrote ${voicePath} (${audioKiB} KiB, from cache)`);
+  }
 
   // ── STT ────────────────────────────────────────────────────────────────
-  const sttProvider = getSTTProvider(values.stt);
-  console.log(`[generate-audio] STT provider="${sttProvider.name}"`);
-  const sttStartedAt = Date.now();
-  const captions = await sttProvider.transcribe(voicePath, { lang });
-  const sttMs = Date.now() - sttStartedAt;
+  if (!captions) {
+    const sttProvider = getSTTProvider(values.stt);
+    sttProviderName = sttProvider.name;
+    console.log(`[generate-audio] STT provider="${sttProvider.name}"`);
+    const sttStartedAt = Date.now();
+    captions = await sttProvider.transcribe(voicePath, { lang });
+    sttMs = Date.now() - sttStartedAt;
+  }
   fs.writeFileSync(captionsPath, JSON.stringify(captions, null, 2));
-  console.log(
-    `[generate-audio] wrote ${captionsPath} (${captions.length} caption tokens, ${sttMs}ms)`,
-  );
+  if (sttProviderName) {
+    console.log(
+      `[generate-audio] wrote ${captionsPath} (${captions.length} caption tokens, ${sttMs}ms)`,
+    );
+  } else {
+    console.log(
+      `[generate-audio] wrote ${captionsPath} (${captions.length} caption tokens, from cache)`,
+    );
+  }
+
+  // Persist the freshly synthesised pair so subsequent runs hit the cache.
+  if (cacheHash && (cacheStatus === "miss" || cacheStatus === "refresh")) {
+    const { dir } = writeCachedTts(cacheHash, { audio: audioBuffer, captions });
+    console.log(`[generate-audio] cached hash=${cacheHash.slice(0, 12)} -> ${dir}`);
+  }
 
   const sidecarPaths = [];
   for (const format of captionFormats) {
@@ -253,19 +341,35 @@ const main = async () => {
   if (durationSecs > 0) {
     console.log(`  audio duration:   ${durationSecs.toFixed(1)}s`);
   }
-  console.log(`  tts provider:     ${ttsProvider.name}`);
+  if (cacheHash) {
+    const cacheLabel =
+      cacheStatus === "hit"
+        ? `hit (no API calls, hash=${cacheHash.slice(0, 12)})`
+        : cacheStatus === "refresh"
+          ? `refresh (forced re-synth, hash=${cacheHash.slice(0, 12)})`
+          : `miss (synthesised + stored, hash=${cacheHash.slice(0, 12)})`;
+    console.log(`  cache:            ${cacheLabel}`);
+    console.log(`  cache root:       ${getCacheRoot()}`);
+  } else {
+    console.log(`  cache:            ${cacheStatus}`);
+  }
+  console.log(`  tts provider:     ${ttsProviderName ?? "cache"}`);
   // Report the text actually sent to ElevenLabs (post pause-injection) so
   // the credit estimate matches the dashboard. The original script length
   // is shown alongside for context.
-  if (finalText.length === text.length) {
-    console.log(`  tts char usage:   ${text.length}`);
+  if (ttsProviderName) {
+    if (finalText.length === text.length) {
+      console.log(`  tts char usage:   ${text.length}`);
+    } else {
+      console.log(
+        `  tts char usage:   ${finalText.length} (script ${text.length} + ${finalText.length - text.length} from pause tags)`,
+      );
+    }
   } else {
-    console.log(
-      `  tts char usage:   ${finalText.length} (script ${text.length} + ${finalText.length - text.length} from pause tags)`,
-    );
+    console.log(`  tts char usage:   0 (cache hit)`);
   }
-  console.log(`  stt provider:     ${sttProvider.name}`);
-  if (sttProvider.name === "elevenlabs" && durationSecs > 0) {
+  console.log(`  stt provider:     ${sttProviderName ?? "cache"}`);
+  if (sttProviderName === "elevenlabs" && durationSecs > 0) {
     console.log(`  stt minutes used: ${(durationSecs / 60).toFixed(2)}`);
   }
   console.log(`  outputs:          ${voicePath}`);

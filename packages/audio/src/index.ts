@@ -6,7 +6,23 @@ export {
   toSrt,
   toVtt,
 } from "./captions-export";
-export { DEFAULT_ELEVENLABS_MODEL_ID, resolveElevenLabsModelId } from "./elevenlabs";
+// TTS cache (sha256(script+voice+tuning) -> ~/.cache/motion-shorts/tts/<hash>/).
+export {
+  type CachedTts,
+  type CacheMode,
+  cacheEntryPaths,
+  computeTtsCacheKey,
+  getCacheRoot,
+  readCachedTts,
+  resolveCacheMode,
+  type TtsCacheKeyInputs,
+  writeCachedTts,
+} from "./cache";
+export {
+  DEFAULT_ELEVENLABS_MODEL_ID,
+  resolveElevenLabsModelId,
+  resolveElevenLabsVoiceId,
+} from "./elevenlabs";
 export { getTTSProvider } from "./factory";
 // ffprobe helper — duration probing shared by render-episode + generate-audio + Scribe.
 export { getAudioDurationSeconds } from "./ffprobe";
