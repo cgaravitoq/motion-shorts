@@ -122,5 +122,59 @@ STT_PROVIDER=hyperframes-transcribe  # Offline: whisper.cpp via npx hyperframes 
 
 ## Cost guardrails
 
-- **TTS char cap**: 5000 characters per call
+- **TTS char cap**: 5000 characters per call (applied per segment in multi-speaker runs)
 - **STT minute cap**: 5 minutes of audio per call (Scribe only; whisper.cpp is free)
+
+## Multi-speaker scripts
+
+A script with no `[speaker:...]` markup behaves exactly as before — same TTS call, same cache key, same captions output (byte-identical guarantee).
+
+To switch voices mid-script, prefix any line with a speaker tag:
+
+```txt
+[speaker:alex] Lo raro de Claude Code no es que ejecute comandos.
+[speaker:morgan] Es que puedes reescribir lo que ve antes de que lo lea.
+[speaker:alex] Eso cambia el rol del desarrollador, no la herramienta.
+```
+
+The tag must be the **first non-whitespace token on the line**. Text that continues on the next line (without a new tag) belongs to the previous speaker. Untagged text before the first tag is synthesised with the default CLI/env voice.
+
+### Resolving names
+
+Set the roster as a JSON env var:
+
+```
+MOTION_SHORTS_VOICE_ROSTER={"alex":"<voice-id-1>","morgan":"<voice-id-2>"}
+```
+
+- Names are matched case-insensitively.
+- An unmatched name is treated as a raw ElevenLabs voice id (so `[speaker:JBFqnCBsd6RMkjVDRZzb]` works without setting up a roster).
+- Unmatched names with a roster present are flagged in the run log so typos surface immediately.
+
+### Run log
+
+The CLI prints a roster summary before synthesis:
+
+```
+[generate-audio] speakers: alex (2), morgan (1)
+[generate-audio] multi-speaker: 3 segments, TTS="elevenlabs" STT="elevenlabs" model=eleven_v3
+[generate-audio] segment 0 (alex) cache hit hash=ab12cd34ef56
+```
+
+### Segment-level caching
+
+Each segment is hashed independently on `(text, voice_id, model, speed, stability, similarityBoost)` — the same key the single-speaker path uses. Editing one segment only re-synthesises that segment; the others stay in the cache. The cache layout is unchanged: `~/.cache/motion-shorts/tts/<hash>/{voice.mp3,captions.json}`.
+
+### Caption confidence at boundaries
+
+After each segment is transcribed, the CLI compares average word confidence across the boundary. When confidence drops by more than 15% the run log warns:
+
+```
+[generate-audio] caption confidence drop at speaker boundary after segment 1 (prev avg=0.92, next avg=0.71, drop=22.8%)
+```
+
+These warnings are advisory — listen to the boundary and consider re-recording or adjusting the second speaker's tuning.
+
+### Follow-up
+
+Per-episode `meta.json` rosters are deferred. Today the env-level `MOTION_SHORTS_VOICE_ROSTER` is the only roster source; the parser API (`parseScript(text, { roster })`) accepts an explicit roster object so per-episode wiring is a small change when an episode demands it.
