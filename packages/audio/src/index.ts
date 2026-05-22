@@ -1,3 +1,18 @@
+// BGM mixer: caption-driven ducking, head/tail fade, -14 LUFS loudnorm.
+export {
+  BGM_DEFAULTS,
+  type BuildArgsOptions,
+  type BuildEnvelopeOptions,
+  buildBgmFilterGraph,
+  buildDuckWindows,
+  buildFfmpegArgs,
+  type DuckWindow,
+  type FfmpegRunner,
+  type FilterGraphOptions,
+  mixBgm,
+  type MixBgmOptions,
+  type MixBgmResult,
+} from "./bgm-mixer";
 // Caption sidecar exporters (SRT / WebVTT) for accessibility + multilingual rollouts.
 export {
   type CaptionExportOptions,
