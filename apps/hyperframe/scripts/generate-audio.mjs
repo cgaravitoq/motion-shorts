@@ -20,15 +20,18 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import {
   DEFAULT_PACING,
-  MAX_BREAK_MS,
-  MAX_TTS_CHARS,
   getAudioDurationSeconds,
   getSTTProvider,
   getTTSProvider,
   injectElevenV3Pauses,
   injectPauses,
   isElevenV3Model,
+  MAX_BREAK_MS,
+  MAX_TTS_CHARS,
+  parseCaptionFormats,
   resolveElevenLabsModelId,
+  toSrt,
+  toVtt,
 } from "@cgaravitoq/audio";
 
 const HELP = `Usage: bun run scripts/generate-audio.mjs <script.txt> [options]
@@ -63,6 +66,11 @@ Options:
                          On v3 this is opt-in. 0 disables.
   --no-pause-injection   Skip pause injection entirely (use when the script
                          already contains hand-authored pause tags).
+  --caption-format=<list>
+                         Comma-separated list of additional sidecar caption
+                         formats to emit alongside captions.json. Supported:
+                         "srt", "vtt". Example: --caption-format=srt,vtt.
+                         When omitted, behavior is unchanged (JSON only).
   -h, --help             Show this help.
 `;
 
@@ -82,6 +90,7 @@ const main = async () => {
       "pause-sentence": { type: "string" },
       "pause-clause": { type: "string" },
       "no-pause-injection": { type: "boolean", default: false },
+      "caption-format": { type: "string" },
       help: { type: "boolean", short: "h" },
     },
     allowPositionals: true,
@@ -115,6 +124,15 @@ const main = async () => {
   const voicePath = path.join(outDir, "voice.mp3");
   const captionsPath = path.join(outDir, "captions.json");
 
+  // Validate sidecar formats before any TTS spend so bad input fails fast.
+  let captionFormats;
+  try {
+    captionFormats = parseCaptionFormats(values["caption-format"]);
+  } catch (err) {
+    console.error(`generate-audio: ${err.message}`);
+    process.exit(1);
+  }
+
   // Flag parsing helpers — both clamp to a range and surface a clear error.
   const parseRange = (raw, label, min, max) => {
     if (raw == null) return undefined;
@@ -133,7 +151,9 @@ const main = async () => {
   const speed = parseRange(values.speed, "speed", 0.5, 1.5);
   const pauseSentenceMs = parseRange(values["pause-sentence"], "pause-sentence", 0, MAX_BREAK_MS);
   const pauseClauseMs = parseRange(values["pause-clause"], "pause-clause", 0, MAX_BREAK_MS);
-  const modelId = values.model ? resolveElevenLabsModelId(values.model) : resolveElevenLabsModelId();
+  const modelId = values.model
+    ? resolveElevenLabsModelId(values.model)
+    : resolveElevenLabsModelId();
   const isV3 = isElevenV3Model(modelId);
   const hasExplicitPauseControls =
     values["pause-sentence"] != null || values["pause-clause"] != null;
@@ -209,6 +229,15 @@ const main = async () => {
     `[generate-audio] wrote ${captionsPath} (${captions.length} caption tokens, ${sttMs}ms)`,
   );
 
+  const sidecarPaths = [];
+  for (const format of captionFormats) {
+    const sidecarPath = path.join(outDir, `captions.${format}`);
+    const body = format === "srt" ? toSrt(captions) : toVtt(captions);
+    fs.writeFileSync(sidecarPath, body);
+    sidecarPaths.push(sidecarPath);
+    console.log(`[generate-audio] wrote ${sidecarPath}`);
+  }
+
   // ── Stats ──────────────────────────────────────────────────────────────
   const durationSecs = await getAudioDurationSeconds(voicePath);
   if (durationSecs <= 0) {
@@ -241,6 +270,9 @@ const main = async () => {
   }
   console.log(`  outputs:          ${voicePath}`);
   console.log(`                    ${captionsPath}`);
+  for (const sidecarPath of sidecarPaths) {
+    console.log(`                    ${sidecarPath}`);
+  }
 };
 
 main().catch((err) => {
