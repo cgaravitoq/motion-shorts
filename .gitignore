@@ -22,6 +22,9 @@ out
 renders
 .hyperframes
 
+# Render telemetry ledger (local-only, regenerated per run)
+apps/hyperframe/.metrics/
+
 # Generated/heavy per-episode media mirrored to R2 via assets.remote.json.
 apps/hyperframe/src/episodes/*/assets/*.mp4
 apps/hyperframe/src/episodes/*/assets/*.mov
