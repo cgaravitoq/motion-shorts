@@ -20,6 +20,7 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import {
   averageCaptionConfidence,
+  BGM_DEFAULTS,
   cacheEntryPaths,
   computeTtsCacheKey,
   DEFAULT_PACING,
@@ -33,6 +34,7 @@ import {
   MAX_BREAK_MS,
   MAX_TTS_CHARS,
   mergeSegmentArtifacts,
+  mixBgm,
   parseCaptionFormats,
   parseScript,
   readCachedTts,
@@ -93,6 +95,20 @@ Options:
                          For multi-speaker scripts (see below) every segment
                          is hashed and cached independently, so editing one
                          line only re-synthesises that segment.
+  --bgm=<path>           Mix a background music track under the narration with
+                         caption-driven ducking. Without this flag the audio
+                         output is byte-identical to the no-mix path.
+  --bgm-gain=<0..1>      Base BGM gain when narration is silent. Default 0.3.
+  --ducking=<0..1>       Multiplier applied on top of --bgm-gain during
+                         narration windows. Default 0.6 (so the effective gain
+                         during narration is 0.3 * 0.6 = 0.18).
+  --bgm-fade=<sec>       Head + tail fade duration in seconds. Default 1.5.
+  --bgm-output=replace|sidecar
+                         Where to write the mixed audio. "sidecar" (default)
+                         writes voice-mixed.mp3 next to the untouched voice.mp3,
+                         keeping render + caption pipelines intact. "replace"
+                         overwrites voice.mp3 after backing the original up to
+                         voice.unmixed.mp3 (safer downstream wiring).
   -h, --help             Show this help.
 
 Multi-speaker scripts:
@@ -121,6 +137,11 @@ const main = async () => {
       "no-pause-injection": { type: "boolean", default: false },
       "caption-format": { type: "string" },
       cache: { type: "string" },
+      bgm: { type: "string" },
+      "bgm-gain": { type: "string" },
+      ducking: { type: "string" },
+      "bgm-fade": { type: "string" },
+      "bgm-output": { type: "string" },
       help: { type: "boolean", short: "h" },
     },
     allowPositionals: true,
@@ -510,6 +531,85 @@ const main = async () => {
     console.log(`[generate-audio] wrote ${sidecarPath}`);
   }
 
+  // ── BGM mix (opt-in) ───────────────────────────────────────────────────
+  // Critical: when --bgm is absent we must not touch voice.mp3 in any way.
+  // Mixing is a post-processing step on top of the cached/synthesised pair;
+  // its parameters are NOT part of the TTS cache key (verified in cache.ts).
+  let bgmResult = null;
+  if (values.bgm) {
+    const bgmPath = path.resolve(values.bgm);
+    if (!fs.existsSync(bgmPath)) {
+      console.error(`generate-audio: --bgm file not found at ${bgmPath}`);
+      process.exit(1);
+    }
+    const bgmGain = parseRange(values["bgm-gain"], "bgm-gain", 0, 1) ?? BGM_DEFAULTS.bgmGain;
+    const ducking = parseRange(values.ducking, "ducking", 0, 1) ?? BGM_DEFAULTS.ducking;
+    const fadeSec = parseRange(values["bgm-fade"], "bgm-fade", 0, 30) ?? BGM_DEFAULTS.fadeSec;
+    const bgmOutputMode = values["bgm-output"] ?? "sidecar";
+    if (bgmOutputMode !== "sidecar" && bgmOutputMode !== "replace") {
+      console.error(
+        `generate-audio: --bgm-output must be "sidecar" or "replace", got "${bgmOutputMode}"`,
+      );
+      process.exit(1);
+    }
+
+    // Probe voice.mp3 (post any cache-hit / multi-speaker concat). This is the
+    // narration we'll layer BGM under; ducking windows are derived from the
+    // captions we just wrote, which always align with this file.
+    const narrationDurationSec = await getAudioDurationSeconds(voicePath);
+    if (narrationDurationSec <= 0) {
+      console.error(
+        "generate-audio: could not probe voice.mp3 duration via ffprobe; required for BGM mixing.",
+      );
+      process.exit(1);
+    }
+
+    // Sidecar: write voice-mixed.mp3 next to voice.mp3 (default — safe).
+    // Replace: back voice.mp3 up to voice.unmixed.mp3 then overwrite voice.mp3
+    //          so downstream renders pick up the mixed track without rewiring.
+    const mixedTargetPath =
+      bgmOutputMode === "replace"
+        ? path.join(outDir, ".voice-mixed.tmp.mp3")
+        : path.join(outDir, "voice-mixed.mp3");
+
+    console.log(
+      `[generate-audio] BGM mixing: track="${bgmPath}" gain=${bgmGain} ducking=${ducking} fade=${fadeSec}s mode=${bgmOutputMode}`,
+    );
+    const mixStartedAt = Date.now();
+    try {
+      bgmResult = await mixBgm({
+        narrationPath: voicePath,
+        narrationDurationSec,
+        bgmPath,
+        outputPath: mixedTargetPath,
+        captions,
+        bgmGain,
+        ducking,
+        fadeSec,
+      });
+    } catch (err) {
+      console.error("generate-audio: ffmpeg BGM mix failed:");
+      console.error(err);
+      // Clean up any half-written tmp output before bailing.
+      if (fs.existsSync(mixedTargetPath)) fs.rmSync(mixedTargetPath, { force: true });
+      process.exit(1);
+    }
+
+    if (bgmOutputMode === "replace") {
+      const backupPath = path.join(outDir, "voice.unmixed.mp3");
+      fs.renameSync(voicePath, backupPath);
+      fs.renameSync(mixedTargetPath, voicePath);
+      bgmResult.outputPath = voicePath;
+      console.log(
+        `[generate-audio] BGM mix: ${voicePath} (original kept at ${backupPath}, ${bgmResult.duckWindowCount} duck windows, ${Date.now() - mixStartedAt}ms)`,
+      );
+    } else {
+      console.log(
+        `[generate-audio] BGM mix: ${bgmResult.outputPath} (${bgmResult.duckWindowCount} duck windows, ${Date.now() - mixStartedAt}ms)`,
+      );
+    }
+  }
+
   // ── Stats ──────────────────────────────────────────────────────────────
   const durationSecs = await getAudioDurationSeconds(voicePath);
   if (durationSecs <= 0) {
@@ -575,6 +675,9 @@ const main = async () => {
   console.log(`                    ${captionsPath}`);
   for (const sidecarPath of sidecarPaths) {
     console.log(`                    ${sidecarPath}`);
+  }
+  if (bgmResult && bgmResult.outputPath !== voicePath) {
+    console.log(`                    ${bgmResult.outputPath}`);
   }
 };
 

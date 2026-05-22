@@ -178,3 +178,54 @@ These warnings are advisory — listen to the boundary and consider re-recording
 ### Follow-up
 
 Per-episode `meta.json` rosters are deferred. Today the env-level `MOTION_SHORTS_VOICE_ROSTER` is the only roster source; the parser API (`parseScript(text, { roster })`) accepts an explicit roster object so per-episode wiring is a small change when an episode demands it.
+
+## Background music (BGM) with ducking
+
+Shorts feel flat without a music bed. `bun run audio` can mix a BGM track under the narration with caption-driven ducking, head/tail fades, and a `-14 LUFS` loudness pass — all in a single ffmpeg call.
+
+```bash
+bun run audio examples/<slug>.txt --lang=es \
+  --out=public/voice/<slug> \
+  --bgm=r2://motion-shorts/bgm/lofi-tech-loop.mp3 \
+  --bgm-gain=0.3 \
+  --ducking=0.6 \
+  --bgm-fade=1.5
+```
+
+### Flags
+
+| Flag | Default | Meaning |
+|------|---------|---------|
+| `--bgm=<path>` | — | Enables mixing. Without it, output is byte-identical to the no-BGM path (the mixer is never invoked). |
+| `--bgm-gain=<0..1>` | `0.3` | Base BGM gain when narration is silent. |
+| `--ducking=<0..1>` | `0.6` | Multiplier applied on top of `--bgm-gain` during narration windows. Effective duck gain = `bgm-gain * ducking` (e.g. `0.3 * 0.6 = 0.18`). |
+| `--bgm-fade=<sec>` | `1.5` | Head + tail fade in seconds. Clamped to `narration/2` so a 2s narration still gets symmetric fades. |
+| `--bgm-output=replace\|sidecar` | `sidecar` | `sidecar` writes `voice-mixed.mp3` alongside an untouched `voice.mp3`. `replace` renames `voice.mp3` → `voice.unmixed.mp3` then overwrites `voice.mp3` with the mixed track so render + caption pipelines pick it up automatically. |
+
+### Why `sidecar` is the default
+
+Every episode + the render path consume `voice.mp3` by name. Changing what that file contains is a global blast radius — a one-line CLI typo could silently push BGM-mixed audio into a render meant to be voice-only. The safer default writes the mixed file to `voice-mixed.mp3` so authors opt in to the swap explicitly via `--bgm-output=replace` (or by pointing their episode at the new path).
+
+### How ducking works
+
+Ducking windows are derived directly from the word-level `captions.json` already produced for every episode. Adjacent words are merged when the gap is shorter than ~0.35s (so the BGM doesn't pump between syllables); each window is widened by ~0.12s on each side so the duck attacks slightly before the word and releases slightly after. The mixer stacks `volume=<ducking>:enable='between(t,a,b)'` filters on top of a base `volume=<bgmGain>` — multiplying gains during narration windows and leaving the BGM at full base gain in between.
+
+The final filter graph passes through `loudnorm=I=-14:TP=-1.5:LRA=11` (YouTube/streaming standard). For a no-window run (rare: captions empty) the BGM still gets the base gain + fades + loudnorm.
+
+### Cache interaction
+
+BGM parameters are NOT part of the TTS cache key (`cache.ts` hashes `text + voiceId + modelId + tuning` only). Tweaking `--bgm-gain` or swapping BGM tracks never re-spends TTS credits — the mix runs on the cached `voice.mp3`.
+
+### BGM tracks (R2 library)
+
+Royalty-free tracks live in R2 alongside other heavy artifacts (see `AGENTS.md` artifact persistence note). The starter library:
+
+| Path (R2) | Mood | Duration | Notes |
+|-----------|------|----------|-------|
+| `bgm/lofi-tech-loop.mp3` | Calm lo-fi, soft kick | ~2:00 (loops cleanly) | Default for explainers / informative shorts. |
+| `bgm/cinematic-pulse.mp3` | Tense, modern, sub-heavy | ~1:30 | For data / proof-point shorts. |
+| `bgm/upbeat-electro.mp3` | Energetic, kinetic | ~1:45 | For hook-led / VFX-experimental shorts. |
+
+Hydrate locally with `bun run hydrate:episode` (extends to the BGM prefix). Pass any local mp3/wav to `--bgm=` for one-off experiments.
+
+To add a track to the shared library: upload to R2 under `bgm/<slug>.mp3`, then append a row to the table above. No need to commit the audio file to the repo — keep the library out of git per the artifact persistence rule.
