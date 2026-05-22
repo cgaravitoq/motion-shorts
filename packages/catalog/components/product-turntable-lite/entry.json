@@ -42,5 +42,8 @@
     "hook",
     "brand"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/product-turntable-lite.svg"
 }

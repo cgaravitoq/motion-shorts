@@ -29,5 +29,8 @@
     "requires .hf-source-knowledge-pipeline__edge",
     "requires tl.set for discrete labels",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

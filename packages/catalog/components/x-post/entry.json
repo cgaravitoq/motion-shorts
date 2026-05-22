@@ -21,5 +21,8 @@
   "validationRules": [
     "requires .x-post-card",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

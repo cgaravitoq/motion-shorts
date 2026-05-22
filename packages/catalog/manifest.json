@@ -43,6 +43,9 @@
       "hook",
       "proof"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/asset-stack-parallax.svg"
   },
   {
@@ -90,6 +93,9 @@
       "brand",
       "proof"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/brand-logo-cloud.svg"
   },
   {
@@ -135,6 +141,9 @@
       "requires outro text blur scale reveal",
       "requires paused GSAP timeline",
       "requires brand mark SVG paths"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -161,6 +170,9 @@
     "validationRules": [
       "requires #brand-corner element",
       "requires data-track-index 97"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -187,6 +199,9 @@
     "validationRules": [
       "requires .hf-data-chart",
       "requires seek-safe metric onUpdate"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -231,6 +246,9 @@
       "proof",
       "reveal"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/device-screen-pan.svg"
   },
   {
@@ -257,6 +275,9 @@
     "validationRules": [
       "requires .hf-flowchart__edge",
       "requires tl.set for discrete labels"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -282,6 +303,9 @@
     "validationRules": [
       "requires .hf-grain-overlay__texture",
       "forbidden repeat:-1"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -307,6 +331,9 @@
     "validationRules": [
       "requires #pixel-grid",
       "forbidden stagger from random"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -354,6 +381,9 @@
       "hook",
       "proof"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/image-ken-burns.svg"
   },
   {
@@ -379,6 +409,9 @@
     "validationRules": [
       "requires #ig-follow or scene-local equivalent",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -402,6 +435,9 @@
     "validationRules": [
       "deprecated replacement brand-logo-watermark",
       "forbidden in new episodes"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -449,6 +485,9 @@
       "brand",
       "hook"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/logo-orbit.svg"
   },
   {
@@ -472,6 +511,9 @@
     "validationRules": [
       "sourceDemo empty allowed only for reference entries",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -519,6 +561,9 @@
       "proof",
       "reveal"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/map-route.svg"
   },
   {
@@ -565,6 +610,9 @@
       "hook",
       "brand"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/product-turntable-lite.svg"
   },
   {
@@ -588,6 +636,9 @@
     "validationRules": [
       "sourceDemo empty allowed only for reference entries",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -612,6 +663,9 @@
     ],
     "validationRules": [
       "requires paused GSAP timeline"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -658,6 +712,9 @@
       "proof",
       "reveal"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/screenshot-spotlight.svg"
   },
   {
@@ -684,6 +741,9 @@
     "validationRules": [
       "requires --shimmer-pos timeline tween",
       "forbidden repeat:-1"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -715,6 +775,9 @@
       "requires .hf-source-article-hero",
       "requires .hf-source-attribution-strip",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -745,6 +808,9 @@
       "requires .hf-source-attribution-strip",
       "forbidden tracks 97..99",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -777,6 +843,9 @@
       "requires .hf-source-attribution-strip",
       "requires tl.set for discrete labels",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -824,6 +893,9 @@
       "reveal",
       "proof"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/source-image-reveal.svg"
   },
   {
@@ -857,6 +929,9 @@
       "requires .hf-source-knowledge-pipeline__edge",
       "requires tl.set for discrete labels",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -889,6 +964,9 @@
       "requires .hf-source-proof-card",
       "requires .hf-source-attribution-strip",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -921,6 +999,9 @@
       "requires .hf-source-attribution-strip",
       "requires tl.set for discrete labels",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -944,6 +1025,9 @@
     "validationRules": [
       "sourceDemo empty allowed only for reference entries",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -990,6 +1074,9 @@
     "motionRoles": [
       "reveal",
       "proof"
+    ],
+    "safeFor": [
+      "short"
     ],
     "previewAssetPath": "packages/catalog/previews/svg-path-draw.svg"
   },
@@ -1039,6 +1126,9 @@
       "hook",
       "reveal"
     ],
+    "safeFor": [
+      "short"
+    ],
     "previewAssetPath": "packages/catalog/previews/talking-head-cutout.svg"
   },
   {
@@ -1060,6 +1150,9 @@
     "validationRules": [
       "deprecated replacement shimmer-sweep",
       "forbidden in new episodes"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -1085,6 +1178,9 @@
     "validationRules": [
       "requires fixed glitch offsets",
       "forbidden repeat:-1"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -1110,6 +1206,9 @@
     "validationRules": [
       "requires .x-post-card",
       "forbidden data-composition-src"
+    ],
+    "safeFor": [
+      "short"
     ]
   },
   {
@@ -1135,6 +1234,9 @@
     "validationRules": [
       "requires #yt-lower-third",
       "forbidden tracks 97..99"
+    ],
+    "safeFor": [
+      "short"
     ]
   }
 ]

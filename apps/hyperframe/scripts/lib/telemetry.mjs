@@ -129,6 +129,7 @@ export const appendLedger = (ledgerPath, record) => {
 export const buildRecord = ({
   slug,
   format,
+  variant,
   quality,
   fps,
   durations,
@@ -139,6 +140,10 @@ export const buildRecord = ({
   ts: new Date().toISOString(),
   slug,
   format,
+  // variant is optional for back-compat with callers that pre-date the
+  // 16:9 desktop profile. Default to "short" when omitted so existing
+  // ledger queries can group by variant without nullable casing.
+  variant: variant ?? "short",
   quality,
   fps,
   totalMs: Number(totalMs.toFixed(1)),

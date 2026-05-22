@@ -22,5 +22,8 @@
   "validationRules": [
     "requires #brand-corner element",
     "requires data-track-index 97"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

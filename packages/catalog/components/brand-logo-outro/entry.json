@@ -13,7 +13,7 @@
   "requiredTracks": [
     7
   ],
-  "timingGuidance": "Use for final 4–6 seconds of standard shorts unless explicitly disabled. The penultimate scene must blur/scale crossfade into this outro, then the brand text reveals with blur-to-sharp scale-up after the logo pieces start assembling.",
+  "timingGuidance": "Use for final 4\u20136 seconds of standard shorts unless explicitly disabled. The penultimate scene must blur/scale crossfade into this outro, then the brand text reveals with blur-to-sharp scale-up after the logo pieces start assembling.",
   "dependencies": [],
   "usageRules": [
     "Use as the standard closing brand lockup.",
@@ -41,5 +41,8 @@
     "requires outro text blur scale reveal",
     "requires paused GSAP timeline",
     "requires brand mark SVG paths"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

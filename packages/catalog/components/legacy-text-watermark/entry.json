@@ -19,5 +19,8 @@
   "validationRules": [
     "deprecated replacement brand-logo-watermark",
     "forbidden in new episodes"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

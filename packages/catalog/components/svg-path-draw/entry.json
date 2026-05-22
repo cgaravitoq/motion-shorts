@@ -43,5 +43,8 @@
     "reveal",
     "proof"
   ],
+  "safeFor": [
+    "short"
+  ],
   "previewAssetPath": "packages/catalog/previews/svg-path-draw.svg"
 }

@@ -44,6 +44,7 @@ const { values, positionals } = parseArgs({
     template: { type: "string" },
     "template-data": { type: "string" },
     slug: { type: "string" },
+    "with-desktop": { type: "boolean", default: false },
     help: { type: "boolean", short: "h" },
   },
   allowPositionals: true,
@@ -69,6 +70,10 @@ Options:
                    Optional JSON slot data for --template. Defaults to the
                    template's sample-data.json.
   --slug=<slug>    Episode slug. Alternative to the positional slug.
+  --with-desktop   Also stamp a 16:9 index.desktop.html variant (1920x1080,
+                   30 fps) seeded from apps/hyperframe/templates/desktop-1080p.html.
+                   The vertical index.html is always written; this flag is
+                   additive. See docs/formats.md.
 `);
   process.exit(values.help ? 0 : 1);
 }
@@ -371,6 +376,30 @@ fs.writeFileSync(path.join(epDir, "meta.json"), metaJson);
 fs.writeFileSync(path.join(epDir, "hyperframes.json"), hyperframesJson);
 fs.writeFileSync(path.join(epDir, "assets", ".gitkeep"), "");
 
+// Optional 16:9 desktop variant — additive, never replaces the vertical short.
+// The template lives at apps/hyperframe/templates/desktop-1080p.html and gets
+// rewritten with the episode slug so window.__timelines["<slug>-desktop"]
+// matches the stage data-composition-id. See docs/formats.md.
+if (values["with-desktop"]) {
+  const desktopTemplatePath = path.resolve("templates/desktop-1080p.html");
+  if (!fs.existsSync(desktopTemplatePath)) {
+    console.error(
+      `new-episode: --with-desktop set but ${desktopTemplatePath} not found. ` +
+        "Restore the template or drop the flag.",
+    );
+    process.exit(1);
+  }
+  const desktopTemplate = fs.readFileSync(desktopTemplatePath, "utf8");
+  const desktopCompositionId = `${slug}-desktop`;
+  const desktopHtml = desktopTemplate
+    .replace(/data-composition-id="desktop-1080p-template"/, `data-composition-id="${desktopCompositionId}"`)
+    .replace(
+      /window\.__timelines\["desktop-1080p-template"\]/,
+      `window.__timelines["${desktopCompositionId}"]`,
+    );
+  fs.writeFileSync(path.join(epDir, "index.desktop.html"), desktopHtml);
+}
+
 // Symlink lib so the project's relative `lib/...` imports resolve. The
 // Hyperframes engine serves the project from <slug>/ as root, so anything
 // outside returns 404. The symlink keeps the shared lib in scope and
@@ -393,6 +422,9 @@ console.log(`Created ${epDir}/`);
 console.log(
   `  index.html (${w}x${h}, handle=${handle}${brand ? `, brand=${brand.slug}` : ""}${templateId ? `, template=${templateId}` : ""})`,
 );
+if (values["with-desktop"]) {
+  console.log("  index.desktop.html (1920x1080, desktop-1080p)");
+}
 console.log("  meta.json");
 console.log("  hyperframes.json");
 console.log("  assets/");

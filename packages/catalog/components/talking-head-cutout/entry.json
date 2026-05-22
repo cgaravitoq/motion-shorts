@@ -15,10 +15,10 @@
   "usageRules": [
     "Wrap each <video> in a non-timed div; opacity/scale tweens target the wrapper, not the <video> element, because the runtime force-applies position:absolute and 100%x100% on tracked stage children.",
     "Drop the subject cutout (speaker.webm) on a mid-to-high scene track and the inverse-alpha plate (plate.webm) on background track 0 so HTML headlines on intermediate tracks can sit behind the head and above the plate.",
-    "Generate speaker.webm and plate.webm with `bunx hyperframes remove-background <presenter>.mp4` — first-party path is HeyGen, but any presenter MP4 works (webcam, D-ID, Synthesia, Veo).",
+    "Generate speaker.webm and plate.webm with `bunx hyperframes remove-background <presenter>.mp4` \u2014 first-party path is HeyGen, but any presenter MP4 works (webcam, D-ID, Synthesia, Veo).",
     "Do not commit speaker.webm or plate.webm. Push them to R2 and list them in assets.remote.json so `bun run hydrate:episode <slug> --manifest=assets` restores them.",
     "Use `playsinline muted` on the <video> elements so the Chromium renderer auto-decodes alpha frames seek-safely; do NOT use `autoplay` or `loop`.",
-    "Treat the subject as a self-framed object — do not wrap it in a generic glass/card container."
+    "Treat the subject as a self-framed object \u2014 do not wrap it in a generic glass/card container."
   ],
   "validationRules": [
     "requires .talking-head-cutout",
@@ -43,6 +43,9 @@
   "motionRoles": [
     "hook",
     "reveal"
+  ],
+  "safeFor": [
+    "short"
   ],
   "previewAssetPath": "packages/catalog/previews/talking-head-cutout.svg"
 }

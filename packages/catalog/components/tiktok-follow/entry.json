@@ -12,7 +12,7 @@
   "requiredTracks": [
     6
   ],
-  "timingGuidance": "5–7s beat; pop overlay and add fixed steps(1) glitch offsets.",
+  "timingGuidance": "5\u20137s beat; pop overlay and add fixed steps(1) glitch offsets.",
   "dependencies": [],
   "usageRules": [
     "Use for faster high-contrast follow beats.",
@@ -21,5 +21,8 @@
   "validationRules": [
     "requires fixed glitch offsets",
     "forbidden repeat:-1"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

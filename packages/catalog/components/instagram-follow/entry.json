@@ -12,7 +12,7 @@
   "requiredTracks": [
     5
   ],
-  "timingGuidance": "5–7s beat; slide follow pill after scene context, pulse button once.",
+  "timingGuidance": "5\u20137s beat; slide follow pill after scene context, pulse button once.",
   "dependencies": [],
   "usageRules": [
     "Use for quick follow CTAs.",
@@ -21,5 +21,8 @@
   "validationRules": [
     "requires #ig-follow or scene-local equivalent",
     "forbidden data-composition-src"
+  ],
+  "safeFor": [
+    "short"
   ]
 }

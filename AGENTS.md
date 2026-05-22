@@ -62,6 +62,7 @@ For diagrams, choose the frame based on density. Compact charts or small decisio
 | Voice IDs, TTS gotchas, pause injection | `docs/voice-config.md` |
 | Typography roles for informative/source-driven shorts | `.agents/skills/canonical-short/references/typography-system.md` |
 | Exact reusable Hyperframes templates | `docs/templates.md` + `apps/hyperframe/templates/` |
+| Render profiles (9:16 short + 16:9 desktop-1080p, safe zones, lint) | `docs/formats.md` |
 | Brand packs (white-label) | `docs/brand-packs.md` |
 | MCP integrations (Notion) | `docs/mcp-integrations.md` |
 | Visual component catalog | `packages/catalog/manifest.json` + `bun run catalog:list` |

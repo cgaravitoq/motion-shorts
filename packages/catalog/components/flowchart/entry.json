@@ -13,7 +13,7 @@
   "requiredTracks": [
     6
   ],
-  "timingGuidance": "7–9s scene; reveal nodes first, draw SVG edges, then reveal labels with tl.set.",
+  "timingGuidance": "7\u20139s scene; reveal nodes first, draw SVG edges, then reveal labels with tl.set.",
   "dependencies": [],
   "usageRules": [
     "Use for decision trees, branching processes, or agent workflows.",
@@ -22,5 +22,8 @@
   "validationRules": [
     "requires .hf-flowchart__edge",
     "requires tl.set for discrete labels"
+  ],
+  "safeFor": [
+    "short"
   ]
 }
