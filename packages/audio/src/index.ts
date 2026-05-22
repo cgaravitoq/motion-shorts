@@ -26,6 +26,24 @@ export {
 export { getTTSProvider } from "./factory";
 // ffprobe helper — duration probing shared by render-episode + generate-audio + Scribe.
 export { getAudioDurationSeconds } from "./ffprobe";
+// Multi-speaker scripts: inline `[speaker:<name>]` markup → per-segment TTS + merged captions.
+export {
+  averageCaptionConfidence,
+  CAPTION_CONFIDENCE_DROP_WARN,
+  type MergeArtifactsResult,
+  type MergedSegmentArtifact,
+  mergeSegmentArtifacts,
+  offsetCaptions,
+  type ParseScriptOptions,
+  type ParseScriptResult,
+  parseRosterJson,
+  parseScript,
+  resolveRoster,
+  type ScriptSegment,
+  type SpeakerRoster,
+  type SpeakerSummaryEntry,
+  summariseSpeakers,
+} from "./multi-speaker";
 export {
   DEFAULT_PACING,
   injectElevenV3Pauses,

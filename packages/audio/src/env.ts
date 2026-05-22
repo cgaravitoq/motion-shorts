@@ -15,6 +15,7 @@ export const env = createEnv({
     INWORLD_TTS_MODEL: z.string().min(1).default("inworld-tts-2"),
     STT_PROVIDER: z.string().min(1).default("elevenlabs"),
     MOTION_SHORTS_TTS_CACHE_DIR: z.string().min(1).optional(),
+    MOTION_SHORTS_VOICE_ROSTER: z.string().min(1).optional(),
     XDG_CACHE_HOME: z.string().min(1).optional(),
   },
   emptyStringAsUndefined: true,
