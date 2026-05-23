@@ -17,10 +17,12 @@
     "render:episode": "bun run scripts/render-episode.mjs",
     "capture:source": "bun run scripts/capture-source.mjs",
     "hydrate:episode": "bun run scripts/hydrate-episode.mjs",
+    "metrics:dashboard": "bun run scripts/metrics-dashboard.mjs",
     "new-episode": "bun run scripts/new-episode.mjs",
     "new:episode": "bun run scripts/new-episode.mjs",
     "templates:list": "bun run scripts/list-templates.mjs",
     "audio": "bun run scripts/generate-audio.mjs",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

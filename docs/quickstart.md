@@ -56,6 +56,9 @@ STT_PROVIDER=hyperframes-transcribe bun run audio examples/short-09.txt \
 # With R2 credentials configured, uploads verified artifacts by default.
 bun run render:episode short-09 --format=mp4
 
+# Local HTML dashboard for render telemetry ledger.
+bun run metrics:dashboard
+
 # Default R2 publish configuration.
 # Requires R2_ACCOUNT_ID, R2_BUCKET, and one transport:
 # R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or direct-S3
