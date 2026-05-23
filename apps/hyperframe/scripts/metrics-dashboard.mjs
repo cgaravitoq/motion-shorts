@@ -181,7 +181,7 @@ export const createDashboardServer = ({ ledgerPath = defaultLedgerPath, warn = c
   });
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const port = Number(process.env.PORT ?? 0);
+  const port = Number(process.env.PORT) || 0;
   const server = createDashboardServer({ warn: (message) => console.warn(message) });
   server.listen(port, "127.0.0.1", () => {
     const address = server.address();
