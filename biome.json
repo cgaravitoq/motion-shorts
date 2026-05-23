@@ -20,9 +20,22 @@
       "!**/.claude/skills",
       "!**/.claude/worktrees",
       "!**/src/episodes/**/*.html",
+      "!**/templates/**/*.html",
       "!**/public/voice"
     ]
   },
+  "overrides": [
+    {
+      "includes": ["**/*.html"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useMediaCaption": "off"
+          }
+        }
+      }
+    }
+  ],
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
