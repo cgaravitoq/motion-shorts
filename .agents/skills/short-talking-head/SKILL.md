@@ -35,7 +35,7 @@ the pipeline (script, audio, captions, render, brand outro) follows `canonical-s
      solid (ideally green or pure white) background. `hyperframes remove-background` accepts
      any MP4.
 3. **Env.** `HEYGEN_API_KEY` is only required for the HeyGen path. See `.env.example`.
-   Read via `env.HEYGEN_API_KEY` from `@cgaravitoq/audio/env` -- do not read
+   Read via `import { env } from "@cgaravitoq/audio/env"` then `env.HEYGEN_API_KEY` -- do not read
    `process.env.HEYGEN_API_KEY` directly (enforced by `bun run lint:env`).
 
 ## Pipeline
