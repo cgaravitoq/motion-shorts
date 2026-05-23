@@ -43,7 +43,8 @@
     "reveal"
   ],
   "safeFor": [
-    "short"
+    "short",
+    "desktop-1080p"
   ],
   "previewAssetPath": "packages/catalog/previews/screenshot-spotlight.svg"
 }

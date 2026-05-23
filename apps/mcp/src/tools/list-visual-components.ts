@@ -1,5 +1,5 @@
 import type { CatalogEntry } from "@cgaravitoq/catalog";
-import { compactCatalogEntry, manifest } from "@cgaravitoq/catalog";
+import { compactCatalogEntry, filterBySafeForFormat, manifest } from "@cgaravitoq/catalog";
 import { z } from "zod";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
@@ -16,7 +16,7 @@ const inputSchema = z.object({
     .optional(),
   platform: z.enum(["youtube-shorts", "tiktok", "instagram-reels", "linkedin"]).optional(),
   density: z.enum(["low", "medium", "high"]).optional(),
-  format: z.enum(["portrait", "square", "landscape"]).optional(),
+  format: z.enum(["portrait", "square", "landscape", "short", "desktop-1080p"]).optional(),
   assetKinds: z
     .array(z.enum(["image", "font", "screenshot", "svg", "logo", "video", "other"]))
     .optional(),
@@ -48,7 +48,7 @@ const jsonSchema = {
       enum: ["youtube-shorts", "tiktok", "instagram-reels", "linkedin"],
     },
     density: { type: "string", enum: ["low", "medium", "high"] },
-    format: { type: "string", enum: ["portrait", "square", "landscape"] },
+    format: { type: "string", enum: ["portrait", "square", "landscape", "short", "desktop-1080p"] },
     assetKinds: {
       type: "array",
       items: { type: "string", enum: ["image", "font", "screenshot", "svg", "logo", "video", "other"] },
@@ -63,12 +63,18 @@ const jsonSchema = {
 export const listVisualComponentsTool: ToolDefinition = {
   name: "list_visual_components",
   description:
-    "List compact visual catalog components. Optional filters: status, intentTags, and type. Returns no snippet bodies.",
+    "List compact visual catalog components. Optional filters: status, intentTags, type, and format (short or desktop-1080p safeFor; legacy portrait/square/landscape formatTargets also accepted). Returns no snippet bodies.",
   inputSchema: jsonSchema,
   async handler(input) {
     try {
       const filters = inputSchema.parse(input);
-      const entries = manifest.filter((entry: CatalogEntry) => {
+      const safeForFormat =
+        filters.format === "desktop-1080p" || filters.format === "short" ? filters.format : "short";
+      const formatTarget =
+        filters.format === "portrait" || filters.format === "square" || filters.format === "landscape"
+          ? filters.format
+          : undefined;
+      const entries = filterBySafeForFormat(manifest, safeForFormat).filter((entry: CatalogEntry) => {
         if (filters.status && entry.status !== filters.status) return false;
         if (filters.type && entry.type !== filters.type) return false;
         if (
@@ -78,7 +84,7 @@ export const listVisualComponentsTool: ToolDefinition = {
           return false;
         if (filters.platform && !entry.platformTargets?.includes(filters.platform)) return false;
         if (filters.density && entry.density !== filters.density) return false;
-        if (filters.format && !entry.formatTargets?.includes(filters.format)) return false;
+        if (formatTarget && !entry.formatTargets?.includes(formatTarget)) return false;
         if (
           filters.assetKinds?.length &&
           !filters.assetKinds.some((kind) => entry.assetKinds?.includes(kind))

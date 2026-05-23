@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import type { CatalogEntry } from "./schema";
 
+export type CatalogSafeForFormat = "short" | "desktop-1080p";
+
 export type CompactCatalogEntry = Pick<
   CatalogEntry,
   | "id"
@@ -32,6 +34,13 @@ export const compactCatalogEntry = (entry: CatalogEntry): CompactCatalogEntry =>
   motionRoles: entry.motionRoles,
   previewAssetPath: entry.previewAssetPath,
 });
+
+export function filterBySafeForFormat<T extends { safeFor?: readonly string[] }>(
+  components: readonly T[],
+  format: CatalogSafeForFormat,
+): T[] {
+  return components.filter((component) => (component.safeFor ?? ["short"]).includes(format));
+}
 
 export const repoRoot = (start = process.cwd()): string => {
   let current = resolve(start);
