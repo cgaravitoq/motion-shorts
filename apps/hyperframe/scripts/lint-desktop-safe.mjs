@@ -9,10 +9,8 @@
  * title-safe inset for `data-critical` elements, YouTube end-screen +
  * CTA dead-zone violations.
  *
- * Scope-tier-2 follow-ups (deliberately deferred):
- *   • Action-safe (90%) enforcement
- *   • Lower-third overlay collision detection
- *   • Font-size minimums for desktop readability
+ * Scope-tier-2: action-safe (90%) warnings, lower-third collision warnings,
+ * and desktop readability font-size errors.
  *
  * Episodes without `index.desktop.html` are vacuously green — the linter
  * skips them rather than failing.
@@ -38,6 +36,9 @@ const DESKTOP_FPS = 30;
 
 const TITLE_SAFE_INSET_X = Math.round(DESKTOP_WIDTH * 0.1); // 192
 const TITLE_SAFE_INSET_Y = Math.round(DESKTOP_HEIGHT * 0.1); // 108
+const ACTION_SAFE_INSET_X = Math.round(DESKTOP_WIDTH * 0.05); // 96
+const ACTION_SAFE_INSET_Y = Math.round(DESKTOP_HEIGHT * 0.05); // 54
+const LOWER_THIRD_HEIGHT = Math.round(DESKTOP_HEIGHT * 0.25); // 270
 
 const ENDSCREEN_BAND_HEIGHT = 120;
 const CTA_SIZE = 160;
@@ -92,6 +93,21 @@ function findCriticalElements(html) {
   return out;
 }
 
+function findTrackedElements(html) {
+  const out = [];
+  const re = /<([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*\bdata-track-index=["'][^"']+["'][^>]*>/g;
+  for (const m of html.matchAll(re)) {
+    out.push({
+      tagName: m[1].toLowerCase(),
+      tag: m[0],
+      attrs: parseAttrs(m[0]),
+      line: offsetToLine(html, m.index),
+      offset: m.index,
+    });
+  }
+  return out;
+}
+
 /**
  * Parse a CSS-ish inline-style attribute into a Map of lowercased prop -> value.
  */
@@ -105,6 +121,42 @@ function parseInlineStyle(style) {
     const value = rest.join(":").trim();
     if (prop) out.set(prop, value);
   }
+  return out;
+}
+
+function parseStyleRules(html) {
+  const rules = [];
+  const styleRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+  for (const styleMatch of html.matchAll(styleRe)) {
+    const css = styleMatch[1].replace(/\/\*[\s\S]*?\*\//g, "");
+    const ruleRe = /([^{}]+)\{([^{}]+)\}/g;
+    for (const ruleMatch of css.matchAll(ruleRe)) {
+      const declarations = parseInlineStyle(ruleMatch[2]);
+      for (const rawSelector of ruleMatch[1].split(",")) {
+        const selector = rawSelector.trim();
+        if (selector) rules.push({ selector, declarations });
+      }
+    }
+  }
+  return rules;
+}
+
+function selectorMatchesElement(selector, element) {
+  const id = element.attrs.get("id") || "";
+  const classes = (element.attrs.get("class") || "").split(/\s+/).filter(Boolean);
+  const simple = selector.trim().split(/\s+/).at(-1) || "";
+  if (id && simple === `#${id}`) return true;
+  if (simple.startsWith(".") && classes.includes(simple.slice(1))) return true;
+  return simple.toLowerCase() === element.tagName;
+}
+
+function computedStyleFor(element, styleRules) {
+  const out = new Map();
+  for (const rule of styleRules) {
+    if (!selectorMatchesElement(rule.selector, element)) continue;
+    for (const [prop, value] of rule.declarations) out.set(prop, value);
+  }
+  for (const [prop, value] of parseInlineStyle(element.attrs.get("style") || "")) out.set(prop, value);
   return out;
 }
 
@@ -125,6 +177,62 @@ function lengthToPx(value, axisSize) {
   // almost always end in px; a bare number is most likely a copy-paste bug).
   const n = Number.parseFloat(v);
   return Number.isFinite(n) ? n : Number.NaN;
+}
+
+function fontSizeToPx(value) {
+  if (value === undefined || value === null) return Number.NaN;
+  const v = String(value).trim().toLowerCase();
+  // TODO: Tier-2 intentionally evaluates px-only font sizes; rem/em/vw/vh need cascade + viewport semantics.
+  if (!v.endsWith("px")) return Number.NaN;
+  const n = Number.parseFloat(v);
+  return Number.isFinite(n) ? n : Number.NaN;
+}
+
+function cssBox(style) {
+  const left = lengthToPx(style.get("left"), DESKTOP_WIDTH);
+  const right = lengthToPx(style.get("right"), DESKTOP_WIDTH);
+  const top = lengthToPx(style.get("top"), DESKTOP_HEIGHT);
+  const bottom = lengthToPx(style.get("bottom"), DESKTOP_HEIGHT);
+  const width = lengthToPx(style.get("width"), DESKTOP_WIDTH);
+  const height = lengthToPx(style.get("height"), DESKTOP_HEIGHT);
+  return { left, top, right, bottom, width, height };
+}
+
+function translateToPx(transform) {
+  const out = { x: 0, y: 0 };
+  if (!transform) return out;
+  const match = String(transform).match(/translate(?:3d|x|y)?\(([^)]*)\)/i);
+  if (!match) return out;
+  const args = match[1].split(",").map((x) => x.trim());
+  const fn = match[0].slice(0, match[0].indexOf("(")).toLowerCase();
+  if (fn === "translatex") out.x = lengthToPx(args[0], DESKTOP_WIDTH) || 0;
+  else if (fn === "translatey") out.y = lengthToPx(args[0], DESKTOP_HEIGHT) || 0;
+  else {
+    out.x = lengthToPx(args[0], DESKTOP_WIDTH) || 0;
+    out.y = lengthToPx(args[1], DESKTOP_HEIGHT) || 0;
+  }
+  return out;
+}
+
+function classList(attrs) {
+  return (attrs.get("class") || "").split(/\s+/).filter(Boolean);
+}
+
+function hasClassMatch(attrs, re) {
+  return classList(attrs).some((name) => re.test(name));
+}
+
+function isExemptLowerThird(element) {
+  const id = element.attrs.get("id") || "";
+  return id === "captions" || id === "brand-corner" || classList(element.attrs).includes("caption") || classList(element.attrs).includes("lower-third-safe");
+}
+
+function isTrackedText(element) {
+  return ["h1", "h2", "h3"].includes(element.tagName) || hasClassMatch(element.attrs, /headline|title|caption|copy|text|subcopy|label/i);
+}
+
+function isHeadline(element) {
+  return ["h1", "h2"].includes(element.tagName) || hasClassMatch(element.attrs, /headline|hero|title/i);
 }
 
 /**
@@ -161,6 +269,18 @@ const RULES = {
   "cta-dead-zone": {
     severity: "error",
     message: `data-critical element overlaps the YouTube CTA/info-card slot (bottom-right ${CTA_SIZE}×${CTA_SIZE}px).`,
+  },
+  "action-safe-inset": {
+    severity: "warning",
+    message: `tracked stage child violates action-safe inset (need ≥${ACTION_SAFE_INSET_X}px L/R, ≥${ACTION_SAFE_INSET_Y}px T/B).`,
+  },
+  "lower-third-collision": {
+    severity: "warning",
+    message: `tracked text element sits in the bottom ${LOWER_THIRD_HEIGHT}px lower-third strip reserved for captions/overlays.`,
+  },
+  "desktop-font-minimum": {
+    severity: "error",
+    message: "desktop-1080p text is below the minimum readable font size.",
   },
 };
 
@@ -268,6 +388,73 @@ function checkCriticalElement(element) {
   return violations;
 }
 
+function checkTrackedElement(element, styleRules) {
+  const style = computedStyleFor(element, styleRules);
+  const violations = [];
+  const id = element.attrs.get("id") || element.tagName;
+
+  const positioningProps = ["top", "left", "right", "bottom", "width", "height", "transform"];
+  if (positioningProps.some((prop) => style.has(prop))) {
+    const box = cssBox(style);
+    const translate = translateToPx(style.get("transform"));
+    const left = Number.isFinite(box.left) ? box.left + translate.x : Number.NaN;
+    const top = Number.isFinite(box.top) ? box.top + translate.y : Number.NaN;
+    const right = Number.isFinite(box.right) ? box.right - translate.x : Number.NaN;
+    const bottom = Number.isFinite(box.bottom) ? box.bottom - translate.y : Number.NaN;
+    const computedRight = Number.isFinite(left) && Number.isFinite(box.width) ? DESKTOP_WIDTH - (left + box.width) : right;
+    const computedBottom = Number.isFinite(top) && Number.isFinite(box.height) ? DESKTOP_HEIGHT - (top + box.height) : bottom;
+    const computedLeft = Number.isFinite(right) && Number.isFinite(box.width) ? DESKTOP_WIDTH - (right + box.width) : left;
+    const computedTop = Number.isFinite(bottom) && Number.isFinite(box.height) ? DESKTOP_HEIGHT - (bottom + box.height) : top;
+
+    if (
+      (Number.isFinite(computedLeft) && computedLeft < ACTION_SAFE_INSET_X) ||
+      (Number.isFinite(computedRight) && computedRight < ACTION_SAFE_INSET_X) ||
+      (Number.isFinite(computedTop) && computedTop < ACTION_SAFE_INSET_Y) ||
+      (Number.isFinite(computedBottom) && computedBottom < ACTION_SAFE_INSET_Y)
+    ) {
+      violations.push({
+        ruleId: "action-safe-inset",
+        severity: RULES["action-safe-inset"].severity,
+        message: `${RULES["action-safe-inset"].message} Found ${id}: left=${computedLeft}, right=${computedRight}, top=${computedTop}, bottom=${computedBottom}.`,
+        suggestion: `Keep tracked stage children inside the inner 90%: left/right ≥${ACTION_SAFE_INSET_X}px and top/bottom ≥${ACTION_SAFE_INSET_Y}px.`,
+        line: element.line,
+        col: 1,
+      });
+    }
+  }
+
+  if (!isExemptLowerThird(element) && isTrackedText(element)) {
+    const bottom = lengthToPx(style.get("bottom"), DESKTOP_HEIGHT);
+    if (Number.isFinite(bottom) && bottom >= 0 && bottom <= LOWER_THIRD_HEIGHT) {
+      violations.push({
+        ruleId: "lower-third-collision",
+        severity: RULES["lower-third-collision"].severity,
+        message: `${RULES["lower-third-collision"].message} Found bottom=${bottom}px on ${id}.`,
+        suggestion: "Move tracked text above the lower third or add class=\"lower-third-safe\" for intentional overlays.",
+        line: element.line,
+        col: 1,
+      });
+    }
+  }
+
+  if (isTrackedText(element) && !isExemptLowerThird(element)) {
+    const fontSize = fontSizeToPx(style.get("font-size"));
+    const min = isHeadline(element) ? 48 : 24;
+    if (Number.isFinite(fontSize) && fontSize < min) {
+      violations.push({
+        ruleId: "desktop-font-minimum",
+        severity: RULES["desktop-font-minimum"].severity,
+        message: `${RULES["desktop-font-minimum"].message} Found ${fontSize}px on ${id}; minimum is ${min}px.`,
+        suggestion: `Use at least ${min}px for ${isHeadline(element) ? "headline" : "body"} text at 1920×1080.`,
+        line: element.line,
+        col: 1,
+      });
+    }
+  }
+
+  return violations;
+}
+
 /**
  * Lint a single desktop-variant HTML file. Returns an array of violations.
  */
@@ -290,6 +477,12 @@ export function lintDesktopHtml(html) {
   const critical = findCriticalElements(html);
   for (const el of critical) {
     violations.push(...checkCriticalElement(el));
+  }
+
+  const styleRules = parseStyleRules(html);
+  const tracked = findTrackedElements(html);
+  for (const el of tracked) {
+    violations.push(...checkTrackedElement(el, styleRules));
   }
 
   violations.sort((a, b) => a.line - b.line);

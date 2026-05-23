@@ -104,3 +104,72 @@ describe("lintDesktopHtml — YouTube dead zones", () => {
     expect(v).toEqual([]);
   });
 });
+
+describe("lintDesktopHtml — action-safe inset", () => {
+  it("passes a tracked element placed inside action-safe", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<div id="panel" data-track-index="5" style="position:absolute; left:120px; top:80px; width:400px; height:200px;">Panel</div>',
+      ),
+    );
+    expect(v).toEqual([]);
+  });
+
+  it("warns when a tracked element is outside action-safe", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<div id="panel" data-track-index="5" style="position:absolute; left:20px; top:80px; width:400px; height:200px;">Panel</div>',
+      ),
+    );
+    expect(v).toHaveLength(1);
+    expect(v[0]).toMatchObject({ ruleId: "action-safe-inset", severity: "warning" });
+  });
+});
+
+describe("lintDesktopHtml — lower-third collision", () => {
+  it("passes tracked text above the lower-third strip", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<h2 id="headline" class="headline" data-track-index="5" style="position:absolute; left:200px; right:200px; bottom:320px; font-size:64px;">Safe headline</h2>',
+      ),
+    );
+    expect(v).toEqual([]);
+  });
+
+  it("warns when tracked text sits in the lower-third strip", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<p id="dek" class="subcopy" data-track-index="5" style="position:absolute; left:200px; right:200px; bottom:100px; font-size:32px;">Too low</p>',
+      ),
+    );
+    expect(v).toHaveLength(1);
+    expect(v[0]).toMatchObject({ ruleId: "lower-third-collision", severity: "warning" });
+  });
+});
+
+describe("lintDesktopHtml — desktop font minimum", () => {
+  it("passes tracked text at desktop-readable sizes", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<h1 id="hero" class="headline" data-track-index="5" style="position:absolute; left:200px; top:120px; font-size:64px;">Readable</h1><p id="copy" class="copy" data-track-index="6" style="position:absolute; left:200px; top:260px; font-size:28px;">Readable body</p>',
+      ),
+    );
+    expect(v).toEqual([]);
+  });
+
+  it("errors when tracked text is below desktop-readable sizes", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<h1 id="hero" class="headline" data-track-index="5" style="position:absolute; left:200px; top:120px; font-size:40px;">Small headline</h1>',
+      ),
+    );
+    expect(v).toHaveLength(1);
+    expect(v[0]).toMatchObject({ ruleId: "desktop-font-minimum", severity: "error" });
+  });
+});
