@@ -1,8 +1,9 @@
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import type { CatalogEntry } from "./schema";
+import type { z } from "zod";
+import type { CatalogEntry, CatalogSafeForSchema } from "./schema";
 
-export type CatalogSafeForFormat = "short" | "desktop-1080p";
+export type CatalogSafeForFormat = z.infer<typeof CatalogSafeForSchema>;
 
 export type CompactCatalogEntry = Pick<
   CatalogEntry,
