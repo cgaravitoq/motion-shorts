@@ -94,7 +94,8 @@
       "proof"
     ],
     "safeFor": [
-      "short"
+      "short",
+      "desktop-1080p"
     ],
     "previewAssetPath": "packages/catalog/previews/brand-logo-cloud.svg"
   },
@@ -382,7 +383,8 @@
       "proof"
     ],
     "safeFor": [
-      "short"
+      "short",
+      "desktop-1080p"
     ],
     "previewAssetPath": "packages/catalog/previews/image-ken-burns.svg"
   },
@@ -562,7 +564,8 @@
       "reveal"
     ],
     "safeFor": [
-      "short"
+      "short",
+      "desktop-1080p"
     ],
     "previewAssetPath": "packages/catalog/previews/map-route.svg"
   },
@@ -713,7 +716,8 @@
       "reveal"
     ],
     "safeFor": [
-      "short"
+      "short",
+      "desktop-1080p"
     ],
     "previewAssetPath": "packages/catalog/previews/screenshot-spotlight.svg"
   },
@@ -894,7 +898,8 @@
       "proof"
     ],
     "safeFor": [
-      "short"
+      "short",
+      "desktop-1080p"
     ],
     "previewAssetPath": "packages/catalog/previews/source-image-reveal.svg"
   },
@@ -1076,7 +1081,8 @@
       "proof"
     ],
     "safeFor": [
-      "short"
+      "short",
+      "desktop-1080p"
     ],
     "previewAssetPath": "packages/catalog/previews/svg-path-draw.svg"
   },

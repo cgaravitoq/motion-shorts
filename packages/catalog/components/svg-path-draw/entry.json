@@ -44,7 +44,8 @@
     "proof"
   ],
   "safeFor": [
-    "short"
+    "short",
+    "desktop-1080p"
   ],
   "previewAssetPath": "packages/catalog/previews/svg-path-draw.svg"
 }

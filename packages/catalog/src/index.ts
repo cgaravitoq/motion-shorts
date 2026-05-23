@@ -1,8 +1,8 @@
 export { buildManifest } from "./build";
 export type { CatalogCheckFailure, CatalogCheckResult } from "./check";
 export { checkEpisode } from "./check";
-export type { CompactCatalogEntry } from "./helpers";
-export { compactCatalogEntry, repoRoot } from "./helpers";
+export type { CatalogSafeForFormat, CompactCatalogEntry } from "./helpers";
+export { compactCatalogEntry, filterBySafeForFormat, repoRoot } from "./helpers";
 export { catalogManifest, catalogManifest as manifest } from "./manifest";
 export type { CatalogIntent, RouteInput, RouteResult } from "./route";
 export { route } from "./route";

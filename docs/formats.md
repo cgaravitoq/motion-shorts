@@ -112,11 +112,10 @@ Every component in `packages/catalog/manifest.json` declares which variants it s
 }
 ```
 
-Today every component is `["short"]` — additive default for back-compat. As components are validated for desktop layouts they'll be promoted to `["short", "desktop-1080p"]`. Picker filtering by `safeFor` is intentionally out of scope here.
+Components without `safeFor` default to `["short"]` for back-compat. As components are validated for desktop layouts they'll be promoted to `["short", "desktop-1080p"]`. Run `bun run catalog:list --format=desktop-1080p` from `apps/hyperframe/` to filter the picker to desktop-safe components; omitted `--format` defaults to `short`.
 
 ## Follow-ups (not in this profile set)
 
 * `desktop-4k` (3840 × 2160, 40 Mbps) for premium long-form delivery.
 * `square-1080` (1:1, 1080 × 1080) for Facebook / LinkedIn mobile feed.
 * `--fps=60` opt-in for high-motion shorts.
-* Catalog picker filter by `safeFor`.

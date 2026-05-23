@@ -1,6 +1,9 @@
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import type { CatalogEntry } from "./schema";
+import type { z } from "zod";
+import type { CatalogEntry, CatalogSafeForSchema } from "./schema";
+
+export type CatalogSafeForFormat = z.infer<typeof CatalogSafeForSchema>;
 
 export type CompactCatalogEntry = Pick<
   CatalogEntry,
@@ -32,6 +35,13 @@ export const compactCatalogEntry = (entry: CatalogEntry): CompactCatalogEntry =>
   motionRoles: entry.motionRoles,
   previewAssetPath: entry.previewAssetPath,
 });
+
+export function filterBySafeForFormat<T extends { safeFor?: readonly string[] }>(
+  components: readonly T[],
+  format: CatalogSafeForFormat,
+): T[] {
+  return components.filter((component) => (component.safeFor ?? ["short"]).includes(format));
+}
 
 export const repoRoot = (start = process.cwd()): string => {
   let current = resolve(start);
