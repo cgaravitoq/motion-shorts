@@ -106,6 +106,8 @@ Options:
                          narration windows. Default 0.6 (so the effective gain
                          during narration is 0.3 * 0.6 = 0.18).
   --bgm-fade=<sec>       Head + tail fade duration in seconds. Default 1.5.
+  --bgm-attack=<sec>     Linear duck attack duration. Default 0.08.
+  --bgm-release=<sec>    Linear duck release duration. Default 0.20.
   --bgm-output=replace|sidecar
                          Where to write the mixed audio. "sidecar" (default)
                          writes voice-mixed.mp3 next to the untouched voice.mp3,
@@ -144,6 +146,8 @@ const main = async () => {
       "bgm-gain": { type: "string" },
       ducking: { type: "string" },
       "bgm-fade": { type: "string" },
+      "bgm-attack": { type: "string" },
+      "bgm-release": { type: "string" },
       "bgm-output": { type: "string" },
       help: { type: "boolean", short: "h" },
     },
@@ -550,6 +554,10 @@ const main = async () => {
     const bgmGain = parseRange(values["bgm-gain"], "bgm-gain", 0, 1) ?? BGM_DEFAULTS.bgmGain;
     const ducking = parseRange(values.ducking, "ducking", 0, 1) ?? BGM_DEFAULTS.ducking;
     const fadeSec = parseRange(values["bgm-fade"], "bgm-fade", 0, 30) ?? BGM_DEFAULTS.fadeSec;
+    const attackSec =
+      parseRange(values["bgm-attack"], "bgm-attack", 0, 30) ?? BGM_DEFAULTS.attackSec;
+    const releaseSec =
+      parseRange(values["bgm-release"], "bgm-release", 0, 30) ?? BGM_DEFAULTS.releaseSec;
     const bgmOutputMode = values["bgm-output"] ?? "sidecar";
     if (bgmOutputMode !== "sidecar" && bgmOutputMode !== "replace") {
       console.error(
@@ -578,7 +586,7 @@ const main = async () => {
         : path.join(outDir, "voice-mixed.mp3");
 
     console.log(
-      `[generate-audio] BGM mixing: track="${bgmPath}" gain=${bgmGain} ducking=${ducking} fade=${fadeSec}s mode=${bgmOutputMode}`,
+      `[generate-audio] BGM mixing: track="${bgmPath}" gain=${bgmGain} ducking=${ducking} fade=${fadeSec}s attack=${attackSec}s release=${releaseSec}s mode=${bgmOutputMode}`,
     );
     const mixStartedAt = Date.now();
     try {
@@ -591,6 +599,8 @@ const main = async () => {
         bgmGain,
         ducking,
         fadeSec,
+        attackSec,
+        releaseSec,
       });
     } catch (err) {
       console.error("generate-audio: ffmpeg BGM mix failed:");

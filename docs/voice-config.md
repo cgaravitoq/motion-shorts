@@ -199,6 +199,8 @@ bun run audio examples/<slug>.txt --lang=es \
   --bgm=r2://motion-shorts/bgm/lofi-tech-loop.mp3 \
   --bgm-gain=0.3 \
   --ducking=0.6 \
+  --bgm-attack=0.08 \
+  --bgm-release=0.20 \
   --bgm-fade=1.5
 ```
 
@@ -209,6 +211,8 @@ bun run audio examples/<slug>.txt --lang=es \
 | `--bgm=<path>` | — | Enables mixing. Without it, output is byte-identical to the no-BGM path (the mixer is never invoked). |
 | `--bgm-gain=<0..1>` | `0.3` | Base BGM gain when narration is silent. |
 | `--ducking=<0..1>` | `0.6` | Multiplier applied on top of `--bgm-gain` during narration windows. Effective duck gain = `bgm-gain * ducking` (e.g. `0.3 * 0.6 = 0.18`). |
+| `--bgm-attack=<sec>` | `0.08` | Linear ramp duration from base BGM gain down to the ducked gain before each word. |
+| `--bgm-release=<sec>` | `0.20` | Linear ramp duration from ducked gain back to base BGM gain after each word. |
 | `--bgm-fade=<sec>` | `1.5` | Head + tail fade in seconds. Clamped to `narration/2` so a 2s narration still gets symmetric fades. |
 | `--bgm-output=replace\|sidecar` | `sidecar` | `sidecar` writes `voice-mixed.mp3` alongside an untouched `voice.mp3`. `replace` renames `voice.mp3` → `voice.unmixed.mp3` then overwrites `voice.mp3` with the mixed track so render + caption pipelines pick it up automatically. |
 
@@ -218,7 +222,9 @@ Every episode + the render path consume `voice.mp3` by name. Changing what that 
 
 ### How ducking works
 
-Ducking windows are derived directly from the word-level `captions.json` already produced for every episode. Adjacent words are merged when the gap is shorter than ~0.35s (so the BGM doesn't pump between syllables); each window is widened by ~0.12s on each side so the duck attacks slightly before the word and releases slightly after. The mixer stacks `volume=<ducking>:enable='between(t,a,b)'` filters on top of a base `volume=<bgmGain>` — multiplying gains during narration windows and leaving the BGM at full base gain in between.
+Ducking envelopes are derived directly from the word-level `captions.json` already produced for every episode. For each word, the BGM ramps linearly from base gain to `bgm-gain * ducking` over `--bgm-attack`, holds the ducked gain while the word is active, then ramps back over `--bgm-release`. Overlapping ramps merge by taking the lowest active gain at each timestamp, so a new word that starts during the previous word's release stays ducked instead of creating an up-down-up pumping artifact.
+
+The ffmpeg graph implements that envelope as deterministic short `volume=<gain>:enable='between(t,a,b)'` segments on top of the base `volume=<bgmGain>`. Ramp regions are sampled at ~10ms intervals for smoothness; hold regions stay as one longer segment to keep filter counts bounded.
 
 The final filter graph passes through `loudnorm=I=-14:TP=-1.5:LRA=11` (YouTube/streaming standard). For a no-window run (rare: captions empty) the BGM still gets the base gain + fades + loudnorm.
 

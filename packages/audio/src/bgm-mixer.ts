@@ -5,19 +5,18 @@
  * Why caption-driven ducking
  * --------------------------
  * Every episode already produces word-level captions (the same array consumed
- * by `captions-export.ts`). Stitching adjacent words into "narration-active"
- * intervals gives us exact ducking windows without sidechain detection or an
- * extra analysis pass. Sub-`mergeGapSec` gaps are bridged so the BGM doesn't
- * pump on inter-word breaths; trailing/leading `padSec` widens each window so
- * the duck attacks slightly before the word and releases slightly after.
+ * by `captions-export.ts`). Each caption becomes a ducking envelope with a
+ * short attack, a hold while the word is active, and a release afterwards.
+ * Overlapping envelopes merge by taking the quietest active gain at each point,
+ * so dense narration stays smoothly ducked instead of pumping between words.
  *
  * Filter graph
  * ------------
  *   [0:a] -> narration passthrough
  *   [1:a] -> aloop (cover narration duration) -> atrim -> asetpts
  *         -> volume=<bgmGain>                 [base BGM gain]
- *         -> volume=<ducking>:enable=...      [duck during narration window 1]
- *         -> volume=<ducking>:enable=...      [duck during narration window N]
+ *         -> volume=<ramp gain>:enable=...    [piecewise-linear duck segment 1]
+ *         -> volume=<ramp gain>:enable=...    [piecewise-linear duck segment N]
  *         -> afade=in (head) -> afade=out (tail)
  *   amix=inputs=2:duration=first:normalize=0
  *   loudnorm=I=-14:TP=-1.5:LRA=11             [YouTube/streaming target]
@@ -40,6 +39,10 @@ export const BGM_DEFAULTS = {
   ducking: 0.6,
   /** Head + tail fade duration in seconds. */
   fadeSec: 1.5,
+  /** Linear duck attack duration in seconds. */
+  attackSec: 0.08,
+  /** Linear duck release duration in seconds. */
+  releaseSec: 0.2,
   /** Caption gaps shorter than this are bridged into one narration window. */
   mergeGapSec: 0.35,
   /** Each narration window is widened by this much on both edges. */
@@ -123,6 +126,10 @@ export interface FilterGraphOptions {
   ducking?: number;
   /** Head/tail fade in seconds. Default 1.5. */
   fadeSec?: number;
+  /** Linear duck attack duration in seconds. Default 0.08. */
+  attackSec?: number;
+  /** Linear duck release duration in seconds. Default 0.20. */
+  releaseSec?: number;
   /** Pre-computed ducking windows. Pass `[]` to disable ducking entirely. */
   duckWindows: DuckWindow[];
   /** Integrated LUFS target. Default -14. */
@@ -140,6 +147,94 @@ const fmtNumber = (n: number, decimals = 3): string => {
   return fixed.includes(".") ? fixed.replace(/0+$/, "").replace(/\.$/, "") : fixed;
 };
 
+export interface DuckSegment {
+  start: number;
+  end: number;
+  gain: number;
+}
+
+const RAMP_STEP_SEC = 0.01;
+const EPSILON = 1e-9;
+
+const uniqueSortedTimes = (times: number[]): number[] => {
+  const sorted = times.filter(Number.isFinite).map((t) => Math.max(0, t)).sort((a, b) => a - b);
+  const out: number[] = [];
+  for (const t of sorted) {
+    const last = out[out.length - 1];
+    if (last == null || Math.abs(t - last) > EPSILON) out.push(t);
+  }
+  return out;
+};
+
+const addRampTicks = (times: number[], start: number, end: number) => {
+  const from = Math.max(0, start);
+  const to = Math.max(0, end);
+  if (to <= from) return;
+  times.push(from, to);
+  // Ramps are approximated by constant-gain ffmpeg volume segments sampled at
+  // each segment midpoint. Keeping ramp spans <=10ms makes the staircase
+  // perceptually smooth without exploding hold-region filter counts.
+  for (let t = from + RAMP_STEP_SEC; t < to - EPSILON; t += RAMP_STEP_SEC) {
+    times.push(Number(t.toFixed(6)));
+  }
+};
+
+const envelopeGainAt = (t: number, w: DuckWindow, attackSec: number, releaseSec: number, ducking: number) => {
+  const attackStart = Math.max(0, w.start - attackSec);
+  if (attackSec > 0 && t >= attackStart && t < w.start) {
+    const progress = (t - attackStart) / (w.start - attackStart);
+    return 1 - (1 - ducking) * progress;
+  }
+  if (t >= w.start && t <= w.end) return ducking;
+  if (releaseSec > 0 && t > w.end && t <= w.end + releaseSec) {
+    const progress = (t - w.end) / releaseSec;
+    return ducking + (1 - ducking) * progress;
+  }
+  return 1;
+};
+
+export const buildDuckSegments = (
+  duckWindows: DuckWindow[],
+  opts: { durationSec: number; ducking?: number; attackSec?: number; releaseSec?: number },
+): DuckSegment[] => {
+  const dur = Math.max(0, opts.durationSec);
+  const ducking = opts.ducking ?? BGM_DEFAULTS.ducking;
+  const attackSec = Math.max(0, opts.attackSec ?? BGM_DEFAULTS.attackSec);
+  const releaseSec = Math.max(0, opts.releaseSec ?? BGM_DEFAULTS.releaseSec);
+  const windows = duckWindows
+    .map((w) => ({ start: Math.max(0, w.start), end: Math.min(dur, w.end) }))
+    .filter((w) => w.end > w.start)
+    .sort((a, b) => a.start - b.start || a.end - b.end);
+  const times: number[] = [];
+  for (const w of windows) {
+    const attackStart = Math.max(0, w.start - attackSec);
+    addRampTicks(times, attackStart, w.start);
+    times.push(w.start, w.end);
+    addRampTicks(times, w.end, Math.min(dur, w.end + releaseSec));
+  }
+  const points = uniqueSortedTimes(times).filter((t) => t <= dur + EPSILON);
+  const segments: DuckSegment[] = [];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const start = points[i] ?? 0;
+    const end = points[i + 1] ?? 0;
+    if (end <= start) continue;
+    const midpoint = (start + end) / 2;
+    const gain = windows.reduce(
+      (minGain, w) => Math.min(minGain, envelopeGainAt(midpoint, w, attackSec, releaseSec, ducking)),
+      1,
+    );
+    if (gain >= 1 - EPSILON) continue;
+    const last = segments[segments.length - 1];
+    const roundedGain = Number(fmtNumber(gain, 6));
+    if (last && Math.abs(last.end - start) <= EPSILON && Math.abs(last.gain - roundedGain) <= EPSILON) {
+      last.end = end;
+    } else {
+      segments.push({ start, end, gain: roundedGain });
+    }
+  }
+  return segments;
+};
+
 /**
  * Build the `-filter_complex` graph for the mix. Pure function — returns the
  * exact string ffmpeg will see, so it can be snapshot-tested.
@@ -154,6 +249,8 @@ export const buildBgmFilterGraph = (opts: FilterGraphOptions): string => {
   const bgmGain = opts.bgmGain ?? BGM_DEFAULTS.bgmGain;
   const ducking = opts.ducking ?? BGM_DEFAULTS.ducking;
   const fadeSec = opts.fadeSec ?? BGM_DEFAULTS.fadeSec;
+  const attackSec = opts.attackSec ?? BGM_DEFAULTS.attackSec;
+  const releaseSec = opts.releaseSec ?? BGM_DEFAULTS.releaseSec;
   const lufs = opts.loudnessLufs ?? BGM_DEFAULTS.loudnessLufs;
   const tp = opts.loudnessTruePeak ?? BGM_DEFAULTS.loudnessTruePeak;
   const lra = opts.loudnessLra ?? BGM_DEFAULTS.loudnessLra;
@@ -173,14 +270,15 @@ export const buildBgmFilterGraph = (opts: FilterGraphOptions): string => {
     `volume=${fmtNumber(bgmGain)}`,
   ];
 
-  // Duck during each narration window. Stacking volume filters with enable=
-  // multiplies, so during a window the effective gain becomes bgmGain*ducking.
-  const clampedWindows = opts.duckWindows
-    .map((w) => ({ start: Math.max(0, w.start), end: Math.min(dur, w.end) }))
-    .filter((w) => w.end > w.start);
-  for (const w of clampedWindows) {
+  const duckSegments = buildDuckSegments(opts.duckWindows, {
+    durationSec: dur,
+    ducking,
+    attackSec,
+    releaseSec,
+  });
+  for (const w of duckSegments) {
     bgmStages.push(
-      `volume=${fmtNumber(ducking)}:enable='between(t,${fmtNumber(w.start)},${fmtNumber(w.end)})'`,
+      `volume=${fmtNumber(w.gain, 6)}:enable='between(t,${fmtNumber(w.start)},${fmtNumber(w.end)})'`,
     );
   }
 
@@ -235,6 +333,8 @@ export interface MixBgmOptions {
   bgmGain?: number;
   ducking?: number;
   fadeSec?: number;
+  attackSec?: number;
+  releaseSec?: number;
   mergeGapSec?: number;
   padSec?: number;
   loudnessLufs?: number;
@@ -270,15 +370,14 @@ export const mixBgm = async (
   opts: MixBgmOptions,
   runner: FfmpegRunner = defaultRunner,
 ): Promise<MixBgmResult> => {
-  const duckWindows = buildDuckWindows(opts.captions, {
-    mergeGapSec: opts.mergeGapSec,
-    padSec: opts.padSec,
-  });
+  const duckWindows = buildDuckWindows(opts.captions, { mergeGapSec: 0, padSec: 0 });
   const filterGraph = buildBgmFilterGraph({
     narrationDurationSec: opts.narrationDurationSec,
     bgmGain: opts.bgmGain,
     ducking: opts.ducking,
     fadeSec: opts.fadeSec,
+    attackSec: opts.attackSec,
+    releaseSec: opts.releaseSec,
     duckWindows,
     loudnessLufs: opts.loudnessLufs,
     loudnessTruePeak: opts.loudnessTruePeak,
@@ -292,6 +391,8 @@ export const mixBgm = async (
     bgmGain: opts.bgmGain,
     ducking: opts.ducking,
     fadeSec: opts.fadeSec,
+    attackSec: opts.attackSec,
+    releaseSec: opts.releaseSec,
     duckWindows,
     loudnessLufs: opts.loudnessLufs,
     loudnessTruePeak: opts.loudnessTruePeak,

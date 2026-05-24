@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildBgmFilterGraph,
+  buildDuckSegments,
   buildDuckWindows,
   buildFfmpegArgs,
   type FfmpegRunner,
@@ -78,9 +79,7 @@ describe("buildBgmFilterGraph", () => {
       fadeSec: 1.5,
       duckWindows: buildDuckWindows(fixtureCaptions, { mergeGapSec: 0.35, padSec: 0.12 }),
     });
-    expect(graph).toMatchInlineSnapshot(
-      `"[1:a]aloop=loop=-1:size=2e+09,atrim=duration=5,asetpts=PTS-STARTPTS,volume=0.3,volume=0.6:enable='between(t,0.38,1.52)',volume=0.6:enable='between(t,3.08,4.32)',afade=t=in:st=0:d=1.5,afade=t=out:st=3.5:d=1.5[bgm];[0:a][bgm]amix=inputs=2:duration=first:normalize=0[mix];[mix]loudnorm=I=-14:TP=-1.5:LRA=11[out]"`,
-    );
+    expect(graph).toMatchInlineSnapshot(`"[1:a]aloop=loop=-1:size=2e+09,atrim=duration=5,asetpts=PTS-STARTPTS,volume=0.3,volume=0.975:enable='between(t,0.3,0.31)',volume=0.925:enable='between(t,0.31,0.32)',volume=0.875:enable='between(t,0.32,0.33)',volume=0.825:enable='between(t,0.33,0.34)',volume=0.775:enable='between(t,0.34,0.35)',volume=0.725:enable='between(t,0.35,0.36)',volume=0.675:enable='between(t,0.36,0.37)',volume=0.625:enable='between(t,0.37,0.38)',volume=0.6:enable='between(t,0.38,1.52)',volume=0.61:enable='between(t,1.52,1.53)',volume=0.63:enable='between(t,1.53,1.54)',volume=0.65:enable='between(t,1.54,1.55)',volume=0.67:enable='between(t,1.55,1.56)',volume=0.69:enable='between(t,1.56,1.57)',volume=0.71:enable='between(t,1.57,1.58)',volume=0.73:enable='between(t,1.58,1.59)',volume=0.75:enable='between(t,1.59,1.6)',volume=0.77:enable='between(t,1.6,1.61)',volume=0.79:enable='between(t,1.61,1.62)',volume=0.81:enable='between(t,1.62,1.63)',volume=0.83:enable='between(t,1.63,1.64)',volume=0.85:enable='between(t,1.64,1.65)',volume=0.87:enable='between(t,1.65,1.66)',volume=0.89:enable='between(t,1.66,1.67)',volume=0.91:enable='between(t,1.67,1.68)',volume=0.93:enable='between(t,1.68,1.69)',volume=0.95:enable='between(t,1.69,1.7)',volume=0.97:enable='between(t,1.7,1.71)',volume=0.99:enable='between(t,1.71,1.72)',volume=0.975:enable='between(t,3,3.01)',volume=0.925:enable='between(t,3.01,3.02)',volume=0.875:enable='between(t,3.02,3.03)',volume=0.825:enable='between(t,3.03,3.04)',volume=0.775:enable='between(t,3.04,3.05)',volume=0.725:enable='between(t,3.05,3.06)',volume=0.675:enable='between(t,3.06,3.07)',volume=0.625:enable='between(t,3.07,3.08)',volume=0.6:enable='between(t,3.08,4.32)',volume=0.61:enable='between(t,4.32,4.33)',volume=0.63:enable='between(t,4.33,4.34)',volume=0.65:enable='between(t,4.34,4.35)',volume=0.67:enable='between(t,4.35,4.36)',volume=0.69:enable='between(t,4.36,4.37)',volume=0.71:enable='between(t,4.37,4.38)',volume=0.73:enable='between(t,4.38,4.39)',volume=0.75:enable='between(t,4.39,4.4)',volume=0.77:enable='between(t,4.4,4.41)',volume=0.79:enable='between(t,4.41,4.42)',volume=0.81:enable='between(t,4.42,4.43)',volume=0.83:enable='between(t,4.43,4.44)',volume=0.85:enable='between(t,4.44,4.45)',volume=0.87:enable='between(t,4.45,4.46)',volume=0.89:enable='between(t,4.46,4.47)',volume=0.91:enable='between(t,4.47,4.48)',volume=0.93:enable='between(t,4.48,4.49)',volume=0.95:enable='between(t,4.49,4.5)',volume=0.97:enable='between(t,4.5,4.51)',volume=0.99:enable='between(t,4.51,4.52)',afade=t=in:st=0:d=1.5,afade=t=out:st=3.5:d=1.5[bgm];[0:a][bgm]amix=inputs=2:duration=first:normalize=0[mix];[mix]loudnorm=I=-14:TP=-1.5:LRA=11[out]"`);
   });
 
   it("skips the ducking stage when no windows are provided", () => {
@@ -119,8 +118,8 @@ describe("buildBgmFilterGraph", () => {
       narrationDurationSec: 3,
       duckWindows: [{ start: -1, end: 0.5 }, { start: 2.5, end: 99 }],
     });
-    expect(graph).toMatch(/between\(t,0,0.5\)/);
-    expect(graph).toMatch(/between\(t,2.5,3\)/);
+    expect(graph).toContain("between(t,0,0.5)");
+    expect(graph).toContain("between(t,2.5,3)");
   });
 
   it("honors custom loudness targets", () => {
@@ -132,6 +131,82 @@ describe("buildBgmFilterGraph", () => {
       loudnessLra: 7,
     });
     expect(graph).toMatch(/loudnorm=I=-16:TP=-2:LRA=7/);
+  });
+});
+
+describe("buildDuckSegments", () => {
+  it("samples a single-word attack, hold, and release envelope", () => {
+    const segments = buildDuckSegments([{ start: 1, end: 1.1 }], {
+      durationSec: 2,
+      ducking: 0.5,
+      attackSec: 0.02,
+      releaseSec: 0.02,
+    });
+    expect(segments).toEqual([
+      { start: 0.98, end: 0.99, gain: 0.875 },
+      { start: 0.99, end: 1, gain: 0.625 },
+      { start: 1, end: 1.1, gain: 0.5 },
+      { start: 1.1, end: 1.11, gain: 0.625 },
+      { start: 1.11, end: 1.12, gain: 0.875 },
+    ]);
+  });
+
+  it("merges overlapping release and attack ramps by keeping the minimum gain", () => {
+    const segments = buildDuckSegments(
+      [
+        { start: 1, end: 1.1 },
+        { start: 1.15, end: 1.25 },
+      ],
+      { durationSec: 2, ducking: 0.5, attackSec: 0.08, releaseSec: 0.2 },
+    );
+    const bridge = segments.filter((s) => s.start >= 1.1 && s.end <= 1.15);
+    expect(bridge.length).toBeGreaterThan(0);
+    expect(Math.max(...bridge.map((s) => s.gain))).toBeLessThanOrEqual(0.625);
+  });
+
+  it("honors custom attack and release values", () => {
+    const segments = buildDuckSegments([{ start: 1, end: 1.1 }], {
+      durationSec: 2,
+      ducking: 0.6,
+      attackSec: 0.05,
+      releaseSec: 0.5,
+    });
+    expect(segments[0]?.start).toBeCloseTo(0.95, 6);
+    expect(segments.some((s) => s.start === 1.1 && s.end === 1.11)).toBe(true);
+    expect(segments.at(-1)?.end).toBeCloseTo(1.6, 6);
+  });
+
+  it("clamps a word at t=0 with no pre-attack window", () => {
+    const segments = buildDuckSegments([{ start: 0, end: 0.1 }], {
+      durationSec: 1,
+      ducking: 0.5,
+      attackSec: 0.08,
+      releaseSec: 0.2,
+    });
+    expect(segments[0]).toEqual({ start: 0, end: 0.1, gain: 0.5 });
+  });
+
+  it("keeps dense narration segment counts bounded", () => {
+    const windows = Array.from({ length: 50 }, (_, i) => ({
+      start: i * 0.1,
+      end: i * 0.1 + 0.05,
+    }));
+    const segments = buildDuckSegments(windows, {
+      durationSec: 5,
+      ducking: 0.6,
+      attackSec: 0.08,
+      releaseSec: 0.2,
+    });
+    expect(segments.length).toBeLessThanOrEqual(500);
+  });
+
+  it("reaches default ducking at word start and recovers after 200ms", () => {
+    const segments = buildDuckSegments([{ start: 1, end: 1.1 }], {
+      durationSec: 2,
+      ducking: 0.6,
+    });
+    expect(segments.find((s) => s.start === 1 && s.end === 1.1)?.gain).toBe(0.6);
+    expect(segments.at(-1)?.end).toBeCloseTo(1.3, 6);
   });
 });
 
@@ -172,7 +247,7 @@ describe("mixBgm", () => {
     const argv = runner.mock.calls[0]?.[0] ?? [];
     expect(argv).toEqual(result.args);
     expect(result.outputPath).toBe("/tmp/voice-mixed.mp3");
-    expect(result.duckWindowCount).toBe(2);
+    expect(result.duckWindowCount).toBe(5);
     expect(result.command).toContain("ffmpeg ");
     expect(result.command).toContain("/tmp/voice-mixed.mp3");
     expect(result.filterGraph).toContain("amix=inputs=2:duration=first:normalize=0");
