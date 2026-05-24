@@ -45,7 +45,9 @@
   ],
   "safeFor": [
     "short",
-    "desktop-1080p"
+    "desktop-1080p",
+    "desktop-4k",
+    "square-1080"
   ],
   "previewAssetPath": "packages/catalog/previews/source-image-reveal.svg"
 }

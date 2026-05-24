@@ -37,10 +37,15 @@ export const CatalogDensitySchema = z.enum(["low", "medium", "high"]);
 export const CatalogFormatSchema = z.enum(["portrait", "square", "landscape"]);
 
 // Render variants the component is safe in. `short` = vertical 9:16 (1080×1920,
-// default). `desktop-1080p` = 16:9 (1920×1080) for YouTube long-form, LinkedIn
-// desktop, X landscape, Vimeo, web heroes. Picker scopes by variant; absence is
-// treated as `["short"]` for back-compat with pre-variant components.
-export const CatalogSafeForSchema = z.enum(["short", "desktop-1080p"]);
+// default). `desktop-1080p` / `desktop-4k` = 16:9. `square-1080` = 1:1.
+// Picker scopes by variant; absence is treated as `["short"]` for back-compat
+// with pre-variant components.
+export const CatalogSafeForSchema = z.enum([
+  "short",
+  "desktop-1080p",
+  "desktop-4k",
+  "square-1080",
+]);
 
 export const CatalogAssetKindSchema = z.enum([
   "image",

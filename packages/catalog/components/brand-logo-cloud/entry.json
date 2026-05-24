@@ -45,7 +45,8 @@
   ],
   "safeFor": [
     "short",
-    "desktop-1080p"
+    "desktop-1080p",
+    "desktop-4k"
   ],
   "previewAssetPath": "packages/catalog/previews/brand-logo-cloud.svg"
 }

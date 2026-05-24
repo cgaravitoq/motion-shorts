@@ -45,6 +45,7 @@ const { values, positionals } = parseArgs({
     "template-data": { type: "string" },
     slug: { type: "string" },
     "with-desktop": { type: "boolean", default: false },
+    "with-square": { type: "boolean", default: false },
     help: { type: "boolean", short: "h" },
   },
   allowPositionals: true,
@@ -71,9 +72,13 @@ Options:
                    template's sample-data.json.
   --slug=<slug>    Episode slug. Alternative to the positional slug.
   --with-desktop   Also stamp a 16:9 index.desktop.html variant (1920x1080,
-                   30 fps) seeded from apps/hyperframe/templates/desktop-1080p.html.
-                   The vertical index.html is always written; this flag is
-                   additive. See docs/formats.md.
+                    30 fps) seeded from apps/hyperframe/templates/desktop-1080p.html.
+                    The vertical index.html is always written; this flag is
+                    additive. See docs/formats.md.
+  --with-square    Also stamp a 1:1 index.square.html variant (1080x1080,
+                    30 fps) seeded from apps/hyperframe/templates/square-1080.html.
+                    The vertical index.html is always written; this flag is
+                    additive. See docs/formats.md.
 `);
   process.exit(values.help ? 0 : 1);
 }
@@ -400,6 +405,27 @@ if (values["with-desktop"]) {
   fs.writeFileSync(path.join(epDir, "index.desktop.html"), desktopHtml);
 }
 
+// Optional 1:1 square variant — additive, never replaces the vertical short.
+if (values["with-square"]) {
+  const squareTemplatePath = path.resolve("templates/square-1080.html");
+  if (!fs.existsSync(squareTemplatePath)) {
+    console.error(
+      `new-episode: --with-square set but ${squareTemplatePath} not found. ` +
+        "Restore the template or drop the flag.",
+    );
+    process.exit(1);
+  }
+  const squareTemplate = fs.readFileSync(squareTemplatePath, "utf8");
+  const squareCompositionId = `${slug}-square`;
+  const squareHtml = squareTemplate
+    .replace(/data-composition-id="square-1080-template"/, `data-composition-id="${squareCompositionId}"`)
+    .replace(
+      /window\.__timelines\["square-1080-template"\]/,
+      `window.__timelines["${squareCompositionId}"]`,
+    );
+  fs.writeFileSync(path.join(epDir, "index.square.html"), squareHtml);
+}
+
 // Symlink lib so the project's relative `lib/...` imports resolve. The
 // Hyperframes engine serves the project from <slug>/ as root, so anything
 // outside returns 404. The symlink keeps the shared lib in scope and
@@ -424,6 +450,9 @@ console.log(
 );
 if (values["with-desktop"]) {
   console.log("  index.desktop.html (1920x1080, desktop-1080p)");
+}
+if (values["with-square"]) {
+  console.log("  index.square.html (1080x1080, square-1080)");
 }
 console.log("  meta.json");
 console.log("  hyperframes.json");
