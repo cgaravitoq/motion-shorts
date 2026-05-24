@@ -25,6 +25,16 @@ renders
 # Render telemetry ledger (local-only, regenerated per run)
 apps/hyperframe/.metrics/
 
+# Repo = tool, not a content gallery: personal episodes stay local and are never pushed.
+# Ignore every episode by default; track only the tool's demo/example episodes.
+# (Placed before the media block below so demo binaries stay ignored while their source is tracked.)
+/apps/hyperframe/src/episodes/*/
+!/apps/hyperframe/src/episodes/demo-*/
+!/apps/hyperframe/src/episodes/source-driven-*/
+!/apps/hyperframe/src/episodes/catalog-components-lab/
+# Episode scripts are personal content too; none tracked by default.
+/apps/hyperframe/examples/*.txt
+
 # Generated/heavy per-episode media mirrored to R2 via assets.remote.json.
 apps/hyperframe/src/episodes/*/assets/*.mp4
 apps/hyperframe/src/episodes/*/assets/*.mov
