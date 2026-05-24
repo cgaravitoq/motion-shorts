@@ -25,13 +25,18 @@ export {
 export {
   type CachedTts,
   type CacheMode,
+  type CachedTtsLookup,
   cacheEntryPaths,
   computeTtsCacheKey,
   getCacheRoot,
+  isTtsCacheR2Enabled,
   readCachedTts,
+  readCachedTtsWithSource,
   resolveCacheMode,
+  type TtsCacheSource,
   type TtsCacheKeyInputs,
   writeCachedTts,
+  writeCachedTtsToR2,
 } from "./cache";
 export {
   DEFAULT_ELEVENLABS_MODEL_ID,

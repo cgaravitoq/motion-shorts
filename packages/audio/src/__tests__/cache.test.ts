@@ -6,20 +6,46 @@ import {
   cacheEntryPaths,
   computeTtsCacheKey,
   getCacheRoot,
+  isTtsCacheR2Enabled,
   readCachedTts,
+  readCachedTtsWithSource,
   resolveCacheMode,
   type TtsCacheKeyInputs,
   writeCachedTts,
+  writeCachedTtsToR2,
 } from "../cache";
 
 const mockEnv = vi.hoisted(() => ({
   MOTION_SHORTS_TTS_CACHE_DIR: undefined as string | undefined,
+  MOTION_SHORTS_TTS_CACHE_R2: "on" as "on" | "off",
+  R2_ACCOUNT_ID: undefined as string | undefined,
+  R2_BUCKET: undefined as string | undefined,
+  R2_UPLOAD_GATEWAY_URL: undefined as string | undefined,
+  R2_UPLOAD_GATEWAY_TOKEN: undefined as string | undefined,
   XDG_CACHE_HOME: undefined as string | undefined,
+}));
+
+const r2Mocks = vi.hoisted(() => ({
+  getObject: vi.fn(),
+  isR2Configured: vi.fn(),
+  putObject: vi.fn(),
 }));
 
 vi.mock("../env", () => ({
   env: mockEnv,
 }));
+
+vi.mock("@cgaravitoq/r2-client", () => r2Mocks);
+
+const resetEnv = () => {
+  mockEnv.MOTION_SHORTS_TTS_CACHE_DIR = undefined;
+  mockEnv.MOTION_SHORTS_TTS_CACHE_R2 = "on";
+  mockEnv.R2_ACCOUNT_ID = undefined;
+  mockEnv.R2_BUCKET = undefined;
+  mockEnv.R2_UPLOAD_GATEWAY_URL = undefined;
+  mockEnv.R2_UPLOAD_GATEWAY_TOKEN = undefined;
+  mockEnv.XDG_CACHE_HOME = undefined;
+};
 
 const makeTmpDir = () =>
   fs.mkdtempSync(path.join(os.tmpdir(), "tts-cache-"));
@@ -91,8 +117,7 @@ describe("computeTtsCacheKey", () => {
 
 describe("getCacheRoot", () => {
   beforeEach(() => {
-    mockEnv.MOTION_SHORTS_TTS_CACHE_DIR = undefined;
-    mockEnv.XDG_CACHE_HOME = undefined;
+    resetEnv();
   });
 
   it("honors MOTION_SHORTS_TTS_CACHE_DIR when set", () => {
@@ -114,6 +139,8 @@ describe("read/writeCachedTts", () => {
   let tmpRoot: string;
 
   beforeEach(() => {
+    resetEnv();
+    vi.resetAllMocks();
     tmpRoot = makeTmpDir();
   });
 
@@ -153,6 +180,74 @@ describe("read/writeCachedTts", () => {
     fs.writeFileSync(captionsPath, "{not-json");
     expect(readCachedTts(hash, tmpRoot)).toBeNull();
   });
+
+  it("reports local-hit before checking R2", async () => {
+    const hash = computeTtsCacheKey(baseInputs());
+    const audio = Buffer.from([0x49, 0x44, 0x33, 0x01]);
+    const captions = [{ text: "hola", start: 0, end: 0.5 }];
+    writeCachedTts(hash, { audio, captions }, tmpRoot);
+
+    const hit = await readCachedTtsWithSource(hash, { root: tmpRoot });
+    expect(hit.source).toBe("local-hit");
+    expect(hit.payload?.captions).toEqual(captions);
+    expect(r2Mocks.getObject).not.toHaveBeenCalled();
+  });
+
+  it("hydrates local cache from an R2 hit", async () => {
+    mockEnv.R2_ACCOUNT_ID = "account";
+    mockEnv.R2_BUCKET = "bucket";
+    r2Mocks.isR2Configured.mockReturnValue(true);
+    const audio = Buffer.from("audio");
+    const captions = [{ text: "hola", start: 0, end: 0.5 }];
+    r2Mocks.getObject
+      .mockResolvedValueOnce({ body: audio, contentType: "audio/mpeg" })
+      .mockResolvedValueOnce({ body: Buffer.from(JSON.stringify(captions)), contentType: "application/json" });
+
+    const hit = await readCachedTtsWithSource("3".repeat(64), { root: tmpRoot });
+    expect(hit.source).toBe("r2-hit");
+    expect(hit.payload?.captions).toEqual(captions);
+    expect(readCachedTts("3".repeat(64), tmpRoot)?.captions).toEqual(captions);
+  });
+
+  it("returns miss when either R2 object is missing", async () => {
+    mockEnv.R2_ACCOUNT_ID = "account";
+    mockEnv.R2_BUCKET = "bucket";
+    r2Mocks.isR2Configured.mockReturnValue(true);
+    r2Mocks.getObject.mockResolvedValueOnce({ body: Buffer.from("audio"), contentType: "audio/mpeg" }).mockResolvedValueOnce(null);
+
+    const hit = await readCachedTtsWithSource("4".repeat(64), { root: tmpRoot });
+    expect(hit).toEqual({ payload: null, source: "miss" });
+  });
+
+  it("skips R2 when disabled by env or local-only mode", async () => {
+    mockEnv.R2_ACCOUNT_ID = "account";
+    mockEnv.R2_BUCKET = "bucket";
+    r2Mocks.isR2Configured.mockReturnValue(true);
+    mockEnv.MOTION_SHORTS_TTS_CACHE_R2 = "off";
+    expect(isTtsCacheR2Enabled()).toBe(false);
+    expect(await readCachedTtsWithSource("5".repeat(64), { root: tmpRoot })).toEqual({ payload: null, source: "miss" });
+    mockEnv.MOTION_SHORTS_TTS_CACHE_R2 = "on";
+    expect(await readCachedTtsWithSource("5".repeat(64), { root: tmpRoot, cacheMode: "local-only" })).toEqual({ payload: null, source: "miss" });
+    expect(r2Mocks.getObject).not.toHaveBeenCalled();
+  });
+
+  it("falls back to local-only when R2 env is missing", async () => {
+    expect(isTtsCacheR2Enabled()).toBe(false);
+    expect(await readCachedTtsWithSource("6".repeat(64), { root: tmpRoot })).toEqual({ payload: null, source: "miss" });
+    expect(r2Mocks.getObject).not.toHaveBeenCalled();
+  });
+
+  it("mirrors writes to R2 best-effort", async () => {
+    mockEnv.R2_ACCOUNT_ID = "account";
+    mockEnv.R2_BUCKET = "bucket";
+    r2Mocks.isR2Configured.mockReturnValue(true);
+    r2Mocks.putObject.mockResolvedValue(undefined);
+    await expect(writeCachedTtsToR2("7".repeat(64), { audio: Buffer.from("audio"), captions: [] })).resolves.toBe(true);
+    expect(r2Mocks.putObject).toHaveBeenCalledTimes(2);
+
+    r2Mocks.putObject.mockRejectedValueOnce(new Error("boom"));
+    await expect(writeCachedTtsToR2("8".repeat(64), { audio: Buffer.from("audio"), captions: [] })).resolves.toBe(false);
+  });
 });
 
 describe("resolveCacheMode", () => {
@@ -166,6 +261,7 @@ describe("resolveCacheMode", () => {
     expect(resolveCacheMode({ flag: "use" })).toBe("use");
     expect(resolveCacheMode({ flag: "refresh" })).toBe("refresh");
     expect(resolveCacheMode({ flag: "off" })).toBe("off");
+    expect(resolveCacheMode({ flag: "local-only" })).toBe("local-only");
     expect(resolveCacheMode({ flag: "REFRESH" })).toBe("refresh");
   });
 

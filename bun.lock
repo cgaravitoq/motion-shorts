@@ -42,6 +42,7 @@
       "name": "@cgaravitoq/audio",
       "version": "0.1.0",
       "dependencies": {
+        "@cgaravitoq/r2-client": "workspace:*",
         "@elevenlabs/elevenlabs-js": "2.47.0",
         "@inworld/tts": "1.1.1",
         "@t3-oss/env-core": "0.13.11",
@@ -55,6 +56,17 @@
       "name": "@cgaravitoq/catalog",
       "version": "0.1.0",
       "dependencies": {
+        "zod": "4.4.3",
+      },
+      "devDependencies": {
+        "vitest": "4.1.6",
+      },
+    },
+    "packages/r2-client": {
+      "name": "@cgaravitoq/r2-client",
+      "version": "0.1.0",
+      "dependencies": {
+        "@t3-oss/env-core": "0.13.11",
         "zod": "4.4.3",
       },
       "devDependencies": {
@@ -96,6 +108,8 @@
     "@cgaravitoq/hyperframe": ["@cgaravitoq/hyperframe@workspace:apps/hyperframe"],
 
     "@cgaravitoq/mcp": ["@cgaravitoq/mcp@workspace:apps/mcp"],
+
+    "@cgaravitoq/r2-client": ["@cgaravitoq/r2-client@workspace:packages/r2-client"],
 
     "@chenglou/pretext": ["@chenglou/pretext@0.0.5", "", {}, "sha512-A8GZN10REdFGsyuiUgLV8jjPDDFMg5GmgxGWV0I3igxBOnzj+jgz2VMmVD7g+SFyoctfeqHFxbNatKSzVRWtRg=="],
 
