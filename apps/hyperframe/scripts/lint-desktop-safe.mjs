@@ -145,9 +145,17 @@ function selectorMatchesElement(selector, element) {
   const id = element.attrs.get("id") || "";
   const classes = (element.attrs.get("class") || "").split(/\s+/).filter(Boolean);
   const simple = selector.trim().split(/\s+/).at(-1) || "";
-  if (id && simple === `#${id}`) return true;
-  if (simple.startsWith(".") && classes.includes(simple.slice(1))) return true;
-  return simple.toLowerCase() === element.tagName;
+  const tokens = simple.match(/[#.]?[a-zA-Z][\w-]*/g) || [];
+  for (const token of tokens) {
+    if (token.startsWith("#")) {
+      if (id !== token.slice(1)) return false;
+    } else if (token.startsWith(".")) {
+      if (!classes.includes(token.slice(1))) return false;
+    } else if (token.toLowerCase() !== element.tagName) {
+      return false;
+    }
+  }
+  return tokens.length > 0;
 }
 
 function computedStyleFor(element, styleRules) {
@@ -188,13 +196,26 @@ function fontSizeToPx(value) {
   return Number.isFinite(n) ? n : Number.NaN;
 }
 
+function expandInsetShorthand(style) {
+  if (!style.has("inset")) return style;
+  const out = new Map(style);
+  const tokens = String(style.get("inset")).trim().split(/\s+/).slice(0, 4);
+  const [top, right = top, bottom = top, left = right] = tokens;
+  const sides = { top, right, bottom, left };
+  for (const [side, value] of Object.entries(sides)) {
+    if (!out.has(side) && value !== undefined && value.toLowerCase() !== "auto") out.set(side, value);
+  }
+  return out;
+}
+
 function cssBox(style) {
-  const left = lengthToPx(style.get("left"), DESKTOP_WIDTH);
-  const right = lengthToPx(style.get("right"), DESKTOP_WIDTH);
-  const top = lengthToPx(style.get("top"), DESKTOP_HEIGHT);
-  const bottom = lengthToPx(style.get("bottom"), DESKTOP_HEIGHT);
-  const width = lengthToPx(style.get("width"), DESKTOP_WIDTH);
-  const height = lengthToPx(style.get("height"), DESKTOP_HEIGHT);
+  const expandedStyle = expandInsetShorthand(style);
+  const left = lengthToPx(expandedStyle.get("left"), DESKTOP_WIDTH);
+  const right = lengthToPx(expandedStyle.get("right"), DESKTOP_WIDTH);
+  const top = lengthToPx(expandedStyle.get("top"), DESKTOP_HEIGHT);
+  const bottom = lengthToPx(expandedStyle.get("bottom"), DESKTOP_HEIGHT);
+  const width = lengthToPx(expandedStyle.get("width"), DESKTOP_WIDTH);
+  const height = lengthToPx(expandedStyle.get("height"), DESKTOP_HEIGHT);
   return { left, top, right, bottom, width, height };
 }
 
@@ -205,11 +226,11 @@ function translateToPx(transform) {
   if (!match) return out;
   const args = match[1].split(",").map((x) => x.trim());
   const fn = match[0].slice(0, match[0].indexOf("(")).toLowerCase();
-  if (fn === "translatex") out.x = lengthToPx(args[0], DESKTOP_WIDTH) || 0;
-  else if (fn === "translatey") out.y = lengthToPx(args[0], DESKTOP_HEIGHT) || 0;
+  if (fn === "translatex") out.x = lengthToPx(args[0], DESKTOP_WIDTH);
+  else if (fn === "translatey") out.y = lengthToPx(args[0], DESKTOP_HEIGHT);
   else {
-    out.x = lengthToPx(args[0], DESKTOP_WIDTH) || 0;
-    out.y = lengthToPx(args[1], DESKTOP_HEIGHT) || 0;
+    out.x = lengthToPx(args[0], DESKTOP_WIDTH);
+    out.y = lengthToPx(args[1], DESKTOP_HEIGHT);
   }
   return out;
 }
@@ -225,6 +246,15 @@ function hasClassMatch(attrs, re) {
 function isExemptLowerThird(element) {
   const id = element.attrs.get("id") || "";
   return id === "captions" || id === "brand-corner" || classList(element.attrs).includes("caption") || classList(element.attrs).includes("lower-third-safe");
+}
+
+function isExemptActionSafe(element) {
+  const id = element.attrs.get("id") || "";
+  const classes = classList(element.attrs);
+  return (
+    id === "brand-corner" ||
+    classes.some((name) => /^(bg-mesh|bg-grid|vignette|scene)$/i.test(name))
+  );
 }
 
 function isTrackedText(element) {
@@ -393,14 +423,15 @@ function checkTrackedElement(element, styleRules) {
   const violations = [];
   const id = element.attrs.get("id") || element.tagName;
 
-  const positioningProps = ["top", "left", "right", "bottom", "width", "height", "transform"];
-  if (positioningProps.some((prop) => style.has(prop))) {
+  // Full-frame structural background/scene layers may intentionally touch the stage edge.
+  const positioningProps = ["top", "left", "right", "bottom", "inset", "width", "height", "transform"];
+  if (!isExemptActionSafe(element) && positioningProps.some((prop) => style.has(prop))) {
     const box = cssBox(style);
     const translate = translateToPx(style.get("transform"));
-    const left = Number.isFinite(box.left) ? box.left + translate.x : Number.NaN;
-    const top = Number.isFinite(box.top) ? box.top + translate.y : Number.NaN;
-    const right = Number.isFinite(box.right) ? box.right - translate.x : Number.NaN;
-    const bottom = Number.isFinite(box.bottom) ? box.bottom - translate.y : Number.NaN;
+    const left = Number.isFinite(box.left) && Number.isFinite(translate.x) ? box.left + translate.x : Number.NaN;
+    const top = Number.isFinite(box.top) && Number.isFinite(translate.y) ? box.top + translate.y : Number.NaN;
+    const right = Number.isFinite(box.right) && Number.isFinite(translate.x) ? box.right - translate.x : Number.NaN;
+    const bottom = Number.isFinite(box.bottom) && Number.isFinite(translate.y) ? box.bottom - translate.y : Number.NaN;
     const computedRight = Number.isFinite(left) && Number.isFinite(box.width) ? DESKTOP_WIDTH - (left + box.width) : right;
     const computedBottom = Number.isFinite(top) && Number.isFinite(box.height) ? DESKTOP_HEIGHT - (top + box.height) : bottom;
     const computedLeft = Number.isFinite(right) && Number.isFinite(box.width) ? DESKTOP_WIDTH - (right + box.width) : left;
@@ -424,12 +455,20 @@ function checkTrackedElement(element, styleRules) {
   }
 
   if (!isExemptLowerThird(element) && isTrackedText(element)) {
-    const bottom = lengthToPx(style.get("bottom"), DESKTOP_HEIGHT);
-    if (Number.isFinite(bottom) && bottom >= 0 && bottom <= LOWER_THIRD_HEIGHT) {
+    const box = cssBox(style);
+    const translate = translateToPx(style.get("transform"));
+    const bottom = Number.isFinite(box.bottom) && Number.isFinite(translate.y) ? box.bottom - translate.y : Number.NaN;
+    const top = Number.isFinite(box.top) && Number.isFinite(translate.y) ? box.top + translate.y : Number.NaN;
+    const effectiveBottom = Number.isFinite(bottom)
+      ? bottom
+      : Number.isFinite(top) && Number.isFinite(box.height)
+        ? DESKTOP_HEIGHT - (top + box.height)
+        : Number.NaN;
+    if (Number.isFinite(effectiveBottom) && effectiveBottom <= LOWER_THIRD_HEIGHT) {
       violations.push({
         ruleId: "lower-third-collision",
         severity: RULES["lower-third-collision"].severity,
-        message: `${RULES["lower-third-collision"].message} Found bottom=${bottom}px on ${id}.`,
+        message: `${RULES["lower-third-collision"].message} Found bottom=${effectiveBottom}px on ${id}.`,
         suggestion: "Move tracked text above the lower third or add class=\"lower-third-safe\" for intentional overlays.",
         line: element.line,
         col: 1,

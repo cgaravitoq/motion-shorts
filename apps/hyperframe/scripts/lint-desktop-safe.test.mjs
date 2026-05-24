@@ -126,6 +126,16 @@ describe("lintDesktopHtml — action-safe inset", () => {
     expect(v).toHaveLength(1);
     expect(v[0]).toMatchObject({ ruleId: "action-safe-inset", severity: "warning" });
   });
+
+  it("skips ambiguous translate values instead of treating them as zero", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<div id="panel" data-track-index="5" style="position:absolute; left:120px; top:80px; width:400px; height:200px; transform:translateX(var(--shift));">Panel</div>',
+      ),
+    );
+    expect(v).toEqual([]);
+  });
 });
 
 describe("lintDesktopHtml — lower-third collision", () => {
@@ -149,6 +159,16 @@ describe("lintDesktopHtml — lower-third collision", () => {
     expect(v).toHaveLength(1);
     expect(v[0]).toMatchObject({ ruleId: "lower-third-collision", severity: "warning" });
   });
+
+  it("warns when tracked text reaches the lower-third strip via top and height", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<h2 id="headline" class="headline" data-track-index="5" style="position:absolute; top:900px; left:200px; height:200px; font-size:48px;">Hidden in lower third</h2>',
+      ),
+    );
+    expect(v.some((x) => x.ruleId === "lower-third-collision" && x.severity === "warning")).toBe(true);
+  });
 });
 
 describe("lintDesktopHtml — desktop font minimum", () => {
@@ -167,6 +187,17 @@ describe("lintDesktopHtml — desktop font minimum", () => {
       wrap(
         validStage,
         '<h1 id="hero" class="headline" data-track-index="5" style="position:absolute; left:200px; top:120px; font-size:40px;">Small headline</h1>',
+      ),
+    );
+    expect(v).toHaveLength(1);
+    expect(v[0]).toMatchObject({ ruleId: "desktop-font-minimum", severity: "error" });
+  });
+
+  it("errors when a compound selector sets a too-small headline font size", () => {
+    const v = lintDesktopHtml(
+      wrap(
+        validStage,
+        '<style>h1.headline { font-size: 40px; }</style><h1 id="hero" class="headline" data-track-index="5" style="position:absolute; left:200px; top:120px;">Small headline</h1>',
       ),
     );
     expect(v).toHaveLength(1);
