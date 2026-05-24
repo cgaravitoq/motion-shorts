@@ -28,6 +28,7 @@ import {
   getCacheRoot,
   getSTTProvider,
   getTTSProvider,
+  getTTSProviderName,
   injectElevenV3Pauses,
   injectPauses,
   isElevenV3Model,
@@ -41,6 +42,7 @@ import {
   resolveCacheMode,
   resolveBgmPath,
   resolveRoster,
+  resolveTTSProviderDefaults,
   summariseSpeakers,
   toSrt,
   toVtt,
@@ -208,13 +210,25 @@ const main = async () => {
   const speed = parseRange(values.speed, "speed", 0.5, 1.5);
   const pauseSentenceMs = parseRange(values["pause-sentence"], "pause-sentence", 0, MAX_BREAK_MS);
   const pauseClauseMs = parseRange(values["pause-clause"], "pause-clause", 0, MAX_BREAK_MS);
-  const ttsProvider = getTTSProvider();
-  const { voiceId: resolvedVoiceId, modelId } = ttsProvider.resolveDefaults({
-    lang,
-    voice: values.voice,
-    model: values.model,
-  });
-  const isV3 = isElevenV3Model(modelId);
+  const ttsProviderNameForDefaults = getTTSProviderName();
+  let resolvedVoiceId;
+  let modelId;
+  let deferredVoiceError = null;
+  try {
+    const defaults = resolveTTSProviderDefaults({
+      providerName: ttsProviderNameForDefaults,
+      lang,
+      voice: values.voice,
+      model: values.model,
+    });
+    resolvedVoiceId = defaults.voiceId;
+    modelId = defaults.modelId;
+  } catch (err) {
+    resolvedVoiceId = undefined;
+    modelId = values.model ?? undefined;
+    deferredVoiceError = err;
+  }
+  const isV3 = ttsProviderNameForDefaults === "elevenlabs" && isElevenV3Model(modelId);
   const hasExplicitPauseControls =
     values["pause-sentence"] != null || values["pause-clause"] != null;
   const tuningRecap = [
@@ -228,7 +242,15 @@ const main = async () => {
 
   // Pause injection runs before the TTS call and must match the ElevenLabs
   // model syntax: v3 uses square-bracket tags; v2/v2.5 use SSML breaks.
-  const shouldInjectPauses = !values["no-pause-injection"] && (!isV3 || hasExplicitPauseControls);
+  if (hasExplicitPauseControls && ttsProviderNameForDefaults !== "elevenlabs") {
+    console.warn(
+      `[generate-audio] pause-injection: skipped — provider="${ttsProviderNameForDefaults}" does not support SSML/v3 break tags. --pause-* flags ignored.`,
+    );
+  }
+  const shouldInjectPauses =
+    !values["no-pause-injection"] &&
+    ttsProviderNameForDefaults === "elevenlabs" &&
+    (!isV3 || hasExplicitPauseControls);
   const injectPausesForText = (raw) =>
     shouldInjectPauses
       ? (isV3 ? injectElevenV3Pauses : injectPauses)(raw, {
@@ -258,6 +280,9 @@ const main = async () => {
   }
 
   const isMultiSpeaker = parsedScript.hasMarkup && parsedScript.segments.length > 1;
+  if (!isMultiSpeaker && deferredVoiceError) {
+    throw deferredVoiceError;
+  }
   if (parsedScript.hasMarkup) {
     const summary = summariseSpeakers(parsedScript.segments)
       .map((e) => `${e.label} (${e.segments})`)
@@ -339,6 +364,7 @@ const main = async () => {
   // legacy cache/TTS/STT block below is skipped because audioBuffer and
   // captions are already populated when we enter it.
   if (isMultiSpeaker) {
+    const ttsProvider = getTTSProvider();
     ttsProviderName = ttsProvider.name;
     const sttProvider = getSTTProvider(values.stt);
     sttProviderName = sttProvider.name;
@@ -363,8 +389,13 @@ const main = async () => {
         // Resolve the segment's voice: explicit segment voice id wins; the
         // untagged opening segment falls back to the CLI/env-resolved id.
         const segVoiceId = segment.voiceId ?? resolvedVoiceId;
+        if (!segVoiceId && deferredVoiceError) {
+          throw new Error(
+            `No default voice is configured for untagged segment ${segment.index}; set a provider voice env var, pass --voice, or add [speaker:<voice-id>] markup for every segment.`,
+          );
+        }
         const segCacheHash =
-          cacheMode === "off" || !segVoiceId
+          cacheMode === "off" || !segVoiceId || !modelId
             ? null
             : computeTtsCacheKey({
                 text: segText,
@@ -479,6 +510,7 @@ const main = async () => {
 
   // ── TTS ────────────────────────────────────────────────────────────────
   if (!audioBuffer) {
+    const ttsProvider = getTTSProvider();
     ttsProviderName = ttsProvider.name;
     console.log(
       `[generate-audio] TTS provider="${ttsProvider.name}" lang=${lang} model=${modelId} chars=${finalText.length}${tuningRecap ? ` ${tuningRecap}` : ""}`,

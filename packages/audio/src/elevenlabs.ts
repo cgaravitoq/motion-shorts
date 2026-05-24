@@ -75,7 +75,7 @@ export class ElevenLabsTTSProvider implements TTSProvider {
     const voiceId = resolveElevenLabsVoiceId(opts.lang, opts.voice);
     if (!voiceId) {
       throw new Error(
-        `No voice ID configured for lang="${opts.lang}". Set ELEVENLABS_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voiceId.`,
+        `No voice ID configured for lang="${opts.lang}". Set ELEVENLABS_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voice.`,
       );
     }
     return {

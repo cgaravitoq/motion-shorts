@@ -66,7 +66,7 @@ export class InworldTTSProvider implements TTSProvider {
     const voiceId = resolveVoiceId(opts.lang, opts.voice);
     if (!voiceId) {
       throw new Error(
-        `No Inworld voice ID configured for lang="${opts.lang}". Set INWORLD_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voiceId.`,
+        `No Inworld voice ID configured for lang="${opts.lang}". Set INWORLD_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voice.`,
       );
     }
     return {

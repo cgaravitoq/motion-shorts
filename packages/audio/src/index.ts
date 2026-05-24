@@ -48,7 +48,7 @@ export {
   resolveElevenLabsModelId,
   resolveElevenLabsVoiceId,
 } from "./elevenlabs";
-export { getTTSProvider } from "./factory";
+export { getTTSProvider, getTTSProviderName, resolveTTSProviderDefaults } from "./factory";
 // ffprobe helper — duration probing shared by render-episode + generate-audio + Scribe.
 export { getAudioDurationSeconds } from "./ffprobe";
 // Multi-speaker scripts: inline `[speaker:<name>]` markup → per-segment TTS + merged captions.

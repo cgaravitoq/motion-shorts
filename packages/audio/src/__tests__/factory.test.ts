@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ElevenLabsTTSProvider } from "../elevenlabs";
-import { getTTSProvider } from "../factory";
+import { getTTSProvider, getTTSProviderName, resolveTTSProviderDefaults } from "../factory";
 import { InworldTTSProvider } from "../inworld";
 
 const mockEnv = vi.hoisted(() => ({
@@ -63,4 +63,27 @@ describe("getTTSProvider", () => {
       modelId: "inworld-tts-2",
     });
   });
+
+  it("returns the configured provider name without constructing a client", () => {
+    mockEnv.ELEVENLABS_API_KEY = undefined;
+    expect(getTTSProviderName()).toBe("elevenlabs");
+  });
+
+  it("resolves ElevenLabs defaults without requiring an API key", () => {
+    mockEnv.ELEVENLABS_API_KEY = undefined;
+    expect(resolveTTSProviderDefaults({ lang: "es" })).toEqual({
+      voiceId: "elevenlabs-voice-es-fixture",
+      modelId: "eleven_v3",
+    });
+  });
+
+  it("resolves Inworld defaults without requiring an API key", () => {
+    mockEnv.TTS_PROVIDER = "inworld";
+    mockEnv.INWORLD_API_KEY = undefined;
+    expect(resolveTTSProviderDefaults({ lang: "en" })).toEqual({
+      voiceId: "inworld-voice-en-fixture",
+      modelId: "inworld-tts-2",
+    });
+  });
+
 });
