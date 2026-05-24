@@ -101,6 +101,7 @@ Options:
 `;
 
 const VALID_FORMATS = ["mp4", "mov", "webm"];
+const VALID_FPS_VALUES = [24, 30, 60];
 const VALID_VARIANTS = ["short", "desktop-1080p", "desktop-4k", "square-1080"];
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -375,6 +376,10 @@ const main = async () => {
   const fpsParsed = Number.parseInt(values.fps, 10);
   if (!Number.isFinite(fpsParsed) || fpsParsed <= 0) {
     console.error(`render-episode: invalid --fps=${values.fps}`);
+    process.exit(1);
+  }
+  if (!VALID_FPS_VALUES.includes(fpsParsed)) {
+    console.error(`render-episode: --fps must be one of ${VALID_FPS_VALUES.join(", ")}, got ${values.fps}`);
     process.exit(1);
   }
 

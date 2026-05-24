@@ -25,10 +25,12 @@ Scaffold a new Hyperframes episode project at `apps/hyperframe/src/episodes/<slu
 ## Run
 
 ```bash
-bun run new:episode <slug> [--width=1080] [--height=1920] [--with-desktop]
+bun run new:episode <slug> [--width=1080] [--height=1920] [--with-desktop] [--with-square]
 ```
 
 Pass `--with-desktop` to additionally stamp a 16:9 `index.desktop.html` (1920x1080, 30 fps) seeded from `apps/hyperframe/templates/desktop-1080p.html`. The vertical `index.html` is always written; the desktop variant is purely additive. See `docs/formats.md` for the desktop profile, title-safe / action-safe insets, and YouTube UI dead-zone callouts.
+
+Pass `--with-square` to additionally stamp a 1:1 `index.square.html` (1080x1080, 30 fps) seeded from `apps/hyperframe/templates/square-1080.html`. The square variant is additive and shares the same assets as the vertical short.
 
 ## What the scaffolder writes
 
@@ -36,13 +38,14 @@ Pass `--with-desktop` to additionally stamp a 16:9 `index.desktop.html` (1920x10
 apps/hyperframe/src/episodes/<slug>/
   index.html          # root composition: stage + <audio id="voiceover"> + #captions overlay
   index.desktop.html  # optional, only with --with-desktop (16:9 1920x1080)
+  index.square.html   # optional, only with --with-square (1:1 1080x1080)
   meta.json           # { "id": "<slug>", "name": "<slug>", "description": "", "tail": 3 }
   hyperframes.json    # registry + paths config
   assets/.gitkeep     # placeholder; voice.mp3 + captions.json drop in later
   lib -> ../../lib    # symlink so relative lib/... imports resolve
 ```
 
-The desktop variant shares `assets/voice.mp3` and `assets/captions.json` with the short — same narration, two layouts. Render with `bun run render:episode <slug> --variant=desktop-1080p`.
+The desktop variant shares `assets/voice.mp3` and `assets/captions.json` with the short — same narration, two layouts. Render with `bun run render:episode <slug> --variant=desktop-1080p`. Render the square variant with `bun run render:episode <slug> --variant=square-1080`.
 
 The line immediately after `<!doctype html>` in `index.html` is `<!-- catalog: [brand-logo-watermark, brand-logo-outro] -->`. The template includes the matching track-97 `#brand-corner` watermark and the production track-7 `#scene-brand-outro` from `packages/catalog/snippets/brand-logo-outro.html`: full 578x320 logo SVG split into animated pieces, grouped blur scale-up reveal for `cgaravitoq` / `AI Engineering` / source attribution, and logo pulse. Extend this declaration with IDs selected from the catalog before authoring scenes.
 

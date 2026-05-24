@@ -15,6 +15,21 @@ describe("lintDesktopHtml — stage dimensions", () => {
     expect(lintDesktopHtml(wrap(validStage, ""))).toEqual([]);
   });
 
+
+  it("passes a clean stage at 60 fps", () => {
+    const v = lintDesktopHtml(
+      wrap(' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="60" data-duration="5"', ""),
+    );
+    expect(v).toEqual([]);
+  });
+
+  it("flags a stage at 24 fps", () => {
+    const v = lintDesktopHtml(
+      wrap(' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="24" data-duration="5"', ""),
+    );
+    expect(v.some((x) => x.ruleId === "stage-dimensions" && /30, 60/.test(x.message))).toBe(true);
+  });
+
   it("flags a missing data-format attribute", () => {
     const v = lintDesktopHtml(
       wrap(' data-width="1920" data-height="1080" data-fps="30" data-duration="5"', ""),

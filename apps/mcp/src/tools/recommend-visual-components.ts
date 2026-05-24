@@ -9,7 +9,7 @@ const inputSchema = z.object({
   source: z.string().optional(),
   platform: z.enum(["youtube-shorts", "tiktok", "instagram-reels", "linkedin"]).optional(),
   density: z.enum(["low", "medium", "high"]).optional(),
-  format: z.enum(["portrait", "square", "landscape", "short", "desktop-1080p"]).optional(),
+  format: z.enum(["portrait", "square", "landscape", "short", "desktop-1080p", "desktop-4k", "square-1080"]).optional(),
   assetKinds: z
     .array(z.enum(["image", "font", "screenshot", "svg", "logo", "video", "other"]))
     .optional(),
@@ -29,7 +29,7 @@ const jsonSchema = {
       enum: ["youtube-shorts", "tiktok", "instagram-reels", "linkedin"],
     },
     density: { type: "string", enum: ["low", "medium", "high"] },
-    format: { type: "string", enum: ["portrait", "square", "landscape", "short", "desktop-1080p"] },
+    format: { type: "string", enum: ["portrait", "square", "landscape", "short", "desktop-1080p", "desktop-4k", "square-1080"] },
     assetKinds: {
       type: "array",
       items: { type: "string", enum: ["image", "font", "screenshot", "svg", "logo", "video", "other"] },
@@ -45,13 +45,15 @@ const jsonSchema = {
 export const recommendVisualComponentsTool: ToolDefinition = {
   name: "recommend_visual_components",
   description:
-    "Recommend visual catalog components for an intent using intent, tags, source, platform, density, format (short or desktop-1080p safeFor; legacy portrait/square/landscape formatTargets also accepted), asset kinds, and motion roles.",
+    "Recommend visual catalog components for an intent using intent, tags, source, platform, density, format (short or desktop-1080p safeFor; desktop-4k or square-1080 safeFor; legacy portrait/square/landscape formatTargets also accepted), asset kinds, and motion roles.",
   inputSchema: jsonSchema,
   async handler(input) {
     try {
       const parsedInput = inputSchema.parse(input);
-      const safeForFormat =
-        parsedInput.format === "desktop-1080p" || parsedInput.format === "short" ? parsedInput.format : "short";
+      const SAFE_FOR_VARIANTS = ["short", "desktop-1080p", "desktop-4k", "square-1080"] as const;
+      const safeForFormat = SAFE_FOR_VARIANTS.includes(parsedInput.format as (typeof SAFE_FOR_VARIANTS)[number])
+        ? (parsedInput.format as (typeof SAFE_FOR_VARIANTS)[number])
+        : "short";
       const routeInput = {
         ...parsedInput,
         format:
