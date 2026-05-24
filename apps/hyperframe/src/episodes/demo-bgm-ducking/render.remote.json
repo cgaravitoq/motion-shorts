@@ -1,0 +1,20 @@
+{
+  "provider": "cloudflare-r2",
+  "bucket": "renders",
+  "episodeSlug": "demo-bgm-ducking",
+  "runId": "2026-05-24T133520Z",
+  "generatedAt": "2026-05-24T13:35:23.331Z",
+  "deleteLocal": false,
+  "objects": [
+    {
+      "key": "motion-shorts/episodes/demo-bgm-ducking/runs/2026-05-24T133520Z/renders/demo-bgm-ducking.mp4",
+      "category": "renders",
+      "bytes": 18584582,
+      "sha256": "4dc124ac8ae7a79eef4c449cbd9582db5bde810497eea5a37b031ed63e812c39",
+      "contentType": "video/mp4",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    }
+  ]
+}

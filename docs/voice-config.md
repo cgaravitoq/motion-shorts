@@ -236,6 +236,8 @@ The ffmpeg graph implements that envelope as deterministic short `volume=<gain>:
 
 The final filter graph passes through `loudnorm=I=-14:TP=-1.5:LRA=11` (YouTube/streaming standard). For a no-window run (rare: captions empty) the BGM still gets the base gain + fades + loudnorm.
 
+Reference demo: `apps/hyperframe/src/episodes/demo-bgm-ducking/` uses the default sidecar flow (`voice-mixed.mp3`) with a self-generated procedural BGM bed documented in `meta.json`.
+
 ### Cache interaction
 
 BGM parameters are NOT part of the TTS cache key (`cache.ts` hashes `text + voiceId + modelId + tuning` only). Tweaking `--bgm-gain` or swapping BGM tracks never re-spends TTS credits — the mix runs on the cached `voice.mp3`.
