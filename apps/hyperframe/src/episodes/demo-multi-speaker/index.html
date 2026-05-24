@@ -12,76 +12,385 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
     <style>
-      html, body {
-        width: 1080px; height: 1920px; margin: 0; padding: 0;
-        background: var(--ink, #060912); overflow: hidden;
-        font-family: "Inter", system-ui, sans-serif;
-        color: var(--paper, #f4f6fb); -webkit-font-smoothing: antialiased;
+      :root {
+        --ink: #050814;
+        --paper: #f4f6fb;
+        --muted: #94a3b8;
+        --accent: #34d399;
+        --cyan: #22d3ee;
+        --amber: #fbbf24;
+        --rose: #fb7185;
       }
-      #ep-stage { width: 1080px; height: 1920px; position: relative; overflow: hidden; }
 
-      /* Brand corner — visible the whole video. */
-      #brand-corner {
-        position: absolute; top: 96px; right: 96px;
-        width: 96px; opacity: 0.42; z-index: 60; pointer-events: none;
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        margin: 0;
+        padding: 0;
+        background: var(--ink);
+        overflow: hidden;
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--paper);
+        -webkit-font-smoothing: antialiased;
       }
-      #brand-corner svg { display: block; width: 100%; height: auto; fill: var(--paper, #f4f6fb); }
+
+      #ep-stage {
+        width: 1080px;
+        height: 1920px;
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+      }
+
+      .mesh {
+        background:
+          radial-gradient(circle at 18% 20%, rgba(34, 211, 238, 0.26), transparent 38%),
+          radial-gradient(circle at 82% 62%, rgba(251, 191, 36, 0.18), transparent 42%),
+          radial-gradient(circle at 44% 88%, rgba(52, 211, 153, 0.16), transparent 36%),
+          #050814;
+      }
+
+      .grid {
+        opacity: 0.62;
+        background-image:
+          linear-gradient(rgba(244, 246, 251, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(244, 246, 251, 0.035) 1px, transparent 1px);
+        background-size: 72px 72px;
+      }
+
+      .grain {
+        opacity: 0.18;
+        background-image:
+          linear-gradient(0deg, rgba(255, 255, 255, 0.04), transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03), transparent 1px);
+        background-size: 9px 11px;
+        mix-blend-mode: screen;
+      }
+
+      .vignette {
+        background: radial-gradient(ellipse at center, transparent 48%, rgba(0, 0, 0, 0.72) 100%);
+      }
+
+      .scene {
+        opacity: 0;
+        will-change: opacity, transform, filter;
+      }
+
+      .scene-wrap {
+        width: 100%;
+        height: 100%;
+        padding: 136px 86px 260px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .eyebrow {
+        align-self: flex-start;
+        margin: 0 0 54px;
+        padding: 14px 20px;
+        border: 1.5px solid rgba(244, 246, 251, 0.18);
+        border-radius: 999px;
+        background: rgba(244, 246, 251, 0.07);
+        color: var(--cyan);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .headline {
+        margin: 0;
+        max-width: 880px;
+        font-size: 92px;
+        line-height: 0.98;
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .subcopy {
+        margin: 36px 0 0;
+        max-width: 820px;
+        color: var(--muted);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 30px;
+        line-height: 1.35;
+        letter-spacing: 0;
+      }
+
+      .dialogue-board {
+        margin-top: 76px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .speaker-row {
+        display: grid;
+        grid-template-columns: 132px 1fr;
+        gap: 24px;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .speaker-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .speaker-avatar {
+        width: 132px;
+        height: 132px;
+        border-radius: 34px;
+        display: grid;
+        place-items: center;
+        color: #041015;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 34px;
+        font-weight: 900;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+      }
+
+      .speaker-avatar.host {
+        background: linear-gradient(135deg, var(--accent), var(--cyan));
+      }
+
+      .speaker-avatar.guest {
+        background: linear-gradient(135deg, var(--amber), var(--rose));
+      }
+
+      .speaker-bubble {
+        min-height: 132px;
+        padding: 28px 32px;
+        box-sizing: border-box;
+        border-radius: 32px;
+        border: 1.5px solid rgba(244, 246, 251, 0.14);
+        background: rgba(244, 246, 251, 0.08);
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.3);
+      }
+
+      .speaker-name {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 22px;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .speaker-line {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.18;
+        font-weight: 790;
+        letter-spacing: 0;
+      }
+
+      .boundary-strip {
+        margin-top: 44px;
+        display: flex;
+        align-items: center;
+      }
+
+      .boundary-dot {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: var(--accent);
+        opacity: 0;
+        box-shadow: 0 0 26px rgba(52, 211, 153, 0.48);
+      }
+
+      .boundary-line {
+        flex: 1;
+        height: 4px;
+        background: rgba(244, 246, 251, 0.16);
+      }
+
+      .quality-panel {
+        margin-top: 84px;
+        border: 1.5px solid rgba(244, 246, 251, 0.14);
+        border-radius: 38px;
+        background: rgba(244, 246, 251, 0.07);
+        padding: 44px;
+        box-shadow: 0 32px 110px rgba(0, 0, 0, 0.34);
+      }
+
+      .caption-ribbon {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .caption-chip {
+        padding: 18px 22px;
+        border-radius: 999px;
+        background: rgba(34, 211, 238, 0.12);
+        border: 1.5px solid rgba(34, 211, 238, 0.24);
+        color: var(--paper);
+        font-size: 32px;
+        line-height: 1;
+        font-weight: 800;
+      }
+
+      .caption-chip.guest {
+        background: rgba(251, 191, 36, 0.14);
+        border-color: rgba(251, 191, 36, 0.28);
+      }
+
+      .confidence-row {
+        margin-top: 44px;
+        display: grid;
+        grid-template-columns: 210px 1fr 86px;
+        align-items: center;
+        gap: 24px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 25px;
+        line-height: 1;
+        font-weight: 800;
+        color: var(--muted);
+      }
+
+      .confidence-bar {
+        height: 22px;
+        border-radius: 999px;
+        background: rgba(244, 246, 251, 0.12);
+        overflow: hidden;
+      }
+
+      .confidence-bar__fill {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--accent), var(--cyan), var(--amber));
+        transform: scaleX(0);
+        transform-origin: left center;
+      }
+
+      #brand-corner {
+        position: absolute;
+        top: 96px;
+        right: 96px;
+        width: 96px;
+        opacity: 0.42;
+        z-index: 60;
+        pointer-events: none;
+      }
+
+      #brand-corner svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        fill: var(--paper);
+      }
 
       .brand-outro {
-        position: absolute; inset: 0;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        text-align: center; background: var(--ink, #060912);
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: var(--ink);
       }
+
       .brand-outro__lockup {
-        position: relative; display: grid; place-items: center;
-        width: 540px; height: 300px; margin-bottom: 34px;
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 540px;
+        height: 300px;
+        margin-bottom: 34px;
       }
+
       .brand-outro__aura {
-        position: absolute; width: 520px; height: 520px; border-radius: 999px;
-        background: radial-gradient(circle, color-mix(in srgb, var(--accent, #34d399) 18%, transparent), transparent 62%);
-        opacity: 0; transform: scale(0.72);
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(52, 211, 153, 0.18), transparent 62%);
+        opacity: 0;
+        transform: scale(0.72);
       }
+
       .brand-outro__mark {
-        position: relative; width: 420px; height: auto; overflow: visible;
-        filter: drop-shadow(0 26px 80px rgba(0,0,0,0.5));
+        position: relative;
+        width: 420px;
+        height: auto;
+        overflow: visible;
+        filter: drop-shadow(0 26px 80px rgba(0, 0, 0, 0.5));
       }
-      .brand-outro__piece { transform-box: fill-box; transform-origin: center; opacity: 0; fill: var(--paper, #f4f6fb); }
+
+      .brand-outro__piece {
+        transform-box: fill-box;
+        transform-origin: center;
+        opacity: 0;
+        fill: var(--paper);
+      }
+
       .brand-outro__name {
-        margin: 0; font-size: 72px; line-height: 1.02; font-weight: 790;
-        letter-spacing: 0; color: var(--paper, #f4f6fb);
+        margin: 0;
+        font-size: 72px;
+        line-height: 1.02;
+        font-weight: 790;
+        letter-spacing: 0;
+        color: var(--paper);
       }
+
       .brand-outro__tagline {
-        margin: 28px 0 0; max-width: 780px; color: var(--muted, #94a3b8);
-        font-family: "JetBrains Mono", monospace; font-size: 30px; line-height: 1.2;
-        font-weight: 590; letter-spacing: 3px; text-transform: uppercase;
+        margin: 28px 0 0;
+        max-width: 780px;
+        color: var(--muted);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 30px;
+        line-height: 1.2;
+        font-weight: 590;
+        letter-spacing: 0;
+        text-transform: uppercase;
       }
+
       .brand-outro__name,
       .brand-outro__tagline {
         will-change: opacity, transform, filter;
       }
 
-      /* Captions strip — bottom of the stage. Required block (the runtime
-         force-applies inset:0 on the captions clip without it).
-         See .agents/skills/canonical-short/SKILL.md for the canonical block. */
-      /* Typography roles for source-driven/informative shorts live at
-         .agents/skills/canonical-short/references/typography-system.md.
-         Use those role sizes/weights instead of inventing local values. */
       #captions {
-        position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%;
-        display: flex; align-items: center; justify-content: center;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 4.5%;
+        height: 12%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-family: "Inter", system-ui, sans-serif;
-        font-size: 60px; font-weight: 900; line-height: 1.1; letter-spacing: -1px;
-        color: var(--paper, #f4f6fb);
+        font-size: 60px;
+        font-weight: 900;
+        line-height: 1.1;
+        letter-spacing: 0;
+        color: var(--paper);
         text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(0, 0, 0, 0.7);
-        text-align: center; padding: 0 64px; box-sizing: border-box;
-        pointer-events: none; z-index: 50;
+        text-align: center;
+        padding: 0 64px;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 50;
       }
+
       #captions .hf-caption-token {
         opacity: 0.78;
-        transition: color 0.06s linear, opacity 0.06s linear, transform 0.06s ease-out;
+        transition:
+          color 0.06s linear,
+          opacity 0.06s linear,
+          transform 0.06s ease-out;
       }
+
       #captions .hf-caption-token.--active {
-        color: var(--accent, #34d399);
+        color: var(--accent);
         opacity: 1;
         transform: scale(1.08);
       }
@@ -92,73 +401,142 @@
       id="ep-stage"
       data-composition-id="demo-multi-speaker"
       data-start="0"
-      data-duration="30"
+      data-duration="16.2"
       data-width="1080"
       data-height="1920"
     >
-      <div id="brand-corner" class="clip" data-start="0" data-duration="30" data-track-index="97"><svg viewBox="0 0 578 320" role="img" aria-labelledby="brand-watermark-title"><title id="brand-watermark-title">Logo mark watermark</title><path d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div>
+      <div id="bg-mesh" class="mesh clip" data-start="0" data-duration="16.2" data-track-index="0" style="position:absolute; inset:0;"></div>
+      <div id="bg-grid" class="grid clip" data-start="0" data-duration="16.2" data-track-index="1" style="position:absolute; inset:0;"></div>
+      <div id="bg-grain" class="grain clip" data-start="0" data-duration="16.2" data-track-index="2" style="position:absolute; inset:0;"></div>
+      <div id="bg-vignette" class="vignette clip" data-start="0" data-duration="16.2" data-track-index="3" style="position:absolute; inset:0;"></div>
 
-      <section id="scene-brand-outro" class="scene clip" data-start="24" data-duration="6" data-track-index="7" style="position:absolute; inset:0;"><div class="brand-outro"><div class="brand-outro__lockup"><div id="brand-aura" class="brand-outro__aura"></div><svg id="brand-mark" class="brand-outro__mark" viewBox="0 0 578 320" role="img" aria-labelledby="brand-outro-title"><title id="brand-outro-title">cgaravitoq logo</title><path id="brand-piece-left" class="brand-outro__piece" d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-top-left" class="brand-outro__piece" d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bridge" class="brand-outro__piece" d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bottom-right" class="brand-outro__piece" d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-right" class="brand-outro__piece" d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div><h1 id="brand-name" class="brand-outro__name">cgaravitoq</h1><p id="brand-tagline" class="brand-outro__tagline">AI Engineering</p></div></section>
+      <section id="scene-dialogue" class="scene clip" data-start="0" data-duration="16.2" data-track-index="4" style="position:absolute; inset:0;">
+        <div class="scene-wrap">
+          <p id="dialogue-eyebrow" class="eyebrow">multi-speaker demo</p>
+          <h1 id="dialogue-title" class="headline">One script. Two resolved voices.</h1>
+          <p id="dialogue-subcopy" class="subcopy">`[speaker:host]` and `[speaker:guest]` split the script into cached segments without breaking the captions stream.</p>
+          <div class="dialogue-board">
+            <div class="speaker-row">
+              <div class="speaker-avatar host">H</div>
+              <div class="speaker-bubble">
+                <p class="speaker-name">host</p>
+                <p class="speaker-line">Welcome to multi-speaker mode.</p>
+              </div>
+            </div>
+            <div class="speaker-row">
+              <div class="speaker-avatar guest">G</div>
+              <div class="speaker-bubble">
+                <p class="speaker-name">guest</p>
+                <p class="speaker-line">Yeah, it is pretty clever.</p>
+              </div>
+            </div>
+            <div class="speaker-row">
+              <div class="speaker-avatar host">H</div>
+              <div class="speaker-bubble">
+                <p class="speaker-name">host</p>
+                <p class="speaker-line">One pipeline, multiple voices.</p>
+              </div>
+            </div>
+          </div>
+          <div class="boundary-strip" aria-hidden="true">
+            <div class="boundary-dot"></div>
+            <div class="boundary-line"></div>
+            <div class="boundary-dot"></div>
+            <div class="boundary-line"></div>
+            <div class="boundary-dot"></div>
+            <div class="boundary-line"></div>
+            <div class="boundary-dot"></div>
+          </div>
+        </div>
+      </section>
 
-      <!--
-        Author scenes inline here. Track-index convention:
-          0..3   — background layers (mesh / grid / grain / vignette)
-          4..6,8 — scenes (track 7 is reserved for #scene-brand-outro)
-          97     — #brand-corner (always visible)
-          98     — voiceover audio
-          99     — captions overlay
+      <section id="scene-quality" class="scene clip" data-start="0" data-duration="16.2" data-track-index="5" style="position:absolute; inset:0;">
+        <div class="scene-wrap">
+          <p id="quality-eyebrow" class="eyebrow">caption merge</p>
+          <h2 id="quality-title" class="headline">Speaker switches stay continuous.</h2>
+          <p id="quality-subcopy" class="subcopy">The captions are one seek-safe stream, with boundary confidence staying stable across host and guest segments.</p>
+          <div class="quality-panel">
+            <div class="caption-ribbon">
+              <span class="caption-chip">Welcome</span>
+              <span class="caption-chip">multi-speaker</span>
+              <span class="caption-chip guest">Yeah</span>
+              <span class="caption-chip guest">clever</span>
+              <span class="caption-chip">pipeline</span>
+              <span class="caption-chip">voices</span>
+              <span class="caption-chip guest">continuous</span>
+              <span class="caption-chip guest">speakers</span>
+            </div>
+            <div class="confidence-row">
+              <span>boundary confidence</span>
+              <div class="confidence-bar"><div id="confidence-fill" class="confidence-bar__fill"></div></div>
+              <span>stable</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        See .agents/skills/canonical-short/SKILL.md for the 5-scene template.
-      -->
+      <div id="brand-corner" class="clip" data-start="0" data-duration="16.2" data-track-index="97"><svg viewBox="0 0 578 320" role="img" aria-labelledby="brand-watermark-title"><title id="brand-watermark-title">Logo mark watermark</title><path d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div>
+
+      <section id="scene-brand-outro" class="scene clip" data-start="0" data-duration="16.2" data-track-index="7" style="position:absolute; inset:0;"><div class="brand-outro"><div class="brand-outro__lockup"><div id="brand-aura" class="brand-outro__aura"></div><svg id="brand-mark" class="brand-outro__mark" viewBox="0 0 578 320" role="img" aria-labelledby="brand-outro-title"><title id="brand-outro-title">cgaravitoq logo</title><path id="brand-piece-left" class="brand-outro__piece" d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-top-left" class="brand-outro__piece" d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bridge" class="brand-outro__piece" d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bottom-right" class="brand-outro__piece" d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-right" class="brand-outro__piece" d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div><h1 id="brand-name" class="brand-outro__name">cgaravitoq</h1><p id="brand-tagline" class="brand-outro__tagline">AI Engineering</p></div></section>
 
       <audio
         id="voiceover"
         class="clip"
         data-start="0"
-        data-duration="30"
+        data-duration="13.19"
         data-track-index="98"
         data-volume="1"
         src="assets/voice.mp3"
       ></audio>
 
-      <div id="captions" class="clip" data-start="0" data-duration="30" data-track-index="99"></div>
+      <div id="captions" class="clip" data-start="0" data-duration="16.2" data-track-index="99"></div>
     </div>
 
-    <!-- Captions inlined as JSON to keep the timeline build SYNCHRONOUS
-         (Hyperframes seeks immediately; async construction leaves tweens
-         unregistered). Replace the empty array with the contents of
-         assets/captions.json before the first render. -->
     <script type="application/json" id="captions-data">[]</script>
 
     <script src="lib/timeline-helpers.js"></script>
     <script src="lib/captions-karaoke.js"></script>
     <script>
-      // Synchronous timeline construction — required by Hyperframes.
       const tl = gsap.timeline({ paused: true });
+      const OUTRO_START = 13.15;
 
-      const captionsData = JSON.parse(
-        document.getElementById("captions-data").textContent || "[]",
-      );
+      const captionsData = JSON.parse(document.getElementById("captions-data").textContent || "[]");
       if (captionsData.length > 0) {
         window.__hf.karaoke(tl, "#captions", captionsData, {
           maxChars: 24,
           maxTokens: 5,
         });
       }
-      // Hide the outro scene before its reveal so the scaffolded episode
-      // shows black (or whatever scenes you add) until OUTRO_START.
-      tl.set("#scene-brand-outro", { autoAlpha: 0, scale: 1.02, filter: "blur(8px)" }, 0);
 
-      // Canonical outro animation — sourced at scaffold time from
-      // packages/catalog/snippets/brand-logo-outro.html.
+      tl.set(["#scene-dialogue", "#scene-quality", "#scene-brand-outro"], { autoAlpha: 0, scale: 1.02, filter: "blur(8px)" }, 0);
       tl.set(["#brand-name", "#brand-tagline"], { autoAlpha: 0, scale: 0.88, filter: "blur(16px)", transformOrigin: "50% 50%" }, 0);
-  tl.to("#brand-corner", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, 24 - 0.55);
-  tl.to("#scene-brand-outro", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, 24);
-  tl.to("#brand-aura", { autoAlpha: 1, scale: 1, duration: 0.65, ease: "power2.out" }, 24 + 0.2);
-  tl.to(".brand-outro__piece", { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.55, stagger: 0.08, ease: "back.out(1.6)", startAt: { x: -24, y: 20, scale: 0.92 } }, 24 + 0.3);
-  tl.to(["#brand-name", "#brand-tagline"], { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.62, stagger: 0.1, ease: "power3.out" }, 24 + 0.62);
-  tl.to("#brand-mark", { scale: 1.04, duration: 0.32, ease: "power2.out", overwrite: "auto" }, 24 + 0.8);
-  tl.to("#brand-mark", { scale: 1, duration: 0.34, ease: "power2.inOut", overwrite: "auto" }, 24 + 1.12);
+      tl.set(".boundary-dot", { scale: 0.4 }, 0);
+      tl.set(".caption-chip", { autoAlpha: 0, y: 18 }, 0);
+
+      tl.to("#scene-dialogue", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "power2.out" }, 0);
+      tl.from("#dialogue-eyebrow", { x: -34, opacity: 0, duration: 0.42, ease: "power2.out" }, 0.18);
+      tl.from("#dialogue-title", { y: 42, opacity: 0, duration: 0.62, ease: "power3.out" }, 0.42);
+      tl.from("#dialogue-subcopy", { y: 28, opacity: 0, duration: 0.52, ease: "power2.out" }, 0.82);
+      tl.from(".speaker-row", { y: 34, opacity: 0, duration: 0.52, stagger: 0.42, ease: "power2.out" }, 1.18);
+      tl.to(".boundary-dot", { autoAlpha: 1, scale: 1, duration: 0.32, stagger: 0.45, ease: "back.out(1.8)" }, 2.2);
+      tl.to("#scene-dialogue", { autoAlpha: 0, scale: 0.98, filter: "blur(8px)", duration: 0.55, ease: "power2.in" }, 6.95);
+
+      tl.to("#scene-quality", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, 7.5);
+      tl.from("#quality-eyebrow", { x: -34, opacity: 0, duration: 0.42, ease: "power2.out" }, 7.7);
+      tl.from("#quality-title", { y: 42, opacity: 0, duration: 0.62, ease: "power3.out" }, 7.96);
+      tl.from("#quality-subcopy", { y: 28, opacity: 0, duration: 0.52, ease: "power2.out" }, 8.34);
+      tl.from(".quality-panel", { y: 42, opacity: 0, scale: 0.97, duration: 0.62, ease: "power2.out" }, 8.82);
+      tl.to(".caption-chip", { autoAlpha: 1, y: 0, duration: 0.34, stagger: 0.12, ease: "power2.out" }, 9.2);
+      tl.to("#confidence-fill", { scaleX: 1, duration: 1.1, ease: "power2.out" }, 10.2);
+      tl.to("#scene-quality", { autoAlpha: 0, scale: 0.98, filter: "blur(8px)", duration: 0.55, ease: "power2.in" }, OUTRO_START - 0.58);
+
+      tl.to("#brand-corner", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, OUTRO_START - 0.55);
+      tl.to("#scene-brand-outro", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, OUTRO_START);
+      tl.to("#brand-aura", { autoAlpha: 1, scale: 1, duration: 0.65, ease: "power2.out" }, OUTRO_START + 0.2);
+      tl.to(".brand-outro__piece", { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.55, stagger: 0.08, ease: "back.out(1.6)", startAt: { x: -24, y: 20, scale: 0.92 } }, OUTRO_START + 0.3);
+      tl.to(["#brand-name", "#brand-tagline"], { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.62, stagger: 0.1, ease: "power3.out" }, OUTRO_START + 0.62);
+      tl.to("#brand-mark", { scale: 1.04, duration: 0.32, ease: "power2.out", overwrite: "auto" }, OUTRO_START + 0.8);
+      tl.to("#brand-mark", { scale: 1, duration: 0.34, ease: "power2.inOut", overwrite: "auto" }, OUTRO_START + 1.12);
 
       window.__timelines = window.__timelines || {};
       window.__timelines["demo-multi-speaker"] = tl;

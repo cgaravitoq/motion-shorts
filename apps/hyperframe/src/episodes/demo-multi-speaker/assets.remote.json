@@ -2,8 +2,9 @@
   "provider": "cloudflare-r2",
   "bucket": "renders",
   "episodeSlug": "demo-multi-speaker",
-  "runId": "2026-05-24T125027Z",
-  "generatedAt": "2026-05-24T12:50:28.679Z",
+  "runId": "2026-05-24T132149Z",
+  "generatedAt": "2026-05-24T13:21:51.639Z",
+  "deleteLocal": false,
   "objects": [
     {
       "key": "motion-shorts/episodes/demo-multi-speaker/runs/2026-05-24T125027Z/assets/voice.mp3",
@@ -18,6 +19,26 @@
     {
       "key": "motion-shorts/episodes/demo-multi-speaker/runs/2026-05-24T125027Z/assets/captions.json",
       "category": "assets",
+      "bytes": 1909,
+      "sha256": "a11c80f42613284fd2cfeab0fe82516f0031c76612e4f9647d8f521ec4865ada",
+      "contentType": "application/json",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    },
+    {
+      "key": "motion-shorts/episodes/demo-multi-speaker/runs/2026-05-24T132149Z/audio/voice.mp3",
+      "category": "audio",
+      "bytes": 211425,
+      "sha256": "f8bf7dc6bc835fd7e31e6a2c7227466ed0d6845256b9c90798d0374034e826fe",
+      "contentType": "audio/mpeg",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    },
+    {
+      "key": "motion-shorts/episodes/demo-multi-speaker/runs/2026-05-24T132149Z/audio/captions.json",
+      "category": "audio",
       "bytes": 1909,
       "sha256": "a11c80f42613284fd2cfeab0fe82516f0031c76612e4f9647d8f521ec4865ada",
       "contentType": "application/json",
