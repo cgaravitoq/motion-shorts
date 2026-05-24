@@ -51,28 +51,27 @@ bun run audio examples/short-09.txt --lang=es \
 STT_PROVIDER=hyperframes-transcribe bun run audio examples/short-09.txt \
   --out=public/voice/short-09
 
-# Render an episode (ffprobe-based duration stamp + render).
+# Render an episode locally for review (ffprobe-based duration stamp + render).
 # Uses meta.tail (default `tail: 3`) unless --tail overrides.
-# With R2 credentials configured, uploads verified artifacts by default.
 bun run render:episode short-09 --format=mp4
 
 # Local HTML dashboard for render telemetry ledger.
 bun run metrics:dashboard
 
-# Default R2 publish configuration.
+# R2 publish configuration for final accepted renders.
 # Requires R2_ACCOUNT_ID, R2_BUCKET, and one transport:
 # R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or direct-S3
 # R2_ACCESS_KEY_ID_WRITE + R2_SECRET_ACCESS_KEY_WRITE.
 # Optional: R2_ENDPOINT_URL, R2_PUBLIC_BASE_URL,
 # R2_SIGNED_URL_TTL_SECONDS, R2_REQUEST_TIMEOUT_MS.
-# Without R2 credentials, rendering falls back to local-only with a warning.
-bun run render:episode short-09 --format=mp4
+# Omit --upload=r2 for local review renders.
+bun run render:episode short-09 --format=mp4 --upload=r2
 
-# Offline/local-only escape hatch: skip upload even when R2 is configured.
+# Back-compat local-only flag; local-only is already the default.
 bun run render:episode short-09 --format=mp4 --local-only
 
 # Keep local render outputs after a verified upload.
-bun run render:episode short-09 --format=mp4 --keep-local
+bun run render:episode short-09 --format=mp4 --upload=r2 --keep-local
 
 # Restore remote references later from the text manifests.
 bun run hydrate:episode short-09
@@ -126,7 +125,7 @@ The command writes `apps/hyperframe/src/episodes/<slug>/assets/source.json` plus
 
 ## Remote artifact manifests
 
-`bun run render:episode <slug>` renders to a local working file first. When R2 credentials are present, it then uploads the render plus episode assets under:
+`bun run render:episode <slug>` renders to a local working file first and keeps it for review. Add `--upload=r2` only for a final accepted render; with R2 credentials present, that uploads the render plus episode assets under:
 
 ```txt
 motion-shorts/episodes/<slug>/runs/<run-id>/
@@ -135,9 +134,9 @@ motion-shorts/episodes/<slug>/runs/<run-id>/
   images/
 ```
 
-Each upload is verified by downloading the object and checking byte size plus sha256 before local manifests are written. `src/episodes/<slug>/render.remote.json` tracks render objects, and `src/episodes/<slug>/assets.remote.json` tracks asset objects. These manifests are text-only and can be committed; generated binaries remain ignored. R2 + remote manifests are the canonical persistence layer; local files are cache/working copies.
+Each upload is verified by downloading the object and checking byte size plus sha256 before local manifests are written. `src/episodes/<slug>/render.remote.json` tracks render objects, and `src/episodes/<slug>/assets.remote.json` tracks asset objects. These manifests are text-only and can be committed; generated binaries remain ignored. R2 + remote manifests are the canonical persistence layer for final accepted artifacts; local files are review/cache working copies.
 
-After a verified R2 upload, local render outputs are deleted by default. Add `--keep-local` to preserve the local render output for inspection, or `--local-only` for offline work. If R2 credentials are absent, rendering falls back to local-only with a warning. `--upload=r2` and `--delete-local` are deprecated back-compat no-op flags, not the normal path. The gateway transport (`R2_UPLOAD_GATEWAY_URL` + `R2_UPLOAD_GATEWAY_TOKEN`) is sufficient on its own for upload and hydration; direct-S3 write keys are only an alternative.
+After a verified R2 upload, local render outputs are deleted by default. Add `--keep-local` to preserve the local render output after upload. Without `--upload=r2`, rendering is local-only and does not require R2 credentials; `--local-only` and `--delete-local` remain accepted for older scripts but are no-ops in the default local-review path. The gateway transport (`R2_UPLOAD_GATEWAY_URL` + `R2_UPLOAD_GATEWAY_TOKEN`) is sufficient on its own for upload and hydration; direct-S3 write keys are only an alternative.
 
 To hydrate an episode from remote manifests, run `bun run hydrate:episode <slug>` from `apps/hyperframe/`. Use `--manifest=assets`, `--manifest=render`, or `--manifest=<path>` when you only need one manifest. Hydration is idempotent and verifies bytes plus sha256.
 

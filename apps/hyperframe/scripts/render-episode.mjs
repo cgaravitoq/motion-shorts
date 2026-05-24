@@ -16,7 +16,7 @@
  *                                              [--tail=<seconds>]
  *                                              [--crf=<value>]
  *                                              [--run-id=<id>]
- *                                              [--local-only]
+ *                                              [--upload=r2]
  *                                              [--keep-local]
  *
  * Episode layout expected:
@@ -36,7 +36,6 @@ import { getAudioDurationSeconds } from "@cgaravitoq/audio";
 import { checkEpisode } from "@cgaravitoq/catalog";
 import manifest from "../../../packages/catalog/manifest.json";
 import {
-  missingR2EnvKeys,
   publishEpisodeArtifacts,
   resolveR2PublishOptions,
 } from "./lib/r2-artifacts.mjs";
@@ -89,14 +88,14 @@ Options:
                            hold for reading. Resolution order: CLI flag >
                            meta.json "tail" field > 0.3 fallback.
   --crf=<value>            Forward CRF to Hyperframes render when supported.
-  --local-only             Skip R2 upload even when credentials are configured.
-                           Local render outputs are kept.
-  --upload=r2              Back-compat no-op; R2 upload is the default when
-                           credentials are configured.
+  --upload=r2              Upload verified artifacts to R2 and write remote
+                           manifests. Omit for local review renders.
+  --local-only             Back-compat no-op; local-only is the default.
   --run-id=<id>            Override the R2 run folder name. Default: UTC timestamp.
   --keep-local             After verified upload, keep the local render output.
-  --delete-local           Deprecated back-compat no-op; local render outputs
-                           are deleted by default after verified R2 upload.
+  --delete-local           Deprecated back-compat no-op; uploaded render
+                           outputs are deleted by default unless --keep-local
+                           is passed.
   -h, --help               Show this help.
 `;
 
@@ -369,9 +368,6 @@ const main = async () => {
     console.error('render-episode: --upload currently supports only "r2"');
     process.exit(1);
   }
-  if (values.upload !== undefined && missingR2EnvKeys().length === 0) {
-    console.warn("[render-episode] --upload=r2 is now the default; flag has no effect.");
-  }
 
   const fpsParsed = Number.parseInt(values.fps, 10);
   if (!Number.isFinite(fpsParsed) || fpsParsed <= 0) {
@@ -552,6 +548,7 @@ const main = async () => {
   }
 
   const publishOptions = resolveR2PublishOptions({
+    upload: values.upload,
     localOnly: values["local-only"],
     keepLocal: values["keep-local"],
     deleteLocal: values["delete-local"],

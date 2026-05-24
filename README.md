@@ -101,11 +101,11 @@ and copy `voice.mp3` (and optional `captions.json`) into the episode's
 `assets/` dir. See [Author a new episode](#author-a-new-episode) for the
 full flow.
 
-With R2 configured, verified render and asset artifacts are uploaded to R2 and
-local render outputs are deleted by default. Use `--keep-local` when you need a
-local mp4 to inspect; otherwise use the R2 URL emitted after upload. After a
-successful upload the script prints `local <path> deleted after verified R2
-upload` so you don't have to guess where the mp4 went.
+Renders are local review artifacts by default, even when R2 is configured. Use
+`--upload=r2` only for a final accepted render that should write remote
+manifests and persist artifacts to R2. After a verified upload, local render
+outputs are deleted by default; add `--keep-local` when you also need the mp4
+locally.
 
 ### Working-copy semantics (read once before cleaning anything)
 

@@ -147,11 +147,12 @@ export const missingR2EnvKeys = (env = Bun.env) => {
 
 export const resolveR2PublishOptions = ({
   env = Bun.env,
+  upload,
   localOnly = false,
   keepLocal = false,
   deleteLocal = true,
 } = {}) => {
-  if (localOnly) {
+  if (localOnly || upload !== "r2") {
     return { upload: false, deleteLocal: false, missing: [], warning: null };
   }
 
@@ -163,7 +164,7 @@ export const resolveR2PublishOptions = ({
       missing,
       warning:
         `[render-episode] WARNING: R2 credentials are missing (${missing.join(", ")}); ` +
-        `keeping this render local-only. ${transportErrorMessage} Pass --local-only to silence this warning.`,
+        `keeping this render local-only. ${transportErrorMessage}`,
     };
   }
 

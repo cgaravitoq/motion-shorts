@@ -199,9 +199,9 @@ tl.to("#prim-tools", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 1 },
 bun run render:episode <slug> --format=mp4
 ```
 
-With R2 configured, verified artifacts upload to R2 and local render outputs are
-deleted by default. Use `--keep-local` only when HITL approval needs a local mp4;
-otherwise share/review the R2 URL printed after upload.
+Review renders stay local by default, even when R2 is configured. Use
+`--upload=r2` only after HITL approval for the final accepted render; add
+`--keep-local` if the final upload should also leave a local mp4.
 
 Validation loop:
 1. Render completes

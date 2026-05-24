@@ -159,17 +159,17 @@ describe("r2 artifact publishing", () => {
     expect(config.secretAccessKey).toBe("write-secret");
   });
 
-  it("uploads and deletes local outputs by default when R2 credentials are configured", () => {
+  it("keeps local outputs and skips upload by default when R2 credentials are configured", () => {
     expect(resolveR2PublishOptions({ env })).toEqual({
-      upload: true,
-      deleteLocal: true,
+      upload: false,
+      deleteLocal: false,
       missing: [],
       warning: null,
     });
   });
 
-  it("deletes local outputs when requested", () => {
-    expect(resolveR2PublishOptions({ env, deleteLocal: true })).toEqual({
+  it("deletes local outputs after opt-in upload when requested", () => {
+    expect(resolveR2PublishOptions({ env, upload: "r2", deleteLocal: true })).toEqual({
       upload: true,
       deleteLocal: true,
       missing: [],
@@ -178,7 +178,10 @@ describe("r2 artifact publishing", () => {
   });
 
   it("falls back to local-only with a warning when R2 credentials are missing", () => {
-    const options = resolveR2PublishOptions({ env: { R2_BUCKET: "bucket-name" } });
+    const options = resolveR2PublishOptions({
+      env: { R2_BUCKET: "bucket-name" },
+      upload: "r2",
+    });
 
     expect(options.upload).toBe(false);
     expect(options.deleteLocal).toBe(false);
@@ -192,7 +195,7 @@ describe("r2 artifact publishing", () => {
   });
 
   it("publishes when gateway-only R2 credentials are configured", () => {
-    expect(resolveR2PublishOptions({ env: gatewayEnv })).toEqual({
+    expect(resolveR2PublishOptions({ env: gatewayEnv, upload: "r2" })).toEqual({
       upload: true,
       deleteLocal: true,
       missing: [],
@@ -201,7 +204,7 @@ describe("r2 artifact publishing", () => {
   });
 
   it("keeps local outputs and skips upload for explicit local-only renders", () => {
-    expect(resolveR2PublishOptions({ env, localOnly: true })).toEqual({
+    expect(resolveR2PublishOptions({ env, upload: "r2", localOnly: true })).toEqual({
       upload: false,
       deleteLocal: false,
       missing: [],
@@ -210,7 +213,7 @@ describe("r2 artifact publishing", () => {
   });
 
   it("preserves local render outputs after upload when requested", () => {
-    expect(resolveR2PublishOptions({ env, keepLocal: true })).toEqual({
+    expect(resolveR2PublishOptions({ env, upload: "r2", keepLocal: true })).toEqual({
       upload: true,
       deleteLocal: false,
       missing: [],

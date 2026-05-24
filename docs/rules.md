@@ -74,7 +74,7 @@ Via turborepo: `turbo run render:episode --filter=@cgaravitoq/hyperframe`
 ## 11. Gitignored outputs
 
 Don't commit `out/`, `renders/`, `node_modules/`, `.turbo/`. `bun.lock` IS committed (pinned).
-R2 + remote manifests are canonical for generated render/media artifacts. After verified upload, local render outputs are deleted by default; pass `--keep-local` only when a local mp4 is needed for inspection. Fresh clones of remote-only episodes should run `bun run hydrate:episode <slug>` from `apps/hyperframe/` before previewing or rendering.
+R2 + remote manifests are canonical for final accepted render/media artifacts. Review renders stay local by default; pass `--upload=r2` only when the output should be persisted remotely. After verified upload, local render outputs are deleted by default unless `--keep-local` is passed. Fresh clones of remote-only episodes should run `bun run hydrate:episode <slug>` from `apps/hyperframe/` before previewing or rendering.
 
 ## 12. bun, not npm
 
