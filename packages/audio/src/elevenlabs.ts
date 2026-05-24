@@ -68,6 +68,22 @@ export class ElevenLabsTTSProvider implements TTSProvider {
     this.client = new ElevenLabsClient({ apiKey });
   }
 
+  resolveDefaults(opts: { lang: Lang; voice?: string; model?: string }): {
+    voiceId: string;
+    modelId: string;
+  } {
+    const voiceId = resolveElevenLabsVoiceId(opts.lang, opts.voice);
+    if (!voiceId) {
+      throw new Error(
+        `No voice ID configured for lang="${opts.lang}". Set ELEVENLABS_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voiceId.`,
+      );
+    }
+    return {
+      voiceId,
+      modelId: resolveElevenLabsModelId(opts.model),
+    };
+  }
+
   async synthesize(text: string, opts: SynthesizeOptions): Promise<Buffer> {
     const trimmed = text.trim();
     if (trimmed.length === 0) {
@@ -79,12 +95,11 @@ export class ElevenLabsTTSProvider implements TTSProvider {
       );
     }
 
-    const voiceId = resolveVoiceId(opts.lang, opts.voiceId);
-    if (!voiceId) {
-      throw new Error(
-        `No voice ID configured for lang="${opts.lang}". Set ELEVENLABS_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voiceId.`,
-      );
-    }
+    const { voiceId, modelId } = this.resolveDefaults({
+      lang: opts.lang,
+      voice: opts.voiceId,
+      model: opts.modelId,
+    });
 
     // Always send a settings block so the provider's narration preset wins
     // over whatever ElevenLabs has stored on the voice. Per-call overrides
@@ -98,7 +113,7 @@ export class ElevenLabsTTSProvider implements TTSProvider {
 
     const stream = await this.client.textToSpeech.convert(voiceId, {
       text: trimmed,
-      modelId: resolveElevenLabsModelId(opts.modelId),
+      modelId,
       outputFormat: DEFAULT_OUTPUT_FORMAT,
       languageCode: opts.lang,
       voiceSettings,

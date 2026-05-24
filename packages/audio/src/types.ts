@@ -24,6 +24,10 @@ export interface SynthesizeOptions {
 
 export interface TTSProvider {
   readonly name: string;
+  resolveDefaults(opts: { lang: Lang; voice?: string; model?: string }): {
+    voiceId: string;
+    modelId: string;
+  };
   synthesize(text: string, opts: SynthesizeOptions): Promise<Buffer>;
 }
 

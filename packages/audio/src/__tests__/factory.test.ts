@@ -23,12 +23,21 @@ describe("getTTSProvider", () => {
   beforeEach(() => {
     mockEnv.ELEVENLABS_API_KEY = "test-key";
     mockEnv.INWORLD_API_KEY = "test-key";
+    mockEnv.ELEVENLABS_VOICE_ID_ES = "elevenlabs-voice-es-fixture";
+    mockEnv.ELEVENLABS_VOICE_ID_EN = "elevenlabs-voice-en-fixture";
+    mockEnv.INWORLD_VOICE_ID_ES = "inworld-voice-es-fixture";
+    mockEnv.INWORLD_VOICE_ID_EN = "inworld-voice-en-fixture";
+    mockEnv.INWORLD_TTS_MODEL = "inworld-tts-2";
     mockEnv.TTS_PROVIDER = "elevenlabs";
   });
 
   afterEach(() => {
     mockEnv.ELEVENLABS_API_KEY = undefined;
     mockEnv.INWORLD_API_KEY = undefined;
+    mockEnv.ELEVENLABS_VOICE_ID_ES = undefined;
+    mockEnv.ELEVENLABS_VOICE_ID_EN = undefined;
+    mockEnv.INWORLD_VOICE_ID_ES = undefined;
+    mockEnv.INWORLD_VOICE_ID_EN = undefined;
   });
 
   it("returns an ElevenLabsTTSProvider", () => {
@@ -38,5 +47,20 @@ describe("getTTSProvider", () => {
   it("returns an InworldTTSProvider", () => {
     mockEnv.TTS_PROVIDER = "inworld";
     expect(getTTSProvider()).toBeInstanceOf(InworldTTSProvider);
+  });
+
+  it("resolves ElevenLabs defaults through the provider", () => {
+    expect(getTTSProvider().resolveDefaults({ lang: "es" })).toEqual({
+      voiceId: "elevenlabs-voice-es-fixture",
+      modelId: "eleven_v3",
+    });
+  });
+
+  it("resolves Inworld defaults through the provider", () => {
+    mockEnv.TTS_PROVIDER = "inworld";
+    expect(getTTSProvider().resolveDefaults({ lang: "en" })).toEqual({
+      voiceId: "inworld-voice-en-fixture",
+      modelId: "inworld-tts-2",
+    });
   });
 });

@@ -59,6 +59,22 @@ export class InworldTTSProvider implements TTSProvider {
     this.client = InworldTTS({ apiKey });
   }
 
+  resolveDefaults(opts: { lang: Lang; voice?: string; model?: string }): {
+    voiceId: string;
+    modelId: string;
+  } {
+    const voiceId = resolveVoiceId(opts.lang, opts.voice);
+    if (!voiceId) {
+      throw new Error(
+        `No Inworld voice ID configured for lang="${opts.lang}". Set INWORLD_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voiceId.`,
+      );
+    }
+    return {
+      voiceId,
+      modelId: opts.model ?? env.INWORLD_TTS_MODEL,
+    };
+  }
+
   async synthesize(text: string, opts: SynthesizeOptions): Promise<Buffer> {
     const trimmed = text.trim();
     if (trimmed.length === 0) {
@@ -70,12 +86,11 @@ export class InworldTTSProvider implements TTSProvider {
       );
     }
 
-    const voiceId = resolveVoiceId(opts.lang, opts.voiceId);
-    if (!voiceId) {
-      throw new Error(
-        `No Inworld voice ID configured for lang="${opts.lang}". Set INWORLD_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voiceId.`,
-      );
-    }
+    const { voiceId, modelId } = this.resolveDefaults({
+      lang: opts.lang,
+      voice: opts.voiceId,
+      model: opts.modelId,
+    });
 
     const speakingRate = resolveSpeakingRate(opts.speed);
     warnIgnoredOptionsOnce(opts);
@@ -83,7 +98,7 @@ export class InworldTTSProvider implements TTSProvider {
     const request: Parameters<typeof this.client.generate>[0] = {
       text: trimmed,
       voice: voiceId,
-      model: opts.modelId ?? env.INWORLD_TTS_MODEL,
+      model: modelId,
       encoding: "MP3",
       language: toLanguageCode(opts.lang),
     };

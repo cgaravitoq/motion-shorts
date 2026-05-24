@@ -5,7 +5,7 @@
  *   bun run scripts/generate-audio.mjs <script.txt> [--lang=es|en] [--out=<dir>]
  *                                                   [--stt=elevenlabs|hyperframes-transcribe]
  *                                                   [--voice=<voice-id>]
- *                                                   [--model=<elevenlabs-model-id>]
+ *                                                   [--model=<tts-provider-model-id>]
  *
  * Default flow:
  *   1. Read script.txt and abort early if it exceeds the TTS soft cap.
@@ -40,8 +40,6 @@ import {
   readCachedTtsWithSource,
   resolveCacheMode,
   resolveBgmPath,
-  resolveElevenLabsModelId,
-  resolveElevenLabsVoiceId,
   resolveRoster,
   summariseSpeakers,
   toSrt,
@@ -60,11 +58,11 @@ Options:
                          then "elevenlabs". hyperframes-transcribe shells out
                          to \`npx hyperframes transcribe\` (whisper.cpp under
                          the hood, free + offline, lower accuracy).
-  --voice=<voice-id>     ElevenLabs voice id override. Defaults to the env
-                         var matching the language (ELEVENLABS_VOICE_ID_ES /
-                         ELEVENLABS_VOICE_ID_EN).
-  --model=<model-id>     ElevenLabs model override. Defaults to ELEVENLABS_MODEL_ID
-                         or eleven_v3.
+  --voice=<voice-id>     TTS provider voice id override (provider-specific
+                         shape). Defaults to the provider env var matching
+                         the language.
+  --model=<model-id>     TTS provider model override (provider-specific shape).
+                         Defaults to the provider env/default model.
   --stability=<0..1>     Voice tuning. Lower = more expressive; higher =
                          more consistent. Repo default 0.5 (narration preset).
   --similarity-boost=<0..1>
@@ -90,7 +88,7 @@ Options:
   --cache=use|refresh|off|local-only
                          TTS cache control. Default "use": look up
                          sha256(script+voice+model+tuning) in the local cache
-                         and skip the ElevenLabs call on hit. "refresh"
+                         and skip the TTS provider call on hit. "refresh"
                          bypasses the cache for reads but writes a fresh
                          entry. "off" disables the cache entirely.
                          "local-only" skips the R2 mirror while still using
@@ -121,7 +119,7 @@ Multi-speaker scripts:
   Prefix any line with [speaker:<name>] to switch voice mid-script. Names
   resolve through the roster JSON in MOTION_SHORTS_VOICE_ROSTER (e.g.
   '{"alex":"voice-id-1","morgan":"voice-id-2"}'); names that don't match a
-  roster entry are treated as raw ElevenLabs voice IDs. Scripts without any
+  roster entry are treated as raw provider voice IDs. Scripts without any
   [speaker:...] tag are byte-identical to single-speaker runs.
 `;
 
@@ -210,9 +208,12 @@ const main = async () => {
   const speed = parseRange(values.speed, "speed", 0.5, 1.5);
   const pauseSentenceMs = parseRange(values["pause-sentence"], "pause-sentence", 0, MAX_BREAK_MS);
   const pauseClauseMs = parseRange(values["pause-clause"], "pause-clause", 0, MAX_BREAK_MS);
-  const modelId = values.model
-    ? resolveElevenLabsModelId(values.model)
-    : resolveElevenLabsModelId();
+  const ttsProvider = getTTSProvider();
+  const { voiceId: resolvedVoiceId, modelId } = ttsProvider.resolveDefaults({
+    lang,
+    voice: values.voice,
+    model: values.model,
+  });
   const isV3 = isElevenV3Model(modelId);
   const hasExplicitPauseControls =
     values["pause-sentence"] != null || values["pause-clause"] != null;
@@ -308,7 +309,6 @@ const main = async () => {
     process.exit(1);
   }
 
-  const resolvedVoiceId = resolveElevenLabsVoiceId(lang, values.voice);
   const cacheHash =
     isMultiSpeaker || cacheMode === "off" || !resolvedVoiceId
       ? null
@@ -339,7 +339,6 @@ const main = async () => {
   // legacy cache/TTS/STT block below is skipped because audioBuffer and
   // captions are already populated when we enter it.
   if (isMultiSpeaker) {
-    const ttsProvider = getTTSProvider();
     ttsProviderName = ttsProvider.name;
     const sttProvider = getSTTProvider(values.stt);
     sttProviderName = sttProvider.name;
@@ -480,7 +479,6 @@ const main = async () => {
 
   // ── TTS ────────────────────────────────────────────────────────────────
   if (!audioBuffer) {
-    const ttsProvider = getTTSProvider();
     ttsProviderName = ttsProvider.name;
     console.log(
       `[generate-audio] TTS provider="${ttsProvider.name}" lang=${lang} model=${modelId} chars=${finalText.length}${tuningRecap ? ` ${tuningRecap}` : ""}`,
