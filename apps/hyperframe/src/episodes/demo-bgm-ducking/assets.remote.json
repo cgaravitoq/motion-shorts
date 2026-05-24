@@ -1,0 +1,50 @@
+{
+  "provider": "cloudflare-r2",
+  "bucket": "renders",
+  "episodeSlug": "demo-bgm-ducking",
+  "runId": "2026-05-24T133520Z",
+  "generatedAt": "2026-05-24T13:35:23.331Z",
+  "deleteLocal": false,
+  "objects": [
+    {
+      "key": "motion-shorts/episodes/demo-bgm-ducking/runs/2026-05-24T133520Z/audio/bgm-procedural-loop.mp3",
+      "category": "audio",
+      "bytes": 97773,
+      "sha256": "af451e3e8b20b3a8cb790281cde14f80c85314c6c943ecf769517d5bd3ce83f1",
+      "contentType": "audio/mpeg",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    },
+    {
+      "key": "motion-shorts/episodes/demo-bgm-ducking/runs/2026-05-24T133520Z/audio/voice.mp3",
+      "category": "audio",
+      "bytes": 251565,
+      "sha256": "6234a6eb57c60b7f19c5e47204249292e1243599d4d2f543c0fdb57341554148",
+      "contentType": "audio/mpeg",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    },
+    {
+      "key": "motion-shorts/episodes/demo-bgm-ducking/runs/2026-05-24T133520Z/audio/captions.json",
+      "category": "audio",
+      "bytes": 2708,
+      "sha256": "4d85806092913ecf15c51c4fdd017cd1885e107fb3f02eb4d665e820c26d7610",
+      "contentType": "application/json",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    },
+    {
+      "key": "motion-shorts/episodes/demo-bgm-ducking/runs/2026-05-24T133520Z/audio/voice-mixed.mp3",
+      "category": "audio",
+      "bytes": 377325,
+      "sha256": "77cc5f85dbad52298307c7518a7088bad0811d6064eda730e63069c8162a98fd",
+      "contentType": "audio/mpeg",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    }
+  ]
+}

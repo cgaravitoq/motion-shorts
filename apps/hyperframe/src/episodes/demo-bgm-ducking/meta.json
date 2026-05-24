@@ -1,0 +1,20 @@
+{
+  "id": "demo-bgm-ducking",
+  "name": "demo-bgm-ducking",
+  "description": "BGM ducking demo episode using a sidecar voice-mixed.mp3 track.",
+  "tail": 3,
+  "captionFormats": ["srt", "vtt"],
+  "bgm": {
+    "source": "Self-generated procedural sine-pad loop with ffmpeg lavfi; no third-party source.",
+    "file": "assets/bgm-procedural-loop.mp3",
+    "mixedFile": "assets/voice-mixed.mp3",
+    "bgmGain": 0.32,
+    "ducking": 0.45,
+    "attackSeconds": 0.08,
+    "releaseSeconds": 0.2,
+    "fadeSeconds": 1.5,
+    "outputMode": "sidecar",
+    "loudnessTargetLufs": -14,
+    "measuredIntegratedLufs": -14.8
+  }
+}
