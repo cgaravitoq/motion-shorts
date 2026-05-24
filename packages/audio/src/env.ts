@@ -15,6 +15,7 @@ export const env = createEnv({
     INWORLD_TTS_MODEL: z.string().min(1).default("inworld-tts-2"),
     STT_PROVIDER: z.string().min(1).default("elevenlabs"),
     HEYGEN_API_KEY: z.string().min(1).optional(),
+    MOTION_SHORTS_BGM_CACHE_DIR: z.string().min(1).optional(),
     MOTION_SHORTS_TTS_CACHE_DIR: z.string().min(1).optional(),
     MOTION_SHORTS_TTS_CACHE_R2: z.enum(["on", "off"]).default("on"),
     MOTION_SHORTS_VOICE_ROSTER: z.string().min(1).optional(),

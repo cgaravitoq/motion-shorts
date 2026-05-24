@@ -1,5 +1,10 @@
 // BGM mixer: caption-driven ducking, head/tail fade, -14 LUFS loudnorm.
 export {
+  BgmTrackNotFoundError,
+  getBgmCacheRoot,
+  resolveBgmPath,
+} from "./bgm-resolver";
+export {
   BGM_DEFAULTS,
   type BuildArgsOptions,
   type BuildEnvelopeOptions,

@@ -16,6 +16,7 @@
     "render": "bunx hyperframes render",
     "render:episode": "bun run scripts/render-episode.mjs",
     "capture:source": "bun run scripts/capture-source.mjs",
+    "hydrate:bgm": "bun run scripts/hydrate-bgm.mjs",
     "hydrate:episode": "bun run scripts/hydrate-episode.mjs",
     "metrics:dashboard": "bun run scripts/metrics-dashboard.mjs",
     "new-episode": "bun run scripts/new-episode.mjs",

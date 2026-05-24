@@ -196,7 +196,7 @@ Shorts feel flat without a music bed. `bun run audio` can mix a BGM track under 
 ```bash
 bun run audio examples/<slug>.txt --lang=es \
   --out=public/voice/<slug> \
-  --bgm=r2://motion-shorts/bgm/lofi-tech-loop.mp3 \
+  --bgm=bgm:lofi-tech-loop \
   --bgm-gain=0.3 \
   --ducking=0.6 \
   --bgm-attack=0.08 \
@@ -208,7 +208,7 @@ bun run audio examples/<slug>.txt --lang=es \
 
 | Flag | Default | Meaning |
 |------|---------|---------|
-| `--bgm=<path>` | — | Enables mixing. Without it, output is byte-identical to the no-BGM path (the mixer is never invoked). |
+| `--bgm=<path\|bgm:name>` | — | Enables mixing. Without it, output is byte-identical to the no-BGM path (the mixer is never invoked). |
 | `--bgm-gain=<0..1>` | `0.3` | Base BGM gain when narration is silent. |
 | `--ducking=<0..1>` | `0.6` | Multiplier applied on top of `--bgm-gain` during narration windows. Effective duck gain = `bgm-gain * ducking` (e.g. `0.3 * 0.6 = 0.18`). |
 | `--bgm-attack=<sec>` | `0.08` | Linear ramp duration from base BGM gain down to the ducked gain before each word. |
@@ -242,6 +242,22 @@ Royalty-free tracks live in R2 alongside other heavy artifacts (see `AGENTS.md` 
 | `bgm/cinematic-pulse.mp3` | Tense, modern, sub-heavy | ~1:30 | For data / proof-point shorts. |
 | `bgm/upbeat-electro.mp3` | Energetic, kinetic | ~1:45 | For hook-led / VFX-experimental shorts. |
 
-Hydrate locally with `bun run hydrate:episode` (extends to the BGM prefix). Pass any local mp3/wav to `--bgm=` for one-off experiments.
+### Hydrated BGM tracks
+
+If you've uploaded shared BGM tracks under the `bgm/` prefix in your R2 bucket,
+you can reference them by name without committing the file:
+
+```bash
+bun run audio script.txt --bgm=bgm:warm-cinematic
+```
+
+The track downloads on first use to `~/.cache/motion-shorts/bgm/<name>.mp3`
+and is reused on subsequent runs. Pre-hydrate a track without running TTS:
+
+```bash
+bun run hydrate:bgm warm-cinematic
+```
+
+Pass any local mp3/wav to `--bgm=` for one-off experiments.
 
 To add a track to the shared library: upload to R2 under `bgm/<slug>.mp3`, then append a row to the table above. No need to commit the audio file to the repo — keep the library out of git per the artifact persistence rule.
