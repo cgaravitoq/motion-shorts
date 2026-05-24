@@ -45,6 +45,11 @@ export async function resolveBgmPath(arg: string): Promise<string> {
 
   const trackName = arg.slice("bgm:".length).trim();
   if (!trackName) throw new Error("BGM track name is required after bgm:. Example: --bgm=bgm:warm-cinematic");
+  if (!/^[A-Za-z0-9._-]+$/.test(trackName) || trackName === "." || trackName.startsWith(".") || trackName.includes("..")) {
+    throw new Error(
+      `Invalid BGM track name "${trackName}". Allowed characters: letters, digits, dot, dash, underscore.`,
+    );
+  }
 
   const key = `bgm/${trackName}.mp3`;
   const cachePath = path.join(getBgmCacheRoot(), `${trackName}.mp3`);

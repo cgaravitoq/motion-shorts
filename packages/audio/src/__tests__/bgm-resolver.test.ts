@@ -86,6 +86,37 @@ describe("resolveBgmPath", () => {
     });
   });
 
+  it.each(["bgm:../../etc/passwd", "bgm:foo/bar", "bgm:.."])(
+    "rejects unsafe bgm track name %s before hydrating",
+    async (input) => {
+      mockEnv.R2_BUCKET = "motion-shorts";
+      r2Mocks.isR2Configured.mockReturnValue(true);
+      r2Mocks.getObject.mockResolvedValue({ body: Buffer.from("r2-audio"), contentType: "audio/mpeg" });
+
+      await expect(resolveBgmPath(input)).rejects.toThrow(
+        /Invalid BGM track name .* Allowed characters: letters, digits, dot, dash, underscore\./,
+      );
+      expect(r2Mocks.getObject).not.toHaveBeenCalled();
+      expect(fs.readdirSync(tmpRoot)).toEqual([]);
+    },
+  );
+
+  it("allows dotted safe bgm track names", async () => {
+    mockEnv.R2_BUCKET = "motion-shorts";
+    r2Mocks.isR2Configured.mockReturnValue(true);
+    r2Mocks.getObject.mockResolvedValue({ body: Buffer.from("r2-audio"), contentType: "audio/mpeg" });
+
+    const resolved = await resolveBgmPath("bgm:warm-cinematic.v2");
+
+    expect(resolved).toBe(path.join(tmpRoot, "warm-cinematic.v2.mp3"));
+    expect(fs.readFileSync(resolved, "utf8")).toBe("r2-audio");
+    expect(r2Mocks.getObject).toHaveBeenCalledWith({
+      bucket: "motion-shorts",
+      key: "bgm/warm-cinematic.v2.mp3",
+      env: mockEnv,
+    });
+  });
+
   it("throws BgmTrackNotFoundError when R2 returns 404", async () => {
     mockEnv.R2_BUCKET = "motion-shorts";
     r2Mocks.isR2Configured.mockReturnValue(true);

@@ -28,7 +28,7 @@ for (const name of positionals) {
     const bgmPath = await resolveBgmPath(`bgm:${name}`);
     console.log(`[hydrate-bgm] cached ${name} at ${bgmPath}`);
   } catch (err) {
-    console.error(`[hydrate-bgm] ${(err).message}`);
+    console.error(`[hydrate-bgm] ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 }

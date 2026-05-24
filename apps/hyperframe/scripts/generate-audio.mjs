@@ -551,7 +551,7 @@ const main = async () => {
     try {
       bgmPath = await resolveBgmPath(values.bgm);
     } catch (err) {
-      console.error(`generate-audio: ${(err).message}`);
+      console.error(`generate-audio: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
     if (!fs.existsSync(bgmPath)) {
