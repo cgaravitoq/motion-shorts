@@ -78,7 +78,7 @@ The `data-format` attribute on the desktop variant is what `bun run lint:desktop
 ```
 
 * **Title-safe (1536 × 864)** — `data-critical` elements need ≥192 px left/right inset and ≥108 px top/bottom inset. Headlines, KPIs, CTAs, source-attribution.
-* **Action-safe (1728 × 972)** — secondary UI; not enforced today, scope-tier-2.
+* **Action-safe (1728 × 972)** — secondary UI and tracked stage children should stay within ≥96 px left/right and ≥54 px top/bottom inset.
 * **YouTube end-screen bar** — bottom 120 px. YouTube overlays "Subscribe" / "Next video" / "More videos" here on long-form. Keep critical content above. Captions in the desktop template are pinned to `bottom: 180px` for this reason.
 * **YouTube CTA / info-card slot** — bottom-right 160 × 160 px. YouTube cards and "Subscribe" hover badge land here.
 
@@ -95,11 +95,15 @@ bun run lint:desktop-safe src/episodes/<slug>          # scan one episode
 
 Episodes without an `index.desktop.html` are vacuously green — the linter skips them. Catches today:
 
-* Stage box must be `data-width="1920" data-height="1080" data-fps="30" data-format="desktop-1080p"`.
-* `data-critical` elements with inline `left/right/top/bottom` styles must satisfy title-safe insets.
-* `data-critical` elements must not overlap the YouTube end-screen bar (bottom 120 px) or the CTA slot (bottom-right 160 × 160).
-
-Scope-tier-2 follow-ups (deliberately deferred): action-safe enforcement, font-size minimums for desktop readability, lower-third overlay collision detection.
+| Rule | Severity | Description | Example violation |
+|------|----------|-------------|-------------------|
+| `stage-dimensions` | error | Stage box must be `data-width="1920" data-height="1080" data-fps="30" data-format="desktop-1080p"`. | `data-width="1080"` on `index.desktop.html`. |
+| `title-safe-inset` | error | `data-critical` elements with inline `left/right/top/bottom` styles must satisfy title-safe insets. | `data-critical="true" style="left:80px"`. |
+| `endscreen-dead-zone` | error | `data-critical` elements must not overlap the YouTube end-screen bar. | `data-critical="true" style="bottom:60px"`. |
+| `cta-dead-zone` | error | `data-critical` elements must not overlap the bottom-right CTA slot. | `data-critical="true" style="right:40px; bottom:40px"`. |
+| `action-safe-inset` | warning | Tracked stage children with explicit pixel/percent positioning should remain inside the inner 90% action-safe area. | `data-track-index="5" style="left:20px; width:400px"`. |
+| `lower-third-collision` | warning | Tracked headline/body text should not sit in the bottom 25% strip reserved for captions and lower-thirds, except `#captions`, `#brand-corner`, `.caption`, or `.lower-third-safe`. | `<h2 data-track-index="5" style="bottom:100px">`. |
+| `desktop-font-minimum` | error | Pixel-sized tracked text must be readable at 1920×1080: body text ≥24 px and headline/hero/title text ≥48 px. | `.headline { font-size: 40px; }`. |
 
 ## Catalog — `safeFor`
 
