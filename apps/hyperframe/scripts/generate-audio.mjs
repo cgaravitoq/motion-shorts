@@ -39,6 +39,7 @@ import {
   parseScript,
   readCachedTtsWithSource,
   resolveCacheMode,
+  resolveBgmPath,
   resolveElevenLabsModelId,
   resolveElevenLabsVoiceId,
   resolveRoster,
@@ -98,7 +99,7 @@ Options:
                          For multi-speaker scripts (see below) every segment
                          is hashed and cached independently, so editing one
                          line only re-synthesises that segment.
-  --bgm=<path>           Mix a background music track under the narration with
+  --bgm=<path|bgm:name>  Mix a background music track under the narration with
                          caption-driven ducking. Without this flag the audio
                          output is byte-identical to the no-mix path.
   --bgm-gain=<0..1>      Base BGM gain when narration is silent. Default 0.3.
@@ -546,7 +547,13 @@ const main = async () => {
   // its parameters are NOT part of the TTS cache key (verified in cache.ts).
   let bgmResult = null;
   if (values.bgm) {
-    const bgmPath = path.resolve(values.bgm);
+    let bgmPath;
+    try {
+      bgmPath = await resolveBgmPath(values.bgm);
+    } catch (err) {
+      console.error(`generate-audio: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
     if (!fs.existsSync(bgmPath)) {
       console.error(`generate-audio: --bgm file not found at ${bgmPath}`);
       process.exit(1);
