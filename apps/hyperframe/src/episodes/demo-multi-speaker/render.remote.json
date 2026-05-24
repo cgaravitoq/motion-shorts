@@ -1,0 +1,20 @@
+{
+  "provider": "cloudflare-r2",
+  "bucket": "renders",
+  "episodeSlug": "demo-multi-speaker",
+  "runId": "2026-05-24T132149Z",
+  "generatedAt": "2026-05-24T13:21:51.639Z",
+  "deleteLocal": false,
+  "objects": [
+    {
+      "key": "motion-shorts/episodes/demo-multi-speaker/runs/2026-05-24T132149Z/renders/demo-multi-speaker.mp4",
+      "category": "renders",
+      "bytes": 15467885,
+      "sha256": "b7be86f5eda2559cf529cd50a2756ddced7561b27cbef1995bcbdc6f31bed57e",
+      "contentType": "video/mp4",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    }
+  ]
+}

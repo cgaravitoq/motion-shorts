@@ -1,0 +1,5 @@
+[speaker:host] Welcome to multi-speaker mode.
+[speaker:guest] Yeah it's pretty clever.
+[speaker:host] One pipeline, multiple voices.
+[speaker:guest] Captions stay continuous across speakers.
+[speaker:host] No confidence drop warnings.

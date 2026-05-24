@@ -157,6 +157,14 @@ Set the roster as a JSON env var:
 MOTION_SHORTS_VOICE_ROSTER={"alex":"<voice-id-1>","morgan":"<voice-id-2>"}
 ```
 
+For Inworld voices, roster values are voice names. The `demo-multi-speaker`
+episode is a working host/guest example:
+
+```
+TTS_PROVIDER=inworld
+MOTION_SHORTS_VOICE_ROSTER={"host":"Chloe","guest":"Hades"}
+```
+
 - Names are matched case-insensitively.
 - An unmatched name is treated as a raw ElevenLabs voice id (so `[speaker:JBFqnCBsd6RMkjVDRZzb]` works without setting up a roster).
 - Unmatched names with a roster present are flagged in the run log so typos surface immediately.
@@ -187,7 +195,7 @@ These warnings are advisory — listen to the boundary and consider re-recording
 
 ### Follow-up
 
-Per-episode `meta.json` rosters are deferred. Today the env-level `MOTION_SHORTS_VOICE_ROSTER` is the only roster source; the parser API (`parseScript(text, { roster })`) accepts an explicit roster object so per-episode wiring is a small change when an episode demands it.
+Per-episode roster wiring is not yet supported. Today the env-level `MOTION_SHORTS_VOICE_ROSTER` is the only roster source; the parser API (`parseScript(text, { roster })`) accepts an explicit roster object so per-episode wiring is a small change when an episode demands it.
 
 ## Background music (BGM) with ducking
 

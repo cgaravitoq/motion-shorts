@@ -1,0 +1,8 @@
+{
+  "id": "demo-multi-speaker",
+  "name": "demo-multi-speaker",
+  "description": "Multi-speaker dialogue demo episode.",
+  "tail": 3,
+  "speakers": ["host", "guest"],
+  "captionFormats": ["srt", "vtt"]
+}
