@@ -1,0 +1,81 @@
+{
+  "id": "avatar-30-70@1",
+  "family": "avatar-30-70",
+  "version": 1,
+  "status": "first-class",
+  "description": "Exact 9:16 avatar template with 70% motion-graphics content and a provider-agnostic 30% full-width avatar band.",
+  "referenceTemplate": "apps/hyperframe/templates/avatar-30-70/v1/template.html.tmpl",
+  "catalogIds": [
+    "brand-logo-watermark",
+    "brand-logo-outro",
+    "flowchart",
+    "svg-path-draw"
+  ],
+  "recommendedCatalogIds": [
+    "talking-head-cutout",
+    "scene-blur-crossfade",
+    "shimmer-sweep",
+    "source-knowledge-pipeline"
+  ],
+  "fonts": {
+    "primary": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "defaults": {
+    "width": 1080,
+    "height": 1920,
+    "totalDuration": 47.92,
+    "audioDuration": 42.92,
+    "outroStart": 42.92,
+    "outroDuration": 5
+  },
+  "layout": {
+    "contentRatio": 0.7,
+    "avatarRatio": 0.3,
+    "contentHeight": 1344,
+    "avatarHeight": 576
+  },
+  "requiredTracks": {
+    "background": [
+      0,
+      1
+    ],
+    "scenes": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "brandOutro": 7,
+    "avatarVideo": 8,
+    "brandCorner": 97,
+    "audio": 98,
+    "captions": 99
+  },
+  "slots": [
+    "avatar.src",
+    "avatar.duration",
+    "avatar.objectPosition",
+    "source.label",
+    "source.accent",
+    "source.accent2",
+    "hook.titleHtml",
+    "hook.subtitle",
+    "proof.title",
+    "proof.body",
+    "support.claim",
+    "comparison.rows",
+    "payoff.title",
+    "payoff.before",
+    "payoff.after"
+  ],
+  "validation": [
+    "generated episode remains monolithic",
+    "avatar wrapper is non-timed and video inside is timed",
+    "content region remains top 70 percent and avatar dock remains bottom 30 percent",
+    "no data-composition-src",
+    "paused GSAP timeline registered in window.__timelines",
+    "hyperframes lint passes"
+  ]
+}

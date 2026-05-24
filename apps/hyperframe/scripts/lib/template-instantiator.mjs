@@ -38,6 +38,12 @@ const supportedTemplates = new Map([
       dir: path.resolve("templates/asset-motion-showcase/v1"),
     },
   ],
+  [
+    "avatar-30-70@1",
+    {
+      dir: path.resolve("templates/avatar-30-70/v1"),
+    },
+  ],
 ]);
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -75,6 +81,7 @@ const mergeData = (base, override) => ({
   support: { ...base.support, ...override.support },
   comparison: { ...base.comparison, ...override.comparison },
   payoff: { ...base.payoff, ...override.payoff },
+  avatar: { ...(base.avatar ?? {}), ...(override.avatar ?? {}) },
 });
 
 function readBrandSnippet(snippetPath, replacements) {
@@ -125,6 +132,7 @@ export function instantiateEpisodeTemplate({
   const totalDuration = defaults.totalDuration;
   const audioDuration = defaults.audioDuration;
   const source = data.source;
+  const avatar = data.avatar ?? {};
   const brandSnippetRoot = path.join(catalogRoot, "snippets");
   const brandWatermark = readBrandSnippet(
     path.join(brandSnippetRoot, "brand-logo-watermark.html"),
@@ -153,6 +161,9 @@ export function instantiateEpisodeTemplate({
     "__SLUG__": slug,
     "__TOTAL_DURATION__": String(totalDuration),
     "__AUDIO_DURATION__": String(audioDuration),
+    "__AVATAR_SRC__": escapeHtml(avatar.src ?? "assets/avatar-seek.mp4"),
+    "__AVATAR_DURATION__": escapeHtml(avatar.duration ?? audioDuration),
+    "__AVATAR_OBJECT_POSITION__": escapeHtml(avatar.objectPosition ?? "50% 44%"),
     "__TEMPLATE_CSS__": renderedCss
       .split("\n")
       .map((line) => `      ${line}`)
