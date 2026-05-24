@@ -91,6 +91,24 @@ describe("ElevenLabsTTSProvider", () => {
     );
   });
 
+  it("resolveDefaults returns provider voice and model defaults", () => {
+    const { client } = stubClient(makeStream([0]));
+    const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
+    expect(provider.resolveDefaults({ lang: "en" })).toEqual({
+      voiceId: "voice-en-fixture",
+      modelId: "eleven_v3",
+    });
+  });
+
+  it("resolveDefaults honours explicit voice and model", () => {
+    const { client } = stubClient(makeStream([0]));
+    const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
+    expect(provider.resolveDefaults({ lang: "es", voice: "custom-voice-id", model: "custom-model" })).toEqual({
+      voiceId: "custom-voice-id",
+      modelId: "custom-model",
+    });
+  });
+
   it("honours opts.voiceId over env defaults", async () => {
     const { client, convert } = stubClient(makeStream([0]));
     const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });

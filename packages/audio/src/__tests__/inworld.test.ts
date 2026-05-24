@@ -46,6 +46,32 @@ describe("InworldTTSProvider", () => {
     );
   });
 
+  it("resolveDefaults returns provider voice and model defaults", () => {
+    const { client } = stubClient();
+    const provider = new InworldTTSProvider({ apiKey: "test", client });
+    expect(provider.resolveDefaults({ lang: "en" })).toEqual({
+      voiceId: "inworld-voice-en-fixture",
+      modelId: "inworld-tts-2",
+    });
+  });
+
+  it("resolveDefaults honours explicit voice and model", () => {
+    const { client } = stubClient();
+    const provider = new InworldTTSProvider({ apiKey: "test", client });
+    expect(
+      provider.resolveDefaults({ lang: "es", voice: "custom-inworld-voice", model: "custom-model" }),
+    ).toEqual({ voiceId: "custom-inworld-voice", modelId: "custom-model" });
+  });
+
+  it("resolveDefaults throws a clear error when the language voice is missing", () => {
+    mockEnv.INWORLD_VOICE_ID_EN = undefined;
+    const { client } = stubClient();
+    const provider = new InworldTTSProvider({ apiKey: "test", client });
+    expect(() => provider.resolveDefaults({ lang: "en" })).toThrow(
+      /No Inworld voice ID configured for lang="en"/,
+    );
+  });
+
   it("resolves the Spanish voice ID from env", async () => {
     const { client, generate } = stubClient();
     const provider = new InworldTTSProvider({ apiKey: "test", client });
