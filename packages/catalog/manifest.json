@@ -95,7 +95,8 @@
     ],
     "safeFor": [
       "short",
-      "desktop-1080p"
+      "desktop-1080p",
+      "desktop-4k"
     ],
     "previewAssetPath": "packages/catalog/previews/brand-logo-cloud.svg"
   },
@@ -384,7 +385,9 @@
     ],
     "safeFor": [
       "short",
-      "desktop-1080p"
+      "desktop-1080p",
+      "desktop-4k",
+      "square-1080"
     ],
     "previewAssetPath": "packages/catalog/previews/image-ken-burns.svg"
   },
@@ -565,7 +568,9 @@
     ],
     "safeFor": [
       "short",
-      "desktop-1080p"
+      "desktop-1080p",
+      "desktop-4k",
+      "square-1080"
     ],
     "previewAssetPath": "packages/catalog/previews/map-route.svg"
   },
@@ -717,7 +722,8 @@
     ],
     "safeFor": [
       "short",
-      "desktop-1080p"
+      "desktop-1080p",
+      "desktop-4k"
     ],
     "previewAssetPath": "packages/catalog/previews/screenshot-spotlight.svg"
   },
@@ -899,7 +905,9 @@
     ],
     "safeFor": [
       "short",
-      "desktop-1080p"
+      "desktop-1080p",
+      "desktop-4k",
+      "square-1080"
     ],
     "previewAssetPath": "packages/catalog/previews/source-image-reveal.svg"
   },
@@ -1082,7 +1090,9 @@
     ],
     "safeFor": [
       "short",
-      "desktop-1080p"
+      "desktop-1080p",
+      "desktop-4k",
+      "square-1080"
     ],
     "previewAssetPath": "packages/catalog/previews/svg-path-draw.svg"
   },

@@ -17,7 +17,7 @@
  *
  * Stage contract (per docs/formats.md):
  *   <div class="stage" data-format="desktop-1080p"
- *        data-width="1920" data-height="1080" data-fps="30">
+ *        data-width="1920" data-height="1080" data-fps="30|60">
  *
  * Critical elements inside the stage MUST stay within title-safe (inner 80%):
  *   left/right inset >= 192px (1920 * 0.10)
@@ -32,7 +32,7 @@ import path from "node:path";
 
 const DESKTOP_WIDTH = 1920;
 const DESKTOP_HEIGHT = 1080;
-const DESKTOP_FPS = 30;
+const DESKTOP_FPS_VALUES = ["30", "60"];
 
 const TITLE_SAFE_INSET_X = Math.round(DESKTOP_WIDTH * 0.1); // 192
 const TITLE_SAFE_INSET_Y = Math.round(DESKTOP_HEIGHT * 0.1); // 108
@@ -286,7 +286,7 @@ const RULES = {
   "stage-dimensions": {
     severity: "error",
     message:
-      `desktop-1080p stage must declare data-width="${DESKTOP_WIDTH}", data-height="${DESKTOP_HEIGHT}", data-fps="${DESKTOP_FPS}", data-format="desktop-1080p".`,
+      `desktop-1080p stage must declare data-width="${DESKTOP_WIDTH}", data-height="${DESKTOP_HEIGHT}", data-fps="30" or "60", data-format="desktop-1080p".`,
   },
   "title-safe-inset": {
     severity: "error",
@@ -319,7 +319,6 @@ function checkStage(attrs, line) {
   const need = {
     "data-width": String(DESKTOP_WIDTH),
     "data-height": String(DESKTOP_HEIGHT),
-    "data-fps": String(DESKTOP_FPS),
     "data-format": "desktop-1080p",
   };
   for (const [k, v] of Object.entries(need)) {
@@ -332,6 +331,16 @@ function checkStage(attrs, line) {
         col: 1,
       });
     }
+  }
+  const fps = attrs.get("data-fps");
+  if (!DESKTOP_FPS_VALUES.includes(fps ?? "")) {
+    violations.push({
+      ruleId: "stage-dimensions",
+      severity: RULES["stage-dimensions"].severity,
+      message: `${RULES["stage-dimensions"].message} Found data-fps="${fps ?? ""}", expected one of ${DESKTOP_FPS_VALUES.join(", ")}.`,
+      line,
+      col: 1,
+    });
   }
   return violations;
 }

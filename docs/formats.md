@@ -1,13 +1,15 @@
 # Formats — render profiles
 
-motion-shorts ships two render profiles. Both come out of the same monolithic-single-file pipeline (AGENTS.md rule 1) and share the same `assets/voice.mp3` + `assets/captions.json` per episode.
+motion-shorts ships four render profiles. All come out of the same monolithic-single-file pipeline (AGENTS.md rule 1) and share the same `assets/voice.mp3` + `assets/captions.json` per episode.
 
 | Profile        | Aspect | Resolution  | FPS | Codec / audio                      | Target use                                                              | Source file              |
 |----------------|--------|-------------|-----|------------------------------------|-------------------------------------------------------------------------|--------------------------|
 | `short`        | 9:16   | 1080 × 1920 | 30  | H.264 High + AAC-LC 48 kHz         | YouTube Shorts, TikTok, Instagram Reels, LinkedIn mobile feed           | `index.html`             |
 | `desktop-1080p`| 16:9   | 1920 × 1080 | 30  | H.264 High + AAC-LC 48 kHz / 384 kbps, 12 Mbps 2-pass VBR | YouTube long-form, LinkedIn desktop, X landscape, Vimeo, embedded heroes | `index.desktop.html`     |
+| `desktop-4k`   | 16:9   | 3840 × 2160 | 30  | H.264 High + AAC-LC 48 kHz / 384 kbps, 40 Mbps 2-pass VBR | Premium YouTube long-form, events, 4K embeds                            | `index.desktop.html`     |
+| `square-1080`  | 1:1    | 1080 × 1080 | 30  | H.264 High + AAC-LC 48 kHz         | LinkedIn feed, Facebook feed, Instagram square placements               | `index.square.html`      |
 
-`short` is the default; existing episodes and tooling work unchanged. `desktop-1080p` is purely additive — opt-in per episode by adding an `index.desktop.html` (the scaffolder stamps one with `bun run new:episode <slug> --with-desktop`).
+`short` is the default; existing episodes and tooling work unchanged. `desktop-1080p` and `desktop-4k` are additive 16:9 variants backed by `index.desktop.html` (the scaffolder stamps one with `bun run new:episode <slug> --with-desktop`). `square-1080` is backed by `index.square.html` (stamp with `bun run new:episode <slug> --with-square`).
 
 ## Render
 
@@ -18,6 +20,10 @@ bun run render:episode <slug> --variant=short
 
 # 16:9 desktop:
 bun run render:episode <slug> --variant=desktop-1080p
+bun run render:episode <slug> --variant=desktop-4k
+
+# 1:1 square:
+bun run render:episode <slug> --variant=square-1080
 ```
 
 Container is independent of variant:
@@ -28,7 +34,16 @@ bun run render:episode <slug> --variant=desktop-1080p --format=mov   # ProRes 44
 bun run render:episode <slug> --variant=desktop-1080p --format=webm  # VP9 + alpha
 ```
 
-> Why `--variant` and not `--format=desktop-1080p`? `--format` in the existing `bunx hyperframes render` surface already means container (mp4 / mov / webm). Keeping that flag stable preserves byte-identical 9:16 renders and avoids ambiguity at the boundary with the upstream Hyperframes CLI. Inside the catalog manifest the per-component scope field is still called `safeFor: ["short", "desktop-1080p"]`.
+Opt into 60 fps for any variant with `--fps=60`. The render wrapper forwards the frame rate to Hyperframes and stamps `data-fps="60"` into the working-copy stage. Bitrate targets increase by 50% at 60 fps:
+
+| Variant | 30 fps target | 60 fps target |
+|---------|---------------|---------------|
+| `short` | 10 Mbps | 15 Mbps |
+| `desktop-1080p` | 12 Mbps | 18 Mbps |
+| `desktop-4k` | 40 Mbps | 60 Mbps |
+| `square-1080` | 10 Mbps | 15 Mbps |
+
+> Why `--variant` and not `--format=desktop-1080p`? `--format` in the existing `bunx hyperframes render` surface already means container (mp4 / mov / webm). Keeping that flag stable preserves byte-identical 9:16 renders and avoids ambiguity at the boundary with the upstream Hyperframes CLI. Inside the catalog manifest the per-component scope field is still called `safeFor`.
 
 ## Stage markup contract
 
@@ -47,9 +62,16 @@ Every episode stage declares its profile:
      data-format="desktop-1080p"
      data-width="1920" data-height="1080" data-fps="30"
      data-start="0" data-duration="<stamped>">
+
+<!-- index.square.html (1:1) -->
+<div id="ep-stage"
+     data-composition-id="<slug>-square"
+     data-format="square-1080"
+     data-width="1080" data-height="1080" data-fps="30"
+     data-start="0" data-duration="<stamped>">
 ```
 
-The `data-format` attribute on the desktop variant is what `bun run lint:desktop-safe` keys off. The 9:16 short does not set `data-format` — absence means `short`.
+The `data-format` attribute declares non-short variants. The 9:16 short does not set `data-format` — absence means `short`. `data-fps="60"` is accepted for opt-in high-motion renders.
 
 ## Safe zones — 16:9 desktop
 
@@ -97,7 +119,7 @@ Episodes without an `index.desktop.html` are vacuously green — the linter skip
 
 | Rule | Severity | Description | Example violation |
 |------|----------|-------------|-------------------|
-| `stage-dimensions` | error | Stage box must be `data-width="1920" data-height="1080" data-fps="30" data-format="desktop-1080p"`. | `data-width="1080"` on `index.desktop.html`. |
+| `stage-dimensions` | error | Stage box must be `data-width="1920" data-height="1080" data-fps="30"` or `data-fps="60"` and `data-format="desktop-1080p"`. | `data-width="1080"` on `index.desktop.html`. |
 | `title-safe-inset` | error | `data-critical` elements with inline `left/right/top/bottom` styles must satisfy title-safe insets. | `data-critical="true" style="left:80px"`. |
 | `endscreen-dead-zone` | error | `data-critical` elements must not overlap the YouTube end-screen bar. | `data-critical="true" style="bottom:60px"`. |
 | `cta-dead-zone` | error | `data-critical` elements must not overlap the bottom-right CTA slot. | `data-critical="true" style="right:40px; bottom:40px"`. |
@@ -116,10 +138,4 @@ Every component in `packages/catalog/manifest.json` declares which variants it s
 }
 ```
 
-Components without `safeFor` default to `["short"]` for back-compat. As components are validated for desktop layouts they'll be promoted to `["short", "desktop-1080p"]`. Run `bun run catalog:list --format=desktop-1080p` from `apps/hyperframe/` to filter the picker to desktop-safe components; omitted `--format` defaults to `short`.
-
-## Follow-ups (not in this profile set)
-
-* `desktop-4k` (3840 × 2160, 40 Mbps) for premium long-form delivery.
-* `square-1080` (1:1, 1080 × 1080) for Facebook / LinkedIn mobile feed.
-* `--fps=60` opt-in for high-motion shorts.
+Components without `safeFor` default to `["short"]` for back-compat. As components are validated for more layouts they'll be promoted to include `desktop-1080p`, `desktop-4k`, and/or `square-1080`. Run `bun run catalog:list --format=desktop-1080p` from `apps/hyperframe/` to filter the picker; omitted `--format` defaults to `short`.
