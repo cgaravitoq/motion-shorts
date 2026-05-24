@@ -87,13 +87,12 @@ export const signRequest = (args: SignRequestArgs): { url: string; headers: Reco
   const credentialScope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`;
   const stringToSign = createStringToSign(canonicalRequest, amzDate);
   const signature = hmacHex(signingKey(args.config.secretAccessKey, dateStamp), stringToSign);
-  const signed = createCanonicalRequest(args);
   return {
     url: `${args.config.endpoint}${args.config.endpointPrefix}/${encodeKey(args.key)}`,
     headers: {
       host: new URL(args.config.endpoint).host,
       "x-amz-content-sha256": args.payloadHash,
-      "x-amz-date": signed.amzDate,
+      "x-amz-date": amzDate,
       ...Object.fromEntries(Object.entries(args.headers ?? {}).map(([name, value]) => [name.toLowerCase(), value])),
       authorization:
         `AWS4-HMAC-SHA256 Credential=${args.config.accessKeyId}/${credentialScope}, ` +

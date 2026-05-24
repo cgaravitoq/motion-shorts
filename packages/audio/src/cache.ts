@@ -12,7 +12,7 @@
  * voice+captions pair, and we want a cache hit to also short-circuit STT.
  */
 import { createHash } from "node:crypto";
-import { getObject, isR2Configured, putObject } from "@cgaravitoq/r2-client";
+import { getObject, isR2Configured, putObject, type GetObjectResult } from "@cgaravitoq/r2-client";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -137,10 +137,17 @@ export const readCachedTtsWithSource = async (
   if (local) return { payload: local, source: "local-hit" };
   if (!isTtsCacheR2Enabled(cacheMode) || !env.R2_BUCKET) return { payload: null, source: "miss" };
 
-  const [audioObject, captionsObject] = await Promise.all([
-    getObject({ bucket: env.R2_BUCKET, key: r2KeyFor(hash, "voice.mp3"), env }),
-    getObject({ bucket: env.R2_BUCKET, key: r2KeyFor(hash, "captions.json"), env }),
-  ]);
+  let audioObject: GetObjectResult | null;
+  let captionsObject: GetObjectResult | null;
+  try {
+    [audioObject, captionsObject] = await Promise.all([
+      getObject({ bucket: env.R2_BUCKET, key: r2KeyFor(hash, "voice.mp3"), env }),
+      getObject({ bucket: env.R2_BUCKET, key: r2KeyFor(hash, "captions.json"), env }),
+    ]);
+  } catch (error) {
+    console.warn(`[tts-cache] R2 mirror read failed for ${hash.slice(0, 12)}: ${(error as Error).message}`);
+    return { payload: null, source: "miss" };
+  }
   if (!audioObject || !captionsObject) return { payload: null, source: "miss" };
 
   let captions: HyperframesCaption[];

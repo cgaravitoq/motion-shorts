@@ -52,4 +52,19 @@ describe("signRequest", () => {
     expect(signed.headers.authorization).toContain("AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/auto/s3/aws4_request");
     expect(signed.headers.authorization).toContain("SignedHeaders=host;x-amz-content-sha256;x-amz-date");
   });
+
+  it("uses one timestamp for default-now signing", () => {
+    const signed = signRequest({
+      config,
+      method: "GET",
+      key: "folder/file name.json",
+      payloadHash: "UNSIGNED-PAYLOAD",
+    });
+    const authorization = signed.headers.authorization ?? "";
+    const amzDate = signed.headers["x-amz-date"] ?? "";
+    const credentialScope = authorization.match(/Credential=AKIDEXAMPLE\/(\d{8})\//)?.[1];
+
+    expect(amzDate).toMatch(/^\d{8}T\d{6}Z$/);
+    expect(amzDate.slice(0, 8)).toBe(credentialScope);
+  });
 });
