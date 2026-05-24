@@ -1,0 +1,29 @@
+{
+  "provider": "cloudflare-r2",
+  "bucket": "renders",
+  "episodeSlug": "demo-explainer-blocks",
+  "runId": "2026-05-24T124155Z",
+  "generatedAt": "2026-05-24T12:41:55.885Z",
+  "objects": [
+    {
+      "key": "motion-shorts/episodes/demo-explainer-blocks/runs/2026-05-24T124155Z/assets/voice.mp3",
+      "category": "assets",
+      "bytes": 251565,
+      "sha256": "6234a6eb57c60b7f19c5e47204249292e1243599d4d2f543c0fdb57341554148",
+      "contentType": "audio/mpeg",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    },
+    {
+      "key": "motion-shorts/episodes/demo-explainer-blocks/runs/2026-05-24T124155Z/assets/captions.json",
+      "category": "assets",
+      "bytes": 2708,
+      "sha256": "4d85806092913ecf15c51c4fdd017cd1885e107fb3f02eb4d665e820c26d7610",
+      "contentType": "application/json",
+      "urlStrategy": "signed-url",
+      "url": null,
+      "signedUrlTtlSeconds": 3600
+    }
+  ]
+}

@@ -2,5 +2,6 @@
   "id": "demo-explainer-blocks",
   "title": "Demo Explainer Blocks",
   "description": "Inline 9:16 demo for official data-chart, flowchart, and logo-outro block adaptations.",
-  "tail": 0
+  "tail": 0,
+  "captionFormats": ["srt", "vtt"]
 }
