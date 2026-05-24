@@ -1,0 +1,167 @@
+<!doctype html>
+<!-- catalog: [brand-logo-watermark, brand-logo-outro] -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="stylesheet" href="lib/theme.css" />
+    <link rel="stylesheet" href="lib/easings.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      html, body {
+        width: 1080px; height: 1920px; margin: 0; padding: 0;
+        background: var(--ink, #060912); overflow: hidden;
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--paper, #f4f6fb); -webkit-font-smoothing: antialiased;
+      }
+      #ep-stage { width: 1080px; height: 1920px; position: relative; overflow: hidden; }
+
+      /* Brand corner — visible the whole video. */
+      #brand-corner {
+        position: absolute; top: 96px; right: 96px;
+        width: 96px; opacity: 0.42; z-index: 60; pointer-events: none;
+      }
+      #brand-corner svg { display: block; width: 100%; height: auto; fill: var(--paper, #f4f6fb); }
+
+      .brand-outro {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; background: var(--ink, #060912);
+      }
+      .brand-outro__lockup {
+        position: relative; display: grid; place-items: center;
+        width: 540px; height: 300px; margin-bottom: 34px;
+      }
+      .brand-outro__aura {
+        position: absolute; width: 520px; height: 520px; border-radius: 999px;
+        background: radial-gradient(circle, color-mix(in srgb, var(--accent, #34d399) 18%, transparent), transparent 62%);
+        opacity: 0; transform: scale(0.72);
+      }
+      .brand-outro__mark {
+        position: relative; width: 420px; height: auto; overflow: visible;
+        filter: drop-shadow(0 26px 80px rgba(0,0,0,0.5));
+      }
+      .brand-outro__piece { transform-box: fill-box; transform-origin: center; opacity: 0; fill: var(--paper, #f4f6fb); }
+      .brand-outro__name {
+        margin: 0; font-size: 72px; line-height: 1.02; font-weight: 790;
+        letter-spacing: 0; color: var(--paper, #f4f6fb);
+      }
+      .brand-outro__tagline {
+        margin: 28px 0 0; max-width: 780px; color: var(--muted, #94a3b8);
+        font-family: "JetBrains Mono", monospace; font-size: 30px; line-height: 1.2;
+        font-weight: 590; letter-spacing: 3px; text-transform: uppercase;
+      }
+      .brand-outro__name,
+      .brand-outro__tagline {
+        will-change: opacity, transform, filter;
+      }
+
+      /* Captions strip — bottom of the stage. Required block (the runtime
+         force-applies inset:0 on the captions clip without it).
+         See .agents/skills/canonical-short/SKILL.md for the canonical block. */
+      /* Typography roles for source-driven/informative shorts live at
+         .agents/skills/canonical-short/references/typography-system.md.
+         Use those role sizes/weights instead of inventing local values. */
+      #captions {
+        position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Inter", system-ui, sans-serif;
+        font-size: 60px; font-weight: 900; line-height: 1.1; letter-spacing: -1px;
+        color: var(--paper, #f4f6fb);
+        text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(0, 0, 0, 0.7);
+        text-align: center; padding: 0 64px; box-sizing: border-box;
+        pointer-events: none; z-index: 50;
+      }
+      #captions .hf-caption-token {
+        opacity: 0.78;
+        transition: color 0.06s linear, opacity 0.06s linear, transform 0.06s ease-out;
+      }
+      #captions .hf-caption-token.--active {
+        color: var(--accent, #34d399);
+        opacity: 1;
+        transform: scale(1.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="ep-stage"
+      data-composition-id="demo-multi-speaker"
+      data-start="0"
+      data-duration="30"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div id="brand-corner" class="clip" data-start="0" data-duration="30" data-track-index="97"><svg viewBox="0 0 578 320" role="img" aria-labelledby="brand-watermark-title"><title id="brand-watermark-title">Logo mark watermark</title><path d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div>
+
+      <section id="scene-brand-outro" class="scene clip" data-start="24" data-duration="6" data-track-index="7" style="position:absolute; inset:0;"><div class="brand-outro"><div class="brand-outro__lockup"><div id="brand-aura" class="brand-outro__aura"></div><svg id="brand-mark" class="brand-outro__mark" viewBox="0 0 578 320" role="img" aria-labelledby="brand-outro-title"><title id="brand-outro-title">cgaravitoq logo</title><path id="brand-piece-left" class="brand-outro__piece" d="M30 96h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30H30c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-top-left" class="brand-outro__piece" d="M180 20h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30V50c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bridge" class="brand-outro__piece" d="M330 28h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-33.8 0-52 18.2-52 52v60c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30h68c33.8 0 52-18.2 52-52V58c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-bottom-right" class="brand-outro__piece" d="M330 178h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /><path id="brand-piece-right" class="brand-outro__piece" d="M480 100h68c16.6 0 30 13.4 30 30v68c0 16.6-13.4 30-30 30h-68c-16.6 0-30-13.4-30-30v-68c0-16.6 13.4-30 30-30Z" /></svg></div><h1 id="brand-name" class="brand-outro__name">cgaravitoq</h1><p id="brand-tagline" class="brand-outro__tagline">AI Engineering</p></div></section>
+
+      <!--
+        Author scenes inline here. Track-index convention:
+          0..3   — background layers (mesh / grid / grain / vignette)
+          4..6,8 — scenes (track 7 is reserved for #scene-brand-outro)
+          97     — #brand-corner (always visible)
+          98     — voiceover audio
+          99     — captions overlay
+
+        See .agents/skills/canonical-short/SKILL.md for the 5-scene template.
+      -->
+
+      <audio
+        id="voiceover"
+        class="clip"
+        data-start="0"
+        data-duration="30"
+        data-track-index="98"
+        data-volume="1"
+        src="assets/voice.mp3"
+      ></audio>
+
+      <div id="captions" class="clip" data-start="0" data-duration="30" data-track-index="99"></div>
+    </div>
+
+    <!-- Captions inlined as JSON to keep the timeline build SYNCHRONOUS
+         (Hyperframes seeks immediately; async construction leaves tweens
+         unregistered). Replace the empty array with the contents of
+         assets/captions.json before the first render. -->
+    <script type="application/json" id="captions-data">[]</script>
+
+    <script src="lib/timeline-helpers.js"></script>
+    <script src="lib/captions-karaoke.js"></script>
+    <script>
+      // Synchronous timeline construction — required by Hyperframes.
+      const tl = gsap.timeline({ paused: true });
+
+      const captionsData = JSON.parse(
+        document.getElementById("captions-data").textContent || "[]",
+      );
+      if (captionsData.length > 0) {
+        window.__hf.karaoke(tl, "#captions", captionsData, {
+          maxChars: 24,
+          maxTokens: 5,
+        });
+      }
+      // Hide the outro scene before its reveal so the scaffolded episode
+      // shows black (or whatever scenes you add) until OUTRO_START.
+      tl.set("#scene-brand-outro", { autoAlpha: 0, scale: 1.02, filter: "blur(8px)" }, 0);
+
+      // Canonical outro animation — sourced at scaffold time from
+      // packages/catalog/snippets/brand-logo-outro.html.
+      tl.set(["#brand-name", "#brand-tagline"], { autoAlpha: 0, scale: 0.88, filter: "blur(16px)", transformOrigin: "50% 50%" }, 0);
+  tl.to("#brand-corner", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, 24 - 0.55);
+  tl.to("#scene-brand-outro", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, 24);
+  tl.to("#brand-aura", { autoAlpha: 1, scale: 1, duration: 0.65, ease: "power2.out" }, 24 + 0.2);
+  tl.to(".brand-outro__piece", { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.55, stagger: 0.08, ease: "back.out(1.6)", startAt: { x: -24, y: 20, scale: 0.92 } }, 24 + 0.3);
+  tl.to(["#brand-name", "#brand-tagline"], { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.62, stagger: 0.1, ease: "power3.out" }, 24 + 0.62);
+  tl.to("#brand-mark", { scale: 1.04, duration: 0.32, ease: "power2.out", overwrite: "auto" }, 24 + 0.8);
+  tl.to("#brand-mark", { scale: 1, duration: 0.34, ease: "power2.inOut", overwrite: "auto" }, 24 + 1.12);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["demo-multi-speaker"] = tl;
+    </script>
+  </body>
+</html>
