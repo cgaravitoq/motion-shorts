@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildBgmFilterGraph,
+  buildDuckSegments,
   buildDuckWindows,
   buildFfmpegArgs,
   type FfmpegRunner,
@@ -76,11 +77,9 @@ describe("buildBgmFilterGraph", () => {
       bgmGain: 0.3,
       ducking: 0.6,
       fadeSec: 1.5,
-      duckWindows: buildDuckWindows(fixtureCaptions, { mergeGapSec: 0.35, padSec: 0.12 }),
+      duckWindows: buildDuckWindows(fixtureCaptions, { mergeGapSec: 0, padSec: 0 }),
     });
-    expect(graph).toMatchInlineSnapshot(
-      `"[1:a]aloop=loop=-1:size=2e+09,atrim=duration=5,asetpts=PTS-STARTPTS,volume=0.3,volume=0.6:enable='between(t,0.38,1.52)',volume=0.6:enable='between(t,3.08,4.32)',afade=t=in:st=0:d=1.5,afade=t=out:st=3.5:d=1.5[bgm];[0:a][bgm]amix=inputs=2:duration=first:normalize=0[mix];[mix]loudnorm=I=-14:TP=-1.5:LRA=11[out]"`,
-    );
+    expect(graph).toMatchInlineSnapshot(`"[1:a]aloop=loop=-1:size=2e+09,atrim=duration=5,asetpts=PTS-STARTPTS,volume=0.3,volume=0.975:enable='between(t,0.42,0.43)',volume=0.925:enable='between(t,0.43,0.44)',volume=0.875:enable='between(t,0.44,0.45)',volume=0.825:enable='between(t,0.45,0.46)',volume=0.775:enable='between(t,0.46,0.47)',volume=0.725:enable='between(t,0.47,0.48)',volume=0.675:enable='between(t,0.48,0.49)',volume=0.625:enable='between(t,0.49,0.5)',volume=0.6:enable='between(t,0.5,0.9)',volume=0.61:enable='between(t,0.9,0.91)',volume=0.63:enable='between(t,0.91,0.92)',volume=0.65:enable='between(t,0.92,0.93)',volume=0.67:enable='between(t,0.93,0.94)',volume=0.625:enable='between(t,0.94,0.95)',volume=0.6:enable='between(t,0.95,1.4)',volume=0.61:enable='between(t,1.4,1.41)',volume=0.63:enable='between(t,1.41,1.42)',volume=0.65:enable='between(t,1.42,1.43)',volume=0.67:enable='between(t,1.43,1.44)',volume=0.69:enable='between(t,1.44,1.45)',volume=0.71:enable='between(t,1.45,1.46)',volume=0.73:enable='between(t,1.46,1.47)',volume=0.75:enable='between(t,1.47,1.48)',volume=0.77:enable='between(t,1.48,1.49)',volume=0.79:enable='between(t,1.49,1.5)',volume=0.81:enable='between(t,1.5,1.51)',volume=0.83:enable='between(t,1.51,1.52)',volume=0.85:enable='between(t,1.52,1.53)',volume=0.87:enable='between(t,1.53,1.54)',volume=0.89:enable='between(t,1.54,1.55)',volume=0.91:enable='between(t,1.55,1.56)',volume=0.93:enable='between(t,1.56,1.57)',volume=0.95:enable='between(t,1.57,1.58)',volume=0.97:enable='between(t,1.58,1.59)',volume=0.99:enable='between(t,1.59,1.6)',volume=0.975:enable='between(t,3.12,3.13)',volume=0.925:enable='between(t,3.13,3.14)',volume=0.875:enable='between(t,3.14,3.15)',volume=0.825:enable='between(t,3.15,3.16)',volume=0.775:enable='between(t,3.16,3.17)',volume=0.725:enable='between(t,3.17,3.18)',volume=0.675:enable='between(t,3.18,3.19)',volume=0.625:enable='between(t,3.19,3.2)',volume=0.6:enable='between(t,3.2,3.5)',volume=0.61:enable='between(t,3.5,3.51)',volume=0.63:enable='between(t,3.51,3.52)',volume=0.65:enable='between(t,3.52,3.53)',volume=0.67:enable='between(t,3.53,3.54)',volume=0.625:enable='between(t,3.54,3.55)',volume=0.6:enable='between(t,3.55,3.7)',volume=0.61:enable='between(t,3.7,3.71)',volume=0.63:enable='between(t,3.71,3.72)',volume=0.65:enable='between(t,3.72,3.73)',volume=0.67:enable='between(t,3.73,3.74)',volume=0.625:enable='between(t,3.74,3.75)',volume=0.6:enable='between(t,3.75,4.2)',volume=0.61:enable='between(t,4.2,4.21)',volume=0.63:enable='between(t,4.21,4.22)',volume=0.65:enable='between(t,4.22,4.23)',volume=0.67:enable='between(t,4.23,4.24)',volume=0.69:enable='between(t,4.24,4.25)',volume=0.71:enable='between(t,4.25,4.26)',volume=0.73:enable='between(t,4.26,4.27)',volume=0.75:enable='between(t,4.27,4.28)',volume=0.77:enable='between(t,4.28,4.29)',volume=0.79:enable='between(t,4.29,4.3)',volume=0.81:enable='between(t,4.3,4.31)',volume=0.83:enable='between(t,4.31,4.32)',volume=0.85:enable='between(t,4.32,4.33)',volume=0.87:enable='between(t,4.33,4.34)',volume=0.89:enable='between(t,4.34,4.35)',volume=0.91:enable='between(t,4.35,4.36)',volume=0.93:enable='between(t,4.36,4.37)',volume=0.95:enable='between(t,4.37,4.38)',volume=0.97:enable='between(t,4.38,4.39)',volume=0.99:enable='between(t,4.39,4.4)',afade=t=in:st=0:d=1.5,afade=t=out:st=3.5:d=1.5[bgm];[0:a][bgm]amix=inputs=2:duration=first:normalize=0[mix];[mix]loudnorm=I=-14:TP=-1.5:LRA=11[out]"`);
   });
 
   it("skips the ducking stage when no windows are provided", () => {
@@ -119,8 +118,8 @@ describe("buildBgmFilterGraph", () => {
       narrationDurationSec: 3,
       duckWindows: [{ start: -1, end: 0.5 }, { start: 2.5, end: 99 }],
     });
-    expect(graph).toMatch(/between\(t,0,0.5\)/);
-    expect(graph).toMatch(/between\(t,2.5,3\)/);
+    expect(graph).toContain("between(t,0,0.5)");
+    expect(graph).toContain("between(t,2.5,3)");
   });
 
   it("honors custom loudness targets", () => {
@@ -132,6 +131,82 @@ describe("buildBgmFilterGraph", () => {
       loudnessLra: 7,
     });
     expect(graph).toMatch(/loudnorm=I=-16:TP=-2:LRA=7/);
+  });
+});
+
+describe("buildDuckSegments", () => {
+  it("samples a single-word attack, hold, and release envelope", () => {
+    const segments = buildDuckSegments([{ start: 1, end: 1.1 }], {
+      durationSec: 2,
+      ducking: 0.5,
+      attackSec: 0.02,
+      releaseSec: 0.02,
+    });
+    expect(segments).toEqual([
+      { start: 0.98, end: 0.99, gain: 0.875 },
+      { start: 0.99, end: 1, gain: 0.625 },
+      { start: 1, end: 1.1, gain: 0.5 },
+      { start: 1.1, end: 1.11, gain: 0.625 },
+      { start: 1.11, end: 1.12, gain: 0.875 },
+    ]);
+  });
+
+  it("merges overlapping release and attack ramps by keeping the minimum gain", () => {
+    const segments = buildDuckSegments(
+      [
+        { start: 1, end: 1.1 },
+        { start: 1.15, end: 1.25 },
+      ],
+      { durationSec: 2, ducking: 0.5, attackSec: 0.08, releaseSec: 0.2 },
+    );
+    const bridge = segments.filter((s) => s.start >= 1.1 && s.end <= 1.15);
+    expect(bridge.length).toBeGreaterThan(0);
+    expect(Math.max(...bridge.map((s) => s.gain))).toBeLessThanOrEqual(0.625);
+  });
+
+  it("honors custom attack and release values", () => {
+    const segments = buildDuckSegments([{ start: 1, end: 1.1 }], {
+      durationSec: 2,
+      ducking: 0.6,
+      attackSec: 0.05,
+      releaseSec: 0.5,
+    });
+    expect(segments[0]?.start).toBeCloseTo(0.95, 6);
+    expect(segments.some((s) => s.start === 1.1 && s.end === 1.11)).toBe(true);
+    expect(segments.at(-1)?.end).toBeCloseTo(1.6, 6);
+  });
+
+  it("clamps a word at t=0 with no pre-attack window", () => {
+    const segments = buildDuckSegments([{ start: 0, end: 0.1 }], {
+      durationSec: 1,
+      ducking: 0.5,
+      attackSec: 0.08,
+      releaseSec: 0.2,
+    });
+    expect(segments[0]).toEqual({ start: 0, end: 0.1, gain: 0.5 });
+  });
+
+  it("keeps dense narration segment counts bounded", () => {
+    const windows = Array.from({ length: 50 }, (_, i) => ({
+      start: i * 0.1,
+      end: i * 0.1 + 0.05,
+    }));
+    const segments = buildDuckSegments(windows, {
+      durationSec: 5,
+      ducking: 0.6,
+      attackSec: 0.08,
+      releaseSec: 0.2,
+    });
+    expect(segments.length).toBeLessThanOrEqual(500);
+  });
+
+  it("reaches default ducking at word start and recovers after 200ms", () => {
+    const segments = buildDuckSegments([{ start: 1, end: 1.1 }], {
+      durationSec: 2,
+      ducking: 0.6,
+    });
+    expect(segments.find((s) => s.start === 1 && s.end === 1.1)?.gain).toBe(0.6);
+    expect(segments.at(-1)?.end).toBeCloseTo(1.3, 6);
   });
 });
 
@@ -172,7 +247,7 @@ describe("mixBgm", () => {
     const argv = runner.mock.calls[0]?.[0] ?? [];
     expect(argv).toEqual(result.args);
     expect(result.outputPath).toBe("/tmp/voice-mixed.mp3");
-    expect(result.duckWindowCount).toBe(2);
+    expect(result.duckWindowCount).toBe(5);
     expect(result.command).toContain("ffmpeg ");
     expect(result.command).toContain("/tmp/voice-mixed.mp3");
     expect(result.filterGraph).toContain("amix=inputs=2:duration=first:normalize=0");
