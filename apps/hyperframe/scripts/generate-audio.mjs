@@ -228,7 +228,10 @@ const main = async () => {
     modelId = values.model ?? undefined;
     deferredVoiceError = err;
   }
-  const isV3 = ttsProviderNameForDefaults === "elevenlabs" && isElevenV3Model(modelId);
+  const isV3 =
+    ttsProviderNameForDefaults === "elevenlabs" &&
+    typeof modelId === "string" &&
+    isElevenV3Model(modelId);
   const hasExplicitPauseControls =
     values["pause-sentence"] != null || values["pause-clause"] != null;
   const tuningRecap = [
