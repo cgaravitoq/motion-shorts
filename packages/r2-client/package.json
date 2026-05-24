@@ -1,14 +1,13 @@
 {
-  "name": "@cgaravitoq/audio",
+  "name": "@cgaravitoq/r2-client",
   "version": "0.1.0",
-  "description": "TTS (ElevenLabs) + STT (Scribe / hyperframes-transcribe) + ffprobe + script pacing pipeline. In-source TypeScript exports — no compile step.",
+  "description": "Minimal Cloudflare R2 client for shared motion-shorts artifacts.",
   "type": "module",
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./env": "./src/env.ts"
+    ".": "./src/index.ts"
   },
   "license": "MIT",
   "scripts": {
@@ -16,9 +15,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@elevenlabs/elevenlabs-js": "2.47.0",
-    "@cgaravitoq/r2-client": "workspace:*",
-    "@inworld/tts": "1.1.1",
     "@t3-oss/env-core": "0.13.11",
     "zod": "4.4.3"
   },

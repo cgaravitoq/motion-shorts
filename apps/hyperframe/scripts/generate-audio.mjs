@@ -37,7 +37,7 @@ import {
   mixBgm,
   parseCaptionFormats,
   parseScript,
-  readCachedTts,
+  readCachedTtsWithSource,
   resolveCacheMode,
   resolveElevenLabsModelId,
   resolveElevenLabsVoiceId,
@@ -46,6 +46,7 @@ import {
   toSrt,
   toVtt,
   writeCachedTts,
+  writeCachedTtsToR2,
 } from "@cgaravitoq/audio";
 
 const HELP = `Usage: bun run scripts/generate-audio.mjs <script.txt> [options]
@@ -85,12 +86,14 @@ Options:
                          formats to emit alongside captions.json. Supported:
                          "srt", "vtt". Example: --caption-format=srt,vtt.
                          When omitted, behavior is unchanged (JSON only).
-  --cache=use|refresh|off
+  --cache=use|refresh|off|local-only
                          TTS cache control. Default "use": look up
                          sha256(script+voice+model+tuning) in the local cache
                          and skip the ElevenLabs call on hit. "refresh"
                          bypasses the cache for reads but writes a fresh
                          entry. "off" disables the cache entirely.
+                         "local-only" skips the R2 mirror while still using
+                         the local cache.
                          Cache lives at ~/.cache/motion-shorts/tts/<hash>/.
                          For multi-speaker scripts (see below) every segment
                          is hashed and cached independently, so editing one
@@ -371,15 +374,15 @@ const main = async () => {
         let segAudio = null;
         let segCaptions = null;
         let segCacheStatus = "disabled";
-        if (cacheMode === "use" && segCacheHash) {
-          const hit = readCachedTts(segCacheHash);
-          if (hit) {
-            segAudio = hit.audio;
-            segCaptions = hit.captions;
-            segCacheStatus = "hit";
+        if ((cacheMode === "use" || cacheMode === "local-only") && segCacheHash) {
+          const hit = await readCachedTtsWithSource(segCacheHash, { cacheMode });
+          if (hit.payload) {
+            segAudio = hit.payload.audio;
+            segCaptions = hit.payload.captions;
+            segCacheStatus = hit.source;
             segmentCacheHits += 1;
             console.log(
-              `[generate-audio] segment ${segment.index} (${segment.speakerName ?? "(default)"}) cache hit hash=${segCacheHash.slice(0, 12)}`,
+              `[generate-audio] segment ${segment.index} (${segment.speakerName ?? "(default)"}) cache ${hit.source} hash=${segCacheHash.slice(0, 12)}`,
             );
           } else {
             segCacheStatus = "miss";
@@ -418,6 +421,7 @@ const main = async () => {
 
         if (segCacheHash && (segCacheStatus === "miss" || segCacheStatus === "refresh")) {
           writeCachedTts(segCacheHash, { audio: segAudio, captions: segCaptions });
+          await writeCachedTtsToR2(segCacheHash, { audio: segAudio, captions: segCaptions }, { cacheMode });
         }
 
         const segDuration = await getAudioDurationSeconds(segAudioPath);
@@ -452,14 +456,14 @@ const main = async () => {
     }
   }
 
-  if (cacheMode === "use" && cacheHash) {
-    const hit = readCachedTts(cacheHash);
-    if (hit) {
-      audioBuffer = hit.audio;
-      captions = hit.captions;
-      cacheStatus = "hit";
+  if ((cacheMode === "use" || cacheMode === "local-only") && cacheHash) {
+    const hit = await readCachedTtsWithSource(cacheHash, { cacheMode });
+    if (hit.payload) {
+      audioBuffer = hit.payload.audio;
+      captions = hit.payload.captions;
+      cacheStatus = hit.source;
       const { dir } = cacheEntryPaths(cacheHash);
-      console.log(`[generate-audio] cache hit hash=${cacheHash.slice(0, 12)} (${dir})`);
+      console.log(`[generate-audio] cache ${hit.source} hash=${cacheHash.slice(0, 12)} (${dir})`);
     } else {
       cacheStatus = "miss";
       console.log(`[generate-audio] cache miss hash=${cacheHash.slice(0, 12)}`);
@@ -519,6 +523,7 @@ const main = async () => {
   // Persist the freshly synthesised pair so subsequent runs hit the cache.
   if (cacheHash && (cacheStatus === "miss" || cacheStatus === "refresh")) {
     const { dir } = writeCachedTts(cacheHash, { audio: audioBuffer, captions });
+    await writeCachedTtsToR2(cacheHash, { audio: audioBuffer, captions }, { cacheMode });
     console.log(`[generate-audio] cached hash=${cacheHash.slice(0, 12)} -> ${dir}`);
   }
 
@@ -638,8 +643,8 @@ const main = async () => {
     }
   } else if (cacheHash) {
     const cacheLabel =
-      cacheStatus === "hit"
-        ? `hit (no API calls, hash=${cacheHash.slice(0, 12)})`
+      cacheStatus === "local-hit" || cacheStatus === "r2-hit"
+        ? `${cacheStatus} (no API calls, hash=${cacheHash.slice(0, 12)})`
         : cacheStatus === "refresh"
           ? `refresh (forced re-synth, hash=${cacheHash.slice(0, 12)})`
           : `miss (synthesised + stored, hash=${cacheHash.slice(0, 12)})`;

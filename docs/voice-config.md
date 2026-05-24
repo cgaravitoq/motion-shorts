@@ -125,6 +125,16 @@ STT_PROVIDER=hyperframes-transcribe  # Offline: whisper.cpp via npx hyperframes 
 - **TTS char cap**: 5000 characters per call (applied per segment in multi-speaker runs)
 - **STT minute cap**: 5 minutes of audio per call (Scribe only; whisper.cpp is free)
 
+## TTS cache mirror
+
+The local TTS cache (`~/.cache/motion-shorts/tts/<hash>/`) can mirror entries to R2 under `tts-cache/<hash>/{voice.mp3,captions.json}` when `R2_*` credentials are present. Cache lookup order is local disk, then R2, then the TTS provider. Missing R2 credentials silently fall back to local-only.
+
+Opt out per run with `--cache=local-only`, or globally with:
+
+```bash
+MOTION_SHORTS_TTS_CACHE_R2=off
+```
+
 ## Multi-speaker scripts
 
 A script with no `[speaker:...]` markup behaves exactly as before — same TTS call, same cache key, same captions output (byte-identical guarantee).
