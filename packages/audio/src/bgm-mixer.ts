@@ -335,8 +335,6 @@ export interface MixBgmOptions {
   fadeSec?: number;
   attackSec?: number;
   releaseSec?: number;
-  mergeGapSec?: number;
-  padSec?: number;
   loudnessLufs?: number;
   loudnessTruePeak?: number;
   loudnessLra?: number;
