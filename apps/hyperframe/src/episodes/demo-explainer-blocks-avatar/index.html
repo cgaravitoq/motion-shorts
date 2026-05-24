@@ -1,0 +1,200 @@
+<!doctype html>
+<!-- catalog: [brand-logo-watermark, data-chart, flowchart] disabled: [brand-logo-outro] reason: "avatar PiP variant keeps the legacy inline outro pattern" -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="stylesheet" href="lib/theme.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@600;800&display=swap" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root { --ink: #050814; --paper: #f8fafc; --muted: #94a3b8; --cyan: #22d3ee; --violet: #a78bfa; --amber: #fbbf24; --emerald: #34d399; }
+      html, body { width: 1080px; height: 1920px; margin: 0; padding: 0; overflow: hidden; background: var(--ink); color: var(--paper); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+      #ep-stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+      .bg-mesh { background: radial-gradient(circle at 22% 18%, rgba(34, 211, 238, 0.28), transparent 40%), radial-gradient(circle at 80% 68%, rgba(167, 139, 250, 0.30), transparent 44%), #050814; }
+      .bg-grid { opacity: 0.72; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 72px 72px; }
+      .vignette { background: radial-gradient(ellipse at center, transparent 48%, rgba(0, 0, 0, 0.62) 100%); }
+      .avatar-pip { position: absolute; left: 72px; bottom: 92px; width: 330px; height: 330px; border-radius: 42px; overflow: hidden; border: 1.5px solid rgba(248,250,252,0.22); background: rgba(5,8,20,0.72); box-shadow: 0 30px 90px rgba(0,0,0,0.44); pointer-events: none; }
+      .avatar-pip video { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+      .scene { opacity: 0; will-change: opacity, transform, filter; }
+      .scene-pad { width: 100%; height: 100%; padding: 120px 86px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 36px; }
+      .label { align-self: flex-start; padding: 13px 22px; border: 1.5px solid rgba(255,255,255,0.18); border-radius: 999px; background: rgba(255,255,255,0.07); color: var(--cyan); font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 800; letter-spacing: 5px; text-transform: uppercase; }
+      .headline { margin: 0; max-width: 880px; font-size: 96px; font-weight: 900; line-height: 0.96; letter-spacing: -4px; }
+      .subcopy { margin: 0; max-width: 820px; color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 30px; line-height: 1.35; }
+      .demo-card { position: relative; min-height: 720px; border-radius: 44px; border: 1.5px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.055); overflow: hidden; box-shadow: 0 34px 110px rgba(0,0,0,0.36); }
+      .hf-data-chart { position: absolute; inset: 54px 50px 50px; display: grid; grid-template-columns: 92px 1fr; grid-template-rows: 1fr 70px; gap: 18px 22px; }
+      .hf-data-chart__axis-y { display: flex; flex-direction: column; justify-content: space-between; color: rgba(248,250,252,0.5); font-family: "JetBrains Mono", monospace; font-size: 22px; text-align: right; }
+      .hf-data-chart__plot { position: relative; border-left: 1.5px solid rgba(248,250,252,0.22); border-bottom: 1.5px solid rgba(248,250,252,0.22); background-image: linear-gradient(rgba(248,250,252,0.08) 1px, transparent 1px); background-size: 100% 25%; }
+      .hf-data-chart__bar { position: absolute; bottom: 0; width: 88px; border-radius: 18px 18px 0 0; background: linear-gradient(180deg, var(--cyan), rgba(34,211,238,0.18)); transform: scaleY(0); transform-origin: bottom center; }
+      .hf-data-chart__bar--a { left: 58px; height: 38%; }
+      .hf-data-chart__bar--b { left: 258px; height: 66%; }
+      .hf-data-chart__bar--c { left: 458px; height: 84%; }
+      .hf-data-chart__value { position: absolute; left: 50%; bottom: calc(100% + 16px); transform: translateX(-50%); font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 800; color: var(--paper); opacity: 0; }
+      .hf-data-chart__line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+      .hf-data-chart__path { fill: none; stroke: var(--amber); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 720; stroke-dashoffset: 720; filter: drop-shadow(0 0 18px rgba(251,191,36,0.28)); }
+      .hf-data-chart__dot { fill: var(--amber); stroke: var(--ink); stroke-width: 8; transform-box: fill-box; transform-origin: center; }
+      .hf-data-chart__axis-x { grid-column: 2; display: flex; justify-content: space-around; color: rgba(248,250,252,0.66); font-family: "JetBrains Mono", monospace; font-size: 24px; font-weight: 800; }
+      .chart-kpi { position: absolute; right: 52px; top: 48px; font-family: "JetBrains Mono", monospace; font-size: 38px; font-weight: 800; color: var(--emerald); }
+      .hf-flowchart { position: absolute; inset: 54px; }
+      .hf-flowchart__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+      .hf-flowchart__edge { fill: none; stroke: rgba(34,211,238,0.82); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 520; stroke-dashoffset: 520; filter: drop-shadow(0 0 16px rgba(34,211,238,0.28)); }
+      .hf-flowchart__edge-label { position: absolute; padding: 9px 14px; border-radius: 999px; background: rgba(5,8,20,0.82); border: 1.5px solid rgba(248,250,252,0.14); color: var(--paper); font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 800; opacity: 0; }
+      .hf-flowchart__node { position: absolute; width: 240px; min-height: 126px; padding: 22px; box-sizing: border-box; border-radius: 28px; border: 1.5px solid rgba(255,255,255,0.16); background: linear-gradient(135deg, rgba(248,250,252,0.14), rgba(248,250,252,0.055)); box-shadow: 0 24px 80px rgba(0,0,0,0.32); opacity: 0; }
+      .hf-flowchart__node strong { display: block; margin-bottom: 10px; font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+      .hf-flowchart__node span { display: block; color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 20px; line-height: 1.25; }
+      #flow-node-a { left: 280px; top: 8px; }
+      #flow-node-b { left: 44px; top: 250px; }
+      #flow-node-c { right: 44px; top: 250px; }
+      #flow-node-d { left: 280px; top: 466px; }
+      #flow-label-a { left: 188px; top: 174px; }
+      #flow-label-b { right: 190px; top: 174px; }
+      #flow-label-c { left: 306px; bottom: 160px; }
+      .hf-logo-outro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 34px; }
+      .hf-logo-outro__mark { position: relative; width: 280px; height: 280px; color: var(--cyan); filter: drop-shadow(0 0 42px rgba(34,211,238,0.34)); }
+      .hf-logo-outro__mark svg { width: 100%; height: 100%; fill: currentColor; opacity: 0; }
+      .hf-logo-outro__tile { position: absolute; width: 128px; height: 128px; border-radius: 34px; background: linear-gradient(135deg, var(--cyan), var(--violet)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 24px 70px rgba(0,0,0,0.34); opacity: 0; }
+      .hf-logo-outro__tile--a { left: 0; top: 0; }
+      .hf-logo-outro__tile--b { right: 0; top: 0; background: linear-gradient(135deg, var(--violet), var(--amber)); }
+      .hf-logo-outro__tile--c { left: 76px; bottom: 0; background: linear-gradient(135deg, var(--emerald), var(--cyan)); }
+      .hf-logo-outro__name { margin: 0; font-size: 92px; font-weight: 900; line-height: 0.94; letter-spacing: -4px; text-align: center; opacity: 0; }
+      .hf-logo-outro__tagline { margin: 0; color: var(--muted); font-family: "JetBrains Mono", monospace; font-size: 30px; font-weight: 800; letter-spacing: 2px; text-align: center; text-transform: uppercase; opacity: 0; }
+      .hf-logo-outro__url { padding: 18px 26px; border-radius: 999px; border: 1.5px solid rgba(248,250,252,0.16); background: rgba(255,255,255,0.07); color: var(--paper); font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 800; opacity: 0; }
+      .hf-logo-outro__glow { position: absolute; width: 520px; height: 520px; border-radius: 999px; background: radial-gradient(circle, rgba(34,211,238,0.28), transparent 64%); transform: scale(0.8); opacity: 0; }
+      #brand-corner { position: absolute; right: 96px; top: 96px; width: 96px; color: rgba(248,250,252,0.3); z-index: 60; pointer-events: none; }
+      #brand-corner svg { display: block; width: 100%; height: auto; fill: currentColor; }
+      #captions { position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%; z-index: 80; pointer-events: none; display: flex; align-items: center; justify-content: center; font-family: "Inter", system-ui, sans-serif; font-size: 60px; font-weight: 900; line-height: 1.1; color: var(--paper); text-align: center; text-shadow: 0 2px 24px rgba(0,0,0,0.80); }
+      #captions .hf-caption-token { opacity: 0.70; transition: color 0.06s linear, opacity 0.06s linear; }
+      #captions .hf-caption-token.--active { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div id="ep-stage" data-composition-id="demo-explainer-blocks-avatar" data-start="0" data-duration="14.53" data-width="1080" data-height="1920">
+      <div id="brand-corner" class="clip" data-start="0" data-duration="14.53" data-track-index="97"><svg viewBox="0 0 64 64" aria-label="Logo mark watermark"><path d="M8 8h18v18H8zM38 8h18v18H38zM23 38h18v18H23z" /></svg></div>
+      <div id="bg-mesh" class="bg-mesh clip" data-start="0" data-duration="14.53" data-track-index="0" style="position:absolute; inset:0;"></div>
+      <div id="bg-grid" class="bg-grid clip" data-start="0" data-duration="14.53" data-track-index="1" style="position:absolute; inset:0;"></div>
+      <div id="bg-vignette" class="vignette clip" data-start="0" data-duration="14.53" data-track-index="2" style="position:absolute; inset:0;"></div>
+
+      <section id="scene-data-chart" class="scene clip" data-start="0" data-duration="14.53" data-track-index="4" style="position:absolute; inset:0;">
+        <div class="scene-pad">
+          <div id="chart-label" class="label">data-chart</div>
+          <h1 id="chart-headline" class="headline">Stats that move with the narration.</h1>
+          <p id="chart-subcopy" class="subcopy">Bars, a trend line, and value labels stay inline and seek-safe.</p>
+          <div id="chart-card" class="demo-card">
+            <div id="chart-kpi" class="chart-kpi">+0%</div>
+            <div class="hf-data-chart">
+              <div class="hf-data-chart__axis-y"><span>90</span><span>60</span><span>30</span><span>0</span></div>
+              <div class="hf-data-chart__plot">
+                <div id="chart-bar-a" class="hf-data-chart__bar hf-data-chart__bar--a"><span id="chart-value-a" class="hf-data-chart__value">38</span></div>
+                <div id="chart-bar-b" class="hf-data-chart__bar hf-data-chart__bar--b"><span id="chart-value-b" class="hf-data-chart__value">66</span></div>
+                <div id="chart-bar-c" class="hf-data-chart__bar hf-data-chart__bar--c"><span id="chart-value-c" class="hf-data-chart__value">84</span></div>
+                <svg class="hf-data-chart__line" viewBox="0 0 694 528" aria-hidden="true">
+                  <path id="chart-line" class="hf-data-chart__path" d="M102 327 C184 304 220 180 302 180 S420 84 502 84" />
+                  <circle id="chart-dot-a" class="hf-data-chart__dot" cx="102" cy="327" r="15" />
+                  <circle id="chart-dot-b" class="hf-data-chart__dot" cx="302" cy="180" r="15" />
+                  <circle id="chart-dot-c" class="hf-data-chart__dot" cx="502" cy="84" r="15" />
+                </svg>
+              </div>
+              <div></div>
+              <div class="hf-data-chart__axis-x"><span>Baseline</span><span>Pilot</span><span>Scaled</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-flowchart" class="scene clip" data-start="0" data-duration="14.53" data-track-index="5" style="position:absolute; inset:0;">
+        <div class="scene-pad">
+          <div id="flow-label" class="label">flowchart</div>
+          <h2 id="flow-headline" class="headline">Decisions become a visible path.</h2>
+          <p id="flow-subcopy" class="subcopy">Nodes enter first; labelled connectors draw in deterministic order.</p>
+          <div id="flow-card" class="demo-card">
+            <div class="hf-flowchart">
+              <svg class="hf-flowchart__svg" viewBox="0 0 800 612" aria-hidden="true">
+                <path id="flow-edge-a" class="hf-flowchart__edge" d="M400 134 C330 178 238 204 164 250" />
+                <path id="flow-edge-b" class="hf-flowchart__edge" d="M400 134 C470 178 562 204 636 250" />
+                <path id="flow-edge-c" class="hf-flowchart__edge" d="M164 376 C238 444 326 466 400 466 M636 376 C562 444 474 466 400 466" />
+              </svg>
+              <div id="flow-node-a" class="hf-flowchart__node"><strong>Input</strong><span>What signal changed?</span></div>
+              <div id="flow-node-b" class="hf-flowchart__node"><strong>Rule</strong><span>Does it affect scope?</span></div>
+              <div id="flow-node-c" class="hf-flowchart__node"><strong>Evidence</strong><span>Can we verify it?</span></div>
+              <div id="flow-node-d" class="hf-flowchart__node"><strong>Action</strong><span>Ship the smallest safe step.</span></div>
+              <div id="flow-label-a" class="hf-flowchart__edge-label">if unclear</div>
+              <div id="flow-label-b" class="hf-flowchart__edge-label">if testable</div>
+              <div id="flow-label-c" class="hf-flowchart__edge-label">then commit</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-logo-outro" class="scene clip" data-start="0" data-duration="14.53" data-track-index="6" style="position:absolute; inset:0;">
+        <div class="hf-logo-outro">
+          <div id="outro-glow" class="hf-logo-outro__glow"></div>
+          <div id="outro-mark" class="hf-logo-outro__mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64"><path d="M8 8h18v18H8zM38 8h18v18H38zM23 38h18v18H23z" /></svg>
+            <div id="outro-tile-a" class="hf-logo-outro__tile hf-logo-outro__tile--a"></div>
+            <div id="outro-tile-b" class="hf-logo-outro__tile hf-logo-outro__tile--b"></div>
+            <div id="outro-tile-c" class="hf-logo-outro__tile hf-logo-outro__tile--c"></div>
+          </div>
+          <h2 id="outro-name" class="hf-logo-outro__name">Inline blocks</h2>
+          <p id="outro-tagline" class="hf-logo-outro__tagline">monolithic · paused · seek-safe</p>
+          <div id="outro-url" class="hf-logo-outro__url">motion-shorts/demo</div>
+        </div>
+      </section>
+
+      <div id="avatar-pip" class="avatar-pip">
+        <video id="avatar-video" src="assets/avatar-seek.mp4" data-start="0" data-duration="14.53" data-track-index="8" playsinline muted preload="auto"></video>
+      </div>
+
+      <audio id="voiceover" class="clip" data-start="0" data-duration="14.53" data-track-index="98" data-volume="1" src="assets/voice.mp3"></audio>
+      <div id="captions" class="clip" data-start="0" data-duration="14.53" data-track-index="99"></div>
+    </div>
+    <script type="application/json" id="captions-data">[]</script>
+    <script src="lib/captions-karaoke.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const metric = { value: 0 };
+      tl.set("#avatar-pip", { autoAlpha: 0, scale: 0.92, y: 18 }, 0);
+      tl.set("#scene-data-chart", { autoAlpha: 0 }, 0);
+      tl.set("#scene-flowchart", { autoAlpha: 0, scale: 1.04, filter: "blur(8px)" }, 0);
+      tl.set("#scene-logo-outro", { autoAlpha: 0, scale: 1.04, filter: "blur(8px)" }, 0);
+      tl.set(["#chart-value-a", "#chart-value-b", "#chart-value-c"], { autoAlpha: 0 }, 0);
+      tl.set(".hf-data-chart__dot", { scale: 0 }, 0);
+      tl.to("#avatar-pip", { autoAlpha: 1, scale: 1, y: 0, duration: 0.55, ease: "power2.out" }, 0.22);
+      tl.to("#scene-data-chart", { autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0);
+      tl.from("#chart-label", { x: -42, opacity: 0, duration: 0.45, ease: "back.out(1.7)" }, 0.18);
+      tl.from("#chart-headline", { y: 36, opacity: 0, duration: 0.62, ease: "back.out(1.5)" }, 0.36);
+      tl.from("#chart-subcopy", { y: 24, opacity: 0, duration: 0.48, ease: "power2.out" }, 0.62);
+      tl.from("#chart-card", { y: 42, opacity: 0, scale: 0.96, duration: 0.7, ease: "power2.out" }, 0.9);
+      tl.to(".hf-data-chart__bar", { scaleY: 1, duration: 0.72, stagger: 0.16, ease: "power3.out" }, 1.35);
+      tl.set("#chart-value-a", { autoAlpha: 1 }, 1.88);
+      tl.set("#chart-value-b", { autoAlpha: 1 }, 2.04);
+      tl.set("#chart-value-c", { autoAlpha: 1 }, 2.2);
+      tl.to("#chart-line", { strokeDashoffset: 0, duration: 1.2, ease: "power2.out" }, 2.25);
+      tl.to(".hf-data-chart__dot", { scale: 1, duration: 0.36, stagger: 0.18, ease: "back.out(1.8)" }, 2.55);
+      tl.to(metric, { value: 46, duration: 1.15, ease: "power2.out", onUpdate: () => { document.getElementById("chart-kpi").textContent = `+${Math.round(metric.value)}%`; } }, 2.1);
+      tl.to("#scene-data-chart", { autoAlpha: 0, scale: 0.97, filter: "blur(8px)", duration: 0.55, ease: "power2.in" }, 4.6);
+      tl.to("#scene-flowchart", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, 5.05);
+      tl.from("#flow-label", { x: -42, opacity: 0, duration: 0.45, ease: "back.out(1.7)" }, 5.2);
+      tl.from("#flow-headline", { y: 36, opacity: 0, duration: 0.62, ease: "back.out(1.5)" }, 5.4);
+      tl.from("#flow-subcopy", { y: 24, opacity: 0, duration: 0.48, ease: "power2.out" }, 5.65);
+      tl.from("#flow-card", { y: 42, opacity: 0, scale: 0.96, duration: 0.7, ease: "power2.out" }, 5.9);
+      tl.to(".hf-flowchart__node", { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.18, ease: "back.out(1.6)", startAt: { y: 26 } }, 6.25);
+      tl.to(".hf-flowchart__edge", { strokeDashoffset: 0, duration: 0.68, stagger: 0.22, ease: "power2.out" }, 7.1);
+      tl.set("#flow-label-a", { autoAlpha: 1 }, 7.55);
+      tl.set("#flow-label-b", { autoAlpha: 1 }, 7.75);
+      tl.set("#flow-label-c", { autoAlpha: 1 }, 7.95);
+      tl.to("#scene-flowchart", { autoAlpha: 0, scale: 0.97, filter: "blur(8px)", duration: 0.55, ease: "power2.in" }, 10.3);
+      tl.to("#avatar-pip", { autoAlpha: 0, scale: 0.96, y: 14, duration: 0.45, ease: "power2.in" }, 10.45);
+      tl.to("#scene-logo-outro", { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, 10.75);
+      tl.to("#outro-glow", { autoAlpha: 1, scale: 1, duration: 0.75, ease: "power2.out" }, 10.9);
+      tl.to(".hf-logo-outro__mark svg", { autoAlpha: 1, duration: 0.42, ease: "power2.out" }, 11.05);
+      tl.to(".hf-logo-outro__tile", { autoAlpha: 1, x: 0, y: 0, rotation: 0, duration: 0.62, stagger: 0.12, ease: "back.out(1.7)", startAt: { x: -42, y: 36, rotation: -14 } }, 11.12);
+      tl.to("#outro-mark", { scale: 1.06, duration: 0.36, ease: "power2.out" }, 12.0);
+      tl.to("#outro-mark", { scale: 1, duration: 0.42, ease: "power2.inOut" }, 12.38);
+      tl.to("#outro-name", { autoAlpha: 1, y: 0, duration: 0.55, ease: "power2.out", startAt: { y: 28 } }, 12.52);
+      tl.to("#outro-tagline", { autoAlpha: 1, y: 0, duration: 0.45, ease: "power2.out", startAt: { y: 18 } }, 12.9);
+      tl.to("#outro-url", { autoAlpha: 1, y: 0, duration: 0.45, ease: "back.out(1.7)", startAt: { y: 18 } }, 13.28);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["demo-explainer-blocks-avatar"] = tl;
+    </script>
+  </body>
+</html>

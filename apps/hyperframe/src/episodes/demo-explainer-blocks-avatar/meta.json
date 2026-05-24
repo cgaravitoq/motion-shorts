@@ -1,0 +1,7 @@
+{
+  "id": "demo-explainer-blocks-avatar",
+  "title": "Demo Explainer Blocks Avatar",
+  "description": "Inline 9:16 demo combining explainer blocks with a floating HeyGen avatar video.",
+  "tail": 0,
+  "captionFormats": ["srt", "vtt"]
+}
