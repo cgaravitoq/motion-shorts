@@ -3,11 +3,7 @@
   "mcp": {
     "motion-shorts": {
       "type": "local",
-      "command": [
-        "bun",
-        "run",
-        "apps/mcp/src/index.ts"
-      ]
+      "command": ["bun", "run", "apps/mcp/src/index.ts"]
     },
     "notion": {
       "type": "remote",
