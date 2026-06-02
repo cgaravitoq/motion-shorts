@@ -1,0 +1,16 @@
+{
+  "eyebrow": "Antes vs después",
+  "title": "HTML a mano vs <strong>scene-hub</strong>",
+  "leftTitle": "A mano",
+  "rightTitle": "Scene-hub",
+  "leftPoints": [
+    { "text": "Cada short diverge en tamaños y timing." },
+    { "text": "Animaciones copiadas y rotas al editar." },
+    { "text": "QA imposible de repetir 1:1." }
+  ],
+  "rightPoints": [
+    { "text": "Escenas tipadas como datos reutilizables." },
+    { "text": "Assembler emite el HTML monolítico 1:1." },
+    { "text": "Entradas y stagger idénticos siempre." }
+  ]
+}

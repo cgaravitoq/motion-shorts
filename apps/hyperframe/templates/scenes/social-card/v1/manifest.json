@@ -1,0 +1,27 @@
+{
+  "id": "social-card@1",
+  "type": "social-card",
+  "version": 1,
+  "label": "Social post card",
+  "description": "A platform-native social post: avatar (initials or accent fill), display name + optional handle, a rich-text body, and an optional engagement row (replies / reposts / likes). Optional eyebrow + title above. The card is the scene object.",
+  "builder": "build_socialCard",
+  "classPrefix": "soc",
+  "defaultDuration": 7,
+  "intentTags": ["social", "informative", "brand"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "avatarInitials": { "kind": "text", "required": false, "default": "" },
+    "name": { "kind": "text", "required": true },
+    "handle": { "kind": "text", "required": false, "default": "" },
+    "body": { "kind": "richText", "required": true },
+    "replies": { "kind": "text", "required": false, "default": "" },
+    "reposts": { "kind": "text", "required": false, "default": "" },
+    "likes": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "single .soc-card primary object (not double-wrapped)",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}

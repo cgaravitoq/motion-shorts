@@ -1,0 +1,10 @@
+{
+  "eyebrow": "Resultados",
+  "title": "El impacto en <strong>números</strong>",
+  "stats": [
+    { "value": "3.2x", "label": "Velocidad de render", "delta": "+220% vs base" },
+    { "value": "98%", "label": "Reproducibilidad 1:1", "delta": "+12 pts" },
+    { "value": "0", "label": "Escenas a mano", "delta": "antes: 100%" },
+    { "value": "1,400", "label": "Líneas eliminadas", "delta": "-37% código" }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "big-stat@1",
+  "type": "big-stat",
+  "version": 1,
+  "label": "Big stat hero number",
+  "description": "One enormous hero metric with an optional unit suffix, a label/eyebrow above, and a context subcopy below. The number scales and blurs in (back.out); label and context follow. Single instance, no repeat slots.",
+  "builder": "build_bigStat",
+  "classPrefix": "bs",
+  "defaultDuration": 6,
+  "intentTags": ["data", "informative", "social", "brand"],
+  "slots": {
+    "label": { "kind": "text", "required": false, "default": "" },
+    "value": { "kind": "text", "required": true },
+    "suffix": { "kind": "text", "required": false, "default": "" },
+    "context": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "single .bs-value hero number",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}

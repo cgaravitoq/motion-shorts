@@ -1,0 +1,10 @@
+{
+  "eyebrow": "La historia",
+  "title": "Del guion al <strong>render final</strong>",
+  "events": [
+    { "marker": "Paso 1", "text": "El guion define el ritmo y las escenas clave." },
+    { "marker": "Paso 2", "text": "ElevenLabs genera la voz y los subtítulos por palabra." },
+    { "marker": "Paso 3", "text": "El assembler arma el HTML monolítico determinista." },
+    { "marker": "Paso 4", "text": "Hyperframes renderiza el MP4 9:16 frame a frame." }
+  ]
+}

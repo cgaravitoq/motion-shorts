@@ -1,0 +1,7 @@
+.qt-mark { display: block; margin: 0 0 -56px -8px; font-family: Georgia, "Times New Roman", serif; font-size: 260px; line-height: 0.7; font-weight: 700; color: var(--source-accent-2); }
+.qt-quote { margin: 0; max-width: 880px; font-size: 70px; line-height: 1.16; font-weight: 720; letter-spacing: -0.5px; color: var(--paper); text-wrap: balance; }
+.qt-quote strong { color: var(--source-accent-2); font-weight: 800; }
+.qt-quote em { font-style: italic; color: var(--paper); }
+.qt-attribution { display: flex; flex-direction: column; gap: 12px; margin-top: 56px; }
+.qt-attribution__name { font-size: 38px; line-height: 1.1; font-weight: 760; color: var(--paper); }
+.qt-attribution__role { font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 26px; line-height: 1.2; font-weight: 540; letter-spacing: 0.5px; color: var(--muted); }

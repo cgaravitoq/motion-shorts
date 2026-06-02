@@ -1,0 +1,20 @@
+{
+  "id": "quote@1",
+  "type": "quote",
+  "version": 1,
+  "label": "Pull quote",
+  "description": "A large pull-quote with a decorative quote-mark glyph, an attribution name, and an optional role. Single instance, no repeat. The quote mark fades and scales in, the quote reveals, and the attribution slides up.",
+  "builder": "build_quote",
+  "classPrefix": "qt",
+  "defaultDuration": 6,
+  "intentTags": ["informative", "social", "brand", "workflow"],
+  "slots": {
+    "quote": { "kind": "richText", "required": true },
+    "name": { "kind": "text", "required": true },
+    "role": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}

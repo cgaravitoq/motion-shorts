@@ -1,0 +1,15 @@
+{
+  "eyebrow": "El assembler",
+  "title": "Una escena es solo datos",
+  "filename": "scene-spec.json",
+  "lines": [
+    { "text": "// cada escena se declara como datos tipados", "kind": "comment" },
+    { "text": "{", "kind": "plain" },
+    { "text": "  \"id\": \"hook\",", "kind": "key" },
+    { "text": "  \"type\": \"code\",", "kind": "key" },
+    { "text": "  \"slots\": {", "kind": "plain" },
+    { "text": "    \"filename\": \"scene-spec.json\"", "kind": "str" },
+    { "text": "  }", "kind": "plain" },
+    { "text": "}", "kind": "plain" }
+  ]
+}

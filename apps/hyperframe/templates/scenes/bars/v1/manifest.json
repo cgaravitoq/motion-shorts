@@ -1,0 +1,31 @@
+{
+  "id": "bars@1",
+  "type": "bars",
+  "version": 1,
+  "label": "Animated horizontal bar chart",
+  "description": "A horizontal bar chart of 2-6 rows. Each row has a short label, a full-width track with a fill that grows from zero (scaleX, seek-safe), and a big value number on the right. The bars ARE the scene; text stays minimal so narration + captions carry the words. Bar height and gap adapt to the row count.",
+  "builder": "build_bars",
+  "classPrefix": "br",
+  "defaultDuration": 7.5,
+  "intentTags": ["data", "informative", "workflow", "brand"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "bars": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 6,
+      "item": {
+        "label": { "kind": "text", "required": true },
+        "value": { "kind": "text", "required": true },
+        "pct": { "kind": "text", "required": true }
+      }
+    }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "bar count within [2,6]",
+    "each .br-fill width driven by inline --pct",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}

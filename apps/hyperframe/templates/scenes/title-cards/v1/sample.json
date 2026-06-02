@@ -1,0 +1,9 @@
+{
+  "eyebrow": "Cómo funciona",
+  "title": "Tres piezas, <strong>un sistema</strong>",
+  "cards": [
+    { "title": "Scene-spec", "body": "Defines escenas como datos tipados." },
+    { "title": "Assembler", "body": "Genera el HTML monolítico 1:1." },
+    { "title": "QA por escena", "body": "Aprueba solo lo correcto." }
+  ]
+}

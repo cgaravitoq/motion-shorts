@@ -1,0 +1,11 @@
+{
+  "eyebrow": "Orquestación",
+  "title": "Una tarea, <strong>muchos agentes</strong>",
+  "sourceLabel": "Tarea",
+  "workers": [
+    { "label": "Logs" },
+    { "label": "Código" },
+    { "label": "Datos" }
+  ],
+  "synthLabel": "Síntesis"
+}

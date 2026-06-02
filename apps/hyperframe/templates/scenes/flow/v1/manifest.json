@@ -1,0 +1,29 @@
+{
+  "id": "flow@1",
+  "type": "flow",
+  "version": 1,
+  "label": "Vertical flow / pipeline",
+  "description": "A workflow shown as a vertical sequence of 2-6 connected step nodes. Each node has an index badge, a label, and an optional sub-line; thin connectors draw between consecutive nodes. Step count is a parameter; the rail and stagger adapt automatically.",
+  "builder": "build_flow",
+  "classPrefix": "fl",
+  "defaultDuration": 8,
+  "intentTags": ["workflow", "informative", "data"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "steps": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 6,
+      "item": {
+        "label": { "kind": "text", "required": true },
+        "detail": { "kind": "text", "required": false, "default": "" }
+      }
+    }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "step count within [2,6]",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}

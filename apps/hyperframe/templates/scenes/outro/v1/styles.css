@@ -1,0 +1,9 @@
+.brand-outro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: var(--ink); }
+.brand-outro__lockup { position: relative; display: grid; place-items: center; width: 540px; height: 300px; margin-bottom: 34px; }
+.brand-outro__aura { position: absolute; width: 520px; height: 520px; border-radius: 999px; background: radial-gradient(circle, color-mix(in srgb, var(--source-accent-2) 16%, transparent), transparent 62%); opacity: 0; transform: scale(0.72); }
+.brand-outro__mark { position: relative; width: 420px; height: auto; overflow: visible; filter: drop-shadow(0 26px 80px rgba(0,0,0,0.5)); }
+.brand-outro__piece { transform-box: fill-box; transform-origin: center; opacity: 0; fill: var(--paper); }
+.brand-outro__name { margin: 0; font-size: 72px; line-height: 1.02; font-weight: 790; letter-spacing: 0; color: var(--paper); }
+.brand-outro__tagline { margin: 28px 0 0; max-width: 780px; color: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 30px; line-height: 1.2; font-weight: 590; letter-spacing: 3px; text-transform: uppercase; }
+.brand-outro__source { margin: 42px 0 0; color: rgba(244,246,251,0.58); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 22px; line-height: 1.25; letter-spacing: 0.8px; }
+.brand-outro__name, .brand-outro__tagline, .brand-outro__source { will-change: opacity, transform, filter; }

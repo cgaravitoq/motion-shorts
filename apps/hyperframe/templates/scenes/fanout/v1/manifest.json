@@ -1,0 +1,30 @@
+{
+  "id": "fanout@1",
+  "type": "fanout",
+  "version": 1,
+  "label": "Fan-out and synthesize orchestration",
+  "description": "An orchestration graph shown by SEEING it: a source node at top fans out to 2-6 worker nodes in a centered row, then converges into a synthesis node at the bottom. Thin connectors draw (scaleY) from source to workers and from workers to synth. Worker count is a parameter; the row wraps and the stagger adapts. Minimal on-screen text (short chip labels only) — the narration carries the words.",
+  "builder": "build_fanout",
+  "classPrefix": "fo",
+  "defaultDuration": 8,
+  "intentTags": ["workflow", "informative", "vfx", "brand"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "sourceLabel": { "kind": "text", "required": true },
+    "workers": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 6,
+      "item": {
+        "label": { "kind": "text", "required": true }
+      }
+    },
+    "synthLabel": { "kind": "text", "required": true }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "worker count within [2,6]",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "eyebrow": "Adopción",
+  "title": "El salto al <strong>escalar</strong>",
+  "bars": [
+    { "label": "Baseline", "value": "38%", "pct": "38" },
+    { "label": "Pilot", "value": "66%", "pct": "66" },
+    { "label": "Scaled", "value": "92%", "pct": "92" }
+  ]
+}

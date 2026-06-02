@@ -5,13 +5,15 @@ import {
   ListToolsRequestSchema,
   type Tool,
 } from "@modelcontextprotocol/sdk/types.js";
+import { assembleEpisodeTool } from "./assemble-episode";
 import { generateAudioTool } from "./generate-audio";
-import { getVisualComponentTool } from "./get-visual-component";
+import { getSceneTypeTool } from "./get-scene-type";
 import { lintHtmlTool } from "./lint-html";
-import { listVisualComponentsTool } from "./list-visual-components";
-import { recommendVisualComponentsTool } from "./recommend-visual-components";
+import { listSceneTypesTool } from "./list-scene-types";
+import { recommendSceneTypesTool } from "./recommend-scene-types";
 import { renderCompositionTool } from "./render-composition";
-import { validateEpisodeCatalogContractTool } from "./validate-episode-catalog-contract";
+import { sceneQaTool } from "./scene-qa";
+import { validateSceneSpecTool } from "./validate-scene-spec";
 
 export type ToolDefinition = {
   name: string;
@@ -21,13 +23,17 @@ export type ToolDefinition = {
 };
 
 const tools = [
+  // scene-hub authoring surface
+  listSceneTypesTool,
+  getSceneTypeTool,
+  recommendSceneTypesTool,
+  validateSceneSpecTool,
+  assembleEpisodeTool,
+  sceneQaTool,
+  // shared media tools
   lintHtmlTool,
   generateAudioTool,
   renderCompositionTool,
-  listVisualComponentsTool,
-  getVisualComponentTool,
-  recommendVisualComponentsTool,
-  validateEpisodeCatalogContractTool,
 ];
 
 export const registerTools = (server: Server): void => {
@@ -55,11 +61,13 @@ export const registerTools = (server: Server): void => {
 };
 
 export {
+  assembleEpisodeTool,
   generateAudioTool,
-  getVisualComponentTool,
+  getSceneTypeTool,
   lintHtmlTool,
-  listVisualComponentsTool,
-  recommendVisualComponentsTool,
+  listSceneTypesTool,
+  recommendSceneTypesTool,
   renderCompositionTool,
-  validateEpisodeCatalogContractTool,
+  sceneQaTool,
+  validateSceneSpecTool,
 };

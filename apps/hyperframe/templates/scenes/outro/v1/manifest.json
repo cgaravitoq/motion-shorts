@@ -1,0 +1,21 @@
+{
+  "id": "outro@1",
+  "type": "outro",
+  "version": 1,
+  "label": "Brand outro lockup",
+  "description": "Pinned brand sign-off: animated logo mark (5 pieces), brand name, tagline, and an optional source line. Always the final scene; the brand corner fades out as it enters.",
+  "builder": "build_outro",
+  "classPrefix": "brand-outro",
+  "defaultDuration": 5.5,
+  "fixedTrack": 7,
+  "role": "outro",
+  "intentTags": ["informative", "workflow", "data", "social", "brand", "vfx"],
+  "slots": {
+    "source": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "section #scene-<id> present on track 7",
+    "five .brand-outro__piece elements",
+    "brand-corner fades before outro reveal"
+  ]
+}

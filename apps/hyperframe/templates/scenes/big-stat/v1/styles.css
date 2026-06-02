@@ -1,0 +1,5 @@
+.bs { align-items: flex-start; }
+.bs-figure { display: flex; align-items: baseline; gap: 8px; margin-top: 18px; }
+.bs-value { font-size: 232px; line-height: 0.92; font-weight: 820; letter-spacing: -4px; color: var(--source-accent-2); font-variant-numeric: tabular-nums; }
+.bs-suffix { font-size: 104px; line-height: 0.92; font-weight: 760; letter-spacing: -2px; color: var(--source-accent-2); }
+.bs-context { max-width: 820px; }

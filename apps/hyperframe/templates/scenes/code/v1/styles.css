@@ -1,0 +1,31 @@
+.cd-title { margin: 0; font-size: 72px; line-height: 1.04; }
+.cd-title:empty { display: none; }
+.cd-eyebrow:empty { display: none; }
+
+.cd-window { margin-top: 56px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 26px; background: rgba(8, 9, 10, 0.92); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55); overflow: hidden; }
+
+.cd-window__bar { display: flex; align-items: center; gap: 16px; padding: 26px 34px; border-bottom: 1px solid var(--line); background: rgba(247, 248, 248, 0.04); }
+.cd-window__dot { width: 22px; height: 22px; border-radius: 999px; background: var(--muted); flex: 0 0 auto; }
+.cd-window__dot:nth-child(1) { background: #ff5f57; }
+.cd-window__dot:nth-child(2) { background: #febc2e; }
+.cd-window__dot:nth-child(3) { background: #28c840; }
+.cd-window__file { margin-left: 16px; color: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 26px; font-weight: 590; letter-spacing: 0.5px; }
+.cd-window__file:empty { display: none; }
+
+.cd-window__body { padding: 40px 44px; display: flex; flex-direction: column; gap: 14px; }
+.cd-line { display: flex; }
+.cd-line__text { font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 32px; line-height: 1.4; font-weight: 510; letter-spacing: 0; color: var(--paper); white-space: pre-wrap; word-break: break-word; }
+
+.cd-line[data-kind="comment"] .cd-line__text { color: var(--muted); font-style: italic; }
+.cd-line[data-kind="key"] .cd-line__text { color: var(--source-accent); font-weight: 640; }
+.cd-line[data-kind="str"] .cd-line__text { color: var(--source-accent-2); }
+.cd-line[data-kind="plain"] .cd-line__text { color: var(--paper); }
+
+.cd-window[data-lines="9"] .cd-line__text,
+.cd-window[data-lines="10"] .cd-line__text,
+.cd-window[data-lines="11"] .cd-line__text,
+.cd-window[data-lines="12"] .cd-line__text { font-size: 28px; line-height: 1.34; }
+.cd-window[data-lines="9"] .cd-window__body,
+.cd-window[data-lines="10"] .cd-window__body,
+.cd-window[data-lines="11"] .cd-window__body,
+.cd-window[data-lines="12"] .cd-window__body { gap: 11px; }

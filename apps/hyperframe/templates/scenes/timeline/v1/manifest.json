@@ -1,0 +1,29 @@
+{
+  "id": "timeline@1",
+  "type": "timeline",
+  "version": 1,
+  "label": "Chronological timeline",
+  "description": "A time-ordered list of 3-6 events down a vertical rail. Each event has a marker (time or label) and a description. The rail draws in and dots plus events stagger; event count is a parameter and the layout adapts automatically.",
+  "builder": "build_timeline",
+  "classPrefix": "tln",
+  "defaultDuration": 8,
+  "intentTags": ["informative", "workflow", "data", "brand"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "events": {
+      "kind": "repeat",
+      "min": 3,
+      "max": 6,
+      "item": {
+        "marker": { "kind": "text", "required": true },
+        "text": { "kind": "text", "required": true }
+      }
+    }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "event count within [3,6]",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}

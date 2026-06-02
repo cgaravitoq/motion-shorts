@@ -1,0 +1,10 @@
+{
+  "eyebrow": "El pipeline",
+  "title": "De guion a <strong>render</strong> en cuatro pasos",
+  "steps": [
+    { "label": "Escribe el guion", "detail": "Texto plano que define la narrativa." },
+    { "label": "Genera la voz", "detail": "ElevenLabs TTS + captions por palabra." },
+    { "label": "Ensambla la escena", "detail": "Scene-spec a HTML monolítico 1:1." },
+    { "label": "Renderiza el short", "detail": "Hyperframes exporta el mp4 final." }
+  ]
+}
