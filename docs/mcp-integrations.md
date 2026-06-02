@@ -14,11 +14,23 @@ All three target Notion's hosted MCP server with OAuth. The first time each CLI 
 
 The repo also ships `apps/mcp`, a local stdio MCP server for motion-shorts itself. Those tools run in-process against local packages and the Hyperframes producer; there is no remote API behind them.
 
-## Catalog MCP tools
+## Scene-hub MCP tools
 
-Remote agents should perform catalog preflight with `list_visual_components`, which mirrors `packages/catalog/manifest.json` and the local `bun run catalog:list` command. Use it before authoring an episode so component IDs, statuses, source demos, and snippet paths come from the catalog contract.
+The local motion-shorts MCP exposes the scene-hub pipeline plus lint, audio, and render tools:
 
-The local motion-shorts MCP exposes catalog discovery, catalog validation, Hyperframes lint, audio generation, and synchronous render tools. `render_composition` and `generate_audio` return absolute local paths under `MCP_OUTPUT_DIR` instead of signed URLs or async job IDs.
+| Tool | Purpose |
+|------|---------|
+| `list_scene_types` | List the 11 scene-types (hook, title-cards, flow, metric, big-stat, comparison, timeline, quote, code, social-card, outro) with their slot ranges. |
+| `get_scene_type` | Fetch one scene-type's manifest (slots, ranges, sample spec). |
+| `recommend_scene_types` | Given an intent (`informative`, `data`, `workflow`, `social`, `brand`, `vfx`), suggest scene-types to compose the short. |
+| `validate_scene_spec` | Validate a `scene-spec.json` against the scene-type manifests (mirrors `bun run scene:check`). |
+| `assemble_episode` | Deterministically generate the monolithic `index.html` from a spec (mirrors `bun run assemble`; identical spec produces identical bytes). |
+| `scene_qa` | Per-scene visual QA: snapshot key frames and run `hyperframes inspect` for overflow/overlap. Optional scene-id list re-checks only changed scenes. |
+| `lint_html` | Run Hyperframes lint against a composition. |
+| `generate_audio` | TTS + word-level captions. |
+| `render_composition` | Synchronous full render. |
+
+Do scene preflight with `list_scene_types` / `recommend_scene_types` before writing a spec so scene-type IDs and slot ranges come from the manifests. `render_composition` and `generate_audio` return absolute local paths under `MCP_OUTPUT_DIR` instead of signed URLs or async job IDs.
 
 ## Notion database (optional)
 

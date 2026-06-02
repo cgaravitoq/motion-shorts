@@ -68,7 +68,7 @@ HTML usage:
 
 ## Handoff Bundle Diagram
 
-Use when the scene needs a tactile bundle of files, screenshots, tickets, checklist cards, or design artifacts. This pattern worked well in `source-driven-catalog-demo`.
+Use when the scene needs a tactile bundle of files, screenshots, tickets, checklist cards, or design artifacts.
 
 ```text
 Purpose: show a complete handoff bundle moving from design to implementation.
@@ -123,4 +123,4 @@ Before handoff, inspect rendered frames and reject the asset if:
 - Generated text contains broken Spanish accents, missing `ñ`, misspelled technical terms, or fake paragraphs that look like copy.
 - The image imitates a real third-party logo or exact product UI without a cleared source-driven reason.
 - The asset is just a card inside a card; self-framed screenshots and bundles must be the scene object.
-- The image looks too generic compared with a simple catalog component that would communicate the idea more clearly.
+- The image looks too generic compared with a text-driven scene-type that would communicate the idea more clearly.

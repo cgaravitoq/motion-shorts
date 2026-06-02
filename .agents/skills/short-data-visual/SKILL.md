@@ -2,7 +2,7 @@
 name: short-data-visual
 description: >
   Use for vertical shorts led by metrics, charts, comparisons, trends, dashboards, benchmarks, or
-  quantified proof points with the mandatory catalog preflight.
+  quantified proof points, built from typed scene-types.
 ---
 
 # Data visual short
@@ -11,16 +11,19 @@ description: >
 
 Use for metrics, charts, comparisons, trends, benchmarks, dashboards, and quantified proof points.
 
-## Catalog preflight
+## Scene-type preflight
 
 Follow `.agents/skills/references/catalog-preflight.md` before production.
 
-- Required: `brand-logo-outro`, `brand-logo-watermark`
-- First-class: `data-chart`
-- Copy-paste: none
-- Deprecated: none
+Call `recommend_scene_types({ intent: "data" })`. Recommended scene-types lean on `big-stat`, `metric`, and `comparison` for quantified proof; `hook` and `outro` are structural (always first / always last).
 
-Call `route({ intent: "data" })` and keep the chosen IDs as the first non-doctype line in `index.html`.
+Typical skeleton:
+
+```
+hook -> big-stat -> metric -> comparison -> outro
+```
+
+Respect repeatable-slot ranges (`metric.stats` 1-4, `comparison.left/rightPoints` 1-5). Read each chosen scene-type's slots via `get_scene_type` (or its `manifest.json`), then write `scene-spec.json`.
 
 ## Handoff
 

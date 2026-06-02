@@ -2,7 +2,7 @@
 name: short-vfx-experimental
 description: >
   Use for vertical shorts led by experimental transitions, texture, kinetic hooks, or effects-forward
-  visual systems with the mandatory catalog preflight.
+  visual systems, built from typed scene-types.
 ---
 
 # VFX experimental short
@@ -11,16 +11,19 @@ description: >
 
 Use for experimental transitions, texture, motion studies, kinetic hooks, and effects-forward shorts.
 
-## Catalog preflight
+## Scene-type preflight
 
 Follow `.agents/skills/references/catalog-preflight.md` before production.
 
-- Required: `brand-logo-outro`, `brand-logo-watermark`
-- First-class: `grain-overlay`, `grid-pixelate-wipe`, `shimmer-sweep`
-- Copy-paste: none
-- Deprecated: `texture-mask-text`
+Call `recommend_scene_types({ intent: "vfx" })`. Recommended scene-types lean on `big-stat`, `title-cards`, and `quote` for bold kinetic beats; `hook` and `outro` are structural (always first / always last). Texture and transition motion are owned by the assembler's crossfades and each scene-type's entrance — drive impact through punchy slot copy and scene pacing.
 
-Call `route({ intent: "vfx" })` and keep the chosen IDs as the first non-doctype line in `index.html`.
+Typical skeleton:
+
+```
+hook -> big-stat -> title-cards -> quote -> outro
+```
+
+Read each chosen scene-type's slots via `get_scene_type` (or its `manifest.json`), then write `scene-spec.json`.
 
 ## Handoff
 

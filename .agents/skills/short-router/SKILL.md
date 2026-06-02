@@ -2,13 +2,13 @@
 name: short-router
 description: >
   Use before producing a vertical short when the user describes a topic, brief, or desired visual
-  style but has not selected an intent skill. Classifies the short intent and routes to the matching
-  intent-specific short skill with catalog preflight requirements.
+  style but has not selected an intent skill. Classifies the short intent, routes to the matching
+  intent-specific short skill, and runs the scene-type preflight.
 ---
 
 # Short router
 
-Classify the user's short request into exactly one intent, call the catalog router, then hand off to the routed intent skill.
+Classify the user's short request into exactly one intent, route to the matching intent skill, then run the scene-type preflight.
 
 ## Intent classification
 
@@ -21,18 +21,23 @@ Classify the user's short request into exactly one intent, call the catalog rout
 
 If multiple intents fit, pick the primary visual job of the short. Do not continue until one intent is selected.
 
-If the requested visual direction includes product/workspace screenshots, generated app surfaces, handoff bundles, dense diagrams, or connector-heavy workflows, carry a `generated-raster-assets` note into the routed skill and invoke `.agents/skills/generated-raster-assets/SKILL.md` before `canonical-short` scene authoring.
+If the requested visual direction includes product/workspace screenshots, generated app surfaces, handoff bundles, dense diagrams, or connector-heavy workflows, carry a `generated-raster-assets` note into the routed skill and invoke `.agents/skills/generated-raster-assets/SKILL.md` before `canonical-short` authoring.
 
-## Catalog route
+## Intent -> skill
 
-Call `route({ intent, tags?, source? })` from `@cgaravitoq/catalog` before invoking the next skill.
+| Intent | Skill |
+|--------|-------|
+| `informative` | `.agents/skills/short-informative/SKILL.md` |
+| `data` | `.agents/skills/short-data-visual/SKILL.md` |
+| `workflow` | `.agents/skills/short-workflow-explainer/SKILL.md` |
+| `social` | `.agents/skills/short-social-overlay/SKILL.md` |
+| `brand` | `.agents/skills/short-brand-system/SKILL.md` |
+| `vfx` | `.agents/skills/short-vfx-experimental/SKILL.md` |
 
-```bash
-bun run --filter @cgaravitoq/catalog route -- --intent <intent>
-```
+## Scene-type preflight
 
-Use `skillPath` as the next skill. Carry `requiredComponents`, `recommendedComponents`, and `deprecatedAvoid` into that skill's catalog preflight.
+There is no catalog. A short is a typed `scene-spec.json` assembled deterministically into the monolithic `index.html`. Get recommended scene-types and a starter spine for the chosen intent with `recommend_scene_types({ intent })` (or `bun run scene:gallery` from `apps/hyperframe`).
 
 ## Handoff
 
-After routing, invoke the returned skill path and require it to complete `.agents/skills/references/catalog-preflight.md` before `canonical-short`, `produce-from-notion`, or `audio-pipeline` begins.
+Invoke the routed intent skill and require it to complete `.agents/skills/references/catalog-preflight.md` (the scene-type preflight) before `canonical-short`, `produce-from-notion`, or `audio-pipeline` begins.

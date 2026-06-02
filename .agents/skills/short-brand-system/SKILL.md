@@ -2,7 +2,7 @@
 name: short-brand-system
 description: >
   Use for vertical shorts centered on brand systems, identity, logo-led motion, or visual-system
-  demonstrations with the mandatory catalog preflight.
+  demonstrations, built from typed scene-types.
 ---
 
 # Brand system short
@@ -11,16 +11,19 @@ description: >
 
 Use for brand-system showcases, identity reveals, logo-led pieces, and visual-system demonstrations.
 
-## Catalog preflight
+## Scene-type preflight
 
 Follow `.agents/skills/references/catalog-preflight.md` before production.
 
-- Required: `brand-logo-outro`, `brand-logo-watermark`
-- First-class: none
-- Copy-paste: none
-- Deprecated: `legacy-text-watermark`
+Call `recommend_scene_types({ intent: "brand" })`. Recommended scene-types lean on `title-cards`, `big-stat`, and `quote` to frame identity and pillars; `hook` and `outro` are structural (always first / always last). The brand sign-off is the `outro` scene-type plus the shell's brand-corner watermark — never a plain `@handle` card.
 
-Call `route({ intent: "brand" })` and keep the chosen IDs as the first non-doctype line in `index.html`.
+Typical skeleton:
+
+```
+hook -> title-cards -> big-stat -> quote -> outro
+```
+
+Read each chosen scene-type's slots via `get_scene_type` (or its `manifest.json`), then write `scene-spec.json`.
 
 ## Handoff
 

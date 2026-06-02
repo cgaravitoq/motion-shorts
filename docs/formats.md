@@ -1,141 +1,83 @@
 # Formats — render profiles
 
-motion-shorts ships four render profiles. All come out of the same monolithic-single-file pipeline (AGENTS.md rule 1) and share the same `assets/voice.mp3` + `assets/captions.json` per episode.
+motion-shorts ships **one** supported render profile: the **9:16 short**. It comes out of the monolithic-single-file pipeline (AGENTS.md rule 1) — `index.html` is generated from `scene-spec.json` by the assembler — and pairs with the episode's `assets/voice.mp3` + `assets/captions.json`.
 
-| Profile        | Aspect | Resolution  | FPS | Codec / audio                      | Target use                                                              | Source file              |
-|----------------|--------|-------------|-----|------------------------------------|-------------------------------------------------------------------------|--------------------------|
-| `short`        | 9:16   | 1080 × 1920 | 30  | H.264 High + AAC-LC 48 kHz         | YouTube Shorts, TikTok, Instagram Reels, LinkedIn mobile feed           | `index.html`             |
-| `desktop-1080p`| 16:9   | 1920 × 1080 | 30  | H.264 High + AAC-LC 48 kHz / 384 kbps, 12 Mbps 2-pass VBR | YouTube long-form, LinkedIn desktop, X landscape, Vimeo, embedded heroes | `index.desktop.html`     |
-| `desktop-4k`   | 16:9   | 3840 × 2160 | 30  | H.264 High + AAC-LC 48 kHz / 384 kbps, 40 Mbps 2-pass VBR | Premium YouTube long-form, events, 4K embeds                            | `index.desktop.html`     |
-| `square-1080`  | 1:1    | 1080 × 1080 | 30  | H.264 High + AAC-LC 48 kHz         | LinkedIn feed, Facebook feed, Instagram square placements               | `index.square.html`      |
+| Profile | Aspect | Resolution  | FPS | Codec / audio              | Target use                                                    | Source file  |
+|---------|--------|-------------|-----|----------------------------|---------------------------------------------------------------|--------------|
+| `short` | 9:16   | 1080 × 1920 | 30  | H.264 High + AAC-LC 48 kHz | YouTube Shorts, TikTok, Instagram Reels, LinkedIn mobile feed | `index.html` |
 
-`short` is the default; existing episodes and tooling work unchanged. `desktop-1080p` and `desktop-4k` are additive 16:9 variants backed by `index.desktop.html` (the scaffolder stamps one with `bun run new:episode <slug> --with-desktop`). `square-1080` is backed by `index.square.html` (stamp with `bun run new:episode <slug> --with-square`).
+> 16:9 and 1:1 variants are a planned future **shell variant** (`templates/_shell/`), not a feature today. There is no `--variant`, no `--with-desktop` / `--with-square`, and no `index.desktop.html` / `index.square.html` to author.
 
 ## Render
 
-```bash
-# 9:16 short (default, byte-identical to pre-desktop behavior):
-bun run render:episode <slug>
-bun run render:episode <slug> --variant=short
-
-# 16:9 desktop:
-bun run render:episode <slug> --variant=desktop-1080p
-bun run render:episode <slug> --variant=desktop-4k
-
-# 1:1 square:
-bun run render:episode <slug> --variant=square-1080
-```
-
-Container is independent of variant:
+`index.html` is generated — assemble it from `scene-spec.json` first, then render:
 
 ```bash
-bun run render:episode <slug> --variant=desktop-1080p --format=mp4   # h264 mp4 (default)
-bun run render:episode <slug> --variant=desktop-1080p --format=mov   # ProRes 4444 + alpha
-bun run render:episode <slug> --variant=desktop-1080p --format=webm  # VP9 + alpha
+bun run assemble <slug>                          # regenerate index.html from scene-spec.json
+bun run render:episode <slug> --format=mp4       # final full render
+bun run render:episode <slug> --format=mp4 --keep-local
 ```
 
-Opt into 60 fps for any variant with `--fps=60`. The render wrapper forwards the frame rate to Hyperframes and stamps `data-fps="60"` into the working-copy stage. Bitrate targets increase by 50% at 60 fps:
+Container is selected with `--format`:
 
-| Variant | 30 fps target | 60 fps target |
-|---------|---------------|---------------|
-| `short` | 10 Mbps | 15 Mbps |
-| `desktop-1080p` | 12 Mbps | 18 Mbps |
-| `desktop-4k` | 40 Mbps | 60 Mbps |
-| `square-1080` | 10 Mbps | 15 Mbps |
+```bash
+bun run render:episode <slug> --format=mp4   # h264 yuv420p mp4 (default)
+bun run render:episode <slug> --format=mov   # ProRes 4444 + alpha
+bun run render:episode <slug> --format=webm  # VP9 + alpha
+```
 
-> Why `--variant` and not `--format=desktop-1080p`? `--format` in the existing `bunx hyperframes render` surface already means container (mp4 / mov / webm). Keeping that flag stable preserves byte-identical 9:16 renders and avoids ambiguity at the boundary with the upstream Hyperframes CLI. Inside the catalog manifest the per-component scope field is still called `safeFor`.
+Opt into 60 fps with `--fps=60`. The render wrapper forwards the frame rate to Hyperframes and stamps `data-fps="60"` onto the working-copy stage. The 30 fps target bitrate is **10 Mbps**; at 60 fps it scales to **15 Mbps**.
+
+| FPS | Video bitrate |
+|-----|---------------|
+| 30  | 10 Mbps       |
+| 60  | 15 Mbps       |
 
 ## Stage markup contract
 
-Every episode stage declares its profile:
+The assembled `index.html` declares the profile on its root stage:
 
 ```html
-<!-- index.html (9:16) -->
 <div id="ep-stage"
      data-composition-id="<slug>"
      data-width="1080" data-height="1920" data-fps="30"
      data-start="0" data-duration="<stamped>">
-
-<!-- index.desktop.html (16:9) -->
-<div id="ep-stage"
-     data-composition-id="<slug>-desktop"
-     data-format="desktop-1080p"
-     data-width="1920" data-height="1080" data-fps="30"
-     data-start="0" data-duration="<stamped>">
-
-<!-- index.square.html (1:1) -->
-<div id="ep-stage"
-     data-composition-id="<slug>-square"
-     data-format="square-1080"
-     data-width="1080" data-height="1080" data-fps="30"
-     data-start="0" data-duration="<stamped>">
 ```
 
-The `data-format` attribute declares non-short variants. The 9:16 short does not set `data-format` — absence means `short`. `data-fps="60"` is accepted for opt-in high-motion renders.
+`render:episode` stamps `data-duration` from the measured voice length (+ tail) and stamps `data-fps` from `--fps`. Never hand-edit `index.html` — change `scene-spec.json` and re-run `bun run assemble`.
 
-## Safe zones — 16:9 desktop
+## Safe zones — 9:16 short
+
+The shell (`templates/_shell/shell.css`) reserves the bottom strip for captions and pins the brand corner. Keep critical content clear of both.
 
 ```
-+--------------------------------------------------------------------+   1920 × 1080
-|                                                                    |
-|    +----- action-safe (inner 90%, 1728 × 972) ----------------+   |
-|    |                                                          |   |
-|    |    +---- title-safe (inner 80%, 1536 × 864) ---------+  |   |
-|    |    |                                                 |  |   |
-|    |    |  Critical text, KPIs, CTAs MUST stay here.      |  |   |
-|    |    |  Mark each with data-critical="true" so the     |  |   |
-|    |    |  lint:desktop-safe script can validate inset.   |  |   |
-|    |    |                                                 |  |   |
-|    |    +-------------------------------------------------+  |   |
-|    |                                                          |   |
-|    +----------------------------------------------------------+   |
-|                                                              +-+  |
-|  +----- YouTube end-screen bar (bottom 120 px) -----------+  |C|  |
-|  |  Reserved by YouTube for "subscribe / next video" UI.  |  |T|  |
-|  |  No critical content. Captions sit ABOVE this band.    |  |A|  |
-|  +--------------------------------------------------------+  +-+  |
-+--------------------------------------------------------------------+
-                                              CTA / info-card slot
-                                              (bottom-right 160 × 160)
++----------------------------+   1080 × 1920
+|        96px        [brand]  |  <- #brand-corner: top/right 96px
+|                            |
+|                            |
+|   Scene content lives in   |
+|   the central region.      |
+|   KPIs, headlines, CTAs    |
+|   stay clear of the bottom |
+|   caption band.            |
+|                            |
+|                            |
+|  +----- captions band ---+ |  <- #captions: bottom 4.5%, height 12% (track 99)
+|  +-----------------------+ |
++----------------------------+
 ```
 
-* **Title-safe (1536 × 864)** — `data-critical` elements need ≥192 px left/right inset and ≥108 px top/bottom inset. Headlines, KPIs, CTAs, source-attribution.
-* **Action-safe (1728 × 972)** — secondary UI and tracked stage children should stay within ≥96 px left/right and ≥54 px top/bottom inset.
-* **YouTube end-screen bar** — bottom 120 px. YouTube overlays "Subscribe" / "Next video" / "More videos" here on long-form. Keep critical content above. Captions in the desktop template are pinned to `bottom: 180px` for this reason.
-* **YouTube CTA / info-card slot** — bottom-right 160 × 160 px. YouTube cards and "Subscribe" hover badge land here.
-
-## Debug overlay — `?guides=1`
-
-The `desktop-1080p.html` template includes a `#safe-zone-guides` overlay that visualises both safe bands and both dead zones. Toggle by appending `?guides=1` to the dev URL (e.g. `http://localhost:3000?guides=1`). The overlay is non-rendering — it's hidden unless `?guides=1` is set, so renders never see it.
+* **Caption band** — `#captions` (track 99) sits at `bottom: 4.5%`, `height: 12%`. No scene content overlaps it; the scene-types lay out above this strip.
+* **Brand corner** — `#brand-corner` (track 97) pins to `top: 96px; right: 96px`. Keep headlines and KPIs out of the top-right corner.
 
 ## Lint
 
 ```bash
-bun run lint:desktop-safe                              # scan every src/episodes/*/index.desktop.html
-bun run lint:desktop-safe src/episodes/<slug>          # scan one episode
+bunx hyperframes lint src/episodes/<slug>     # composition lint (HTML/GSAP/track contract)
+bun run lint:seek-safe                         # scan every src/episodes/*/index.html
+bun run lint:seek-safe src/episodes/<slug>     # scan one episode
 ```
 
-Episodes without an `index.desktop.html` are vacuously green — the linter skips them. Catches today:
+`lint:seek-safe` enforces AGENTS.md rule 7 (docs/rules.md rule 21): the timeline must be `paused: true` and registered in `window.__timelines["<id>"]`, and discrete transitions must use `tl.set(...)` — tween callbacks (`onStart` / `onComplete` / `onRepeat`) and `tl.call()` do not fire during frame-by-frame seek. It also flags `repeat: -1` (non-deterministic) and other determinism hazards.
 
-| Rule | Severity | Description | Example violation |
-|------|----------|-------------|-------------------|
-| `stage-dimensions` | error | Stage box must be `data-width="1920" data-height="1080" data-fps="30"` or `data-fps="60"` and `data-format="desktop-1080p"`. | `data-width="1080"` on `index.desktop.html`. |
-| `title-safe-inset` | error | `data-critical` elements with inline `left/right/top/bottom` styles must satisfy title-safe insets. | `data-critical="true" style="left:80px"`. |
-| `endscreen-dead-zone` | error | `data-critical` elements must not overlap the YouTube end-screen bar. | `data-critical="true" style="bottom:60px"`. |
-| `cta-dead-zone` | error | `data-critical` elements must not overlap the bottom-right CTA slot. | `data-critical="true" style="right:40px; bottom:40px"`. |
-| `action-safe-inset` | warning | Tracked stage children with explicit pixel/percent positioning should remain inside the inner 90% action-safe area. | `data-track-index="5" style="left:20px; width:400px"`. |
-| `lower-third-collision` | warning | Tracked headline/body text should not sit in the bottom 25% strip reserved for captions and lower-thirds, except `#captions`, `#brand-corner`, `.caption`, or `.lower-third-safe`. | `<h2 data-track-index="5" style="bottom:100px">`. |
-| `desktop-font-minimum` | error | Pixel-sized tracked text must be readable at 1920×1080: body text ≥24 px and headline/hero/title text ≥48 px. | `.headline { font-size: 40px; }`. |
-
-## Catalog — `safeFor`
-
-Every component in `packages/catalog/manifest.json` declares which variants it ships in:
-
-```json
-{
-  "id": "data-chart",
-  "safeFor": ["short"]
-}
-```
-
-Components without `safeFor` default to `["short"]` for back-compat. As components are validated for more layouts they'll be promoted to include `desktop-1080p`, `desktop-4k`, and/or `square-1080`. Run `bun run catalog:list --format=desktop-1080p` from `apps/hyperframe/` to filter the picker; omitted `--format` defaults to `short`.
+Validate the spec before assembling, and per-scene QA after, with `bun run scene:check` and `bun run scripts/scene-qa.mjs <slug>` (see AGENTS.md).

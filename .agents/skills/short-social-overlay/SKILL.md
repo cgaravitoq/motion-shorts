@@ -2,7 +2,7 @@
 name: short-social-overlay
 description: >
   Use for vertical shorts built around social posts, creator overlays, follow CTAs, media cards, or
-  platform-native UI beats with the mandatory catalog preflight.
+  platform-native UI beats, built from typed scene-types.
 ---
 
 # Social overlay short
@@ -11,16 +11,19 @@ description: >
 
 Use for posts, comments, creator overlays, follow CTAs, media cards, and platform-native UI beats.
 
-## Catalog preflight
+## Scene-type preflight
 
 Follow `.agents/skills/references/catalog-preflight.md` before production.
 
-- Required: `brand-logo-outro`, `brand-logo-watermark`
-- First-class: `instagram-follow`, `tiktok-follow`, `yt-lower-third`
-- Copy-paste: `reddit-post`, `spotify-card`, `x-post`
-- Deprecated: none
+Call `recommend_scene_types({ intent: "social" })`. Recommended scene-types lean on `social-card` for platform-native post beats, plus `quote` and `metric` for reactions and proof; `hook` and `outro` are structural (always first / always last).
 
-Call `route({ intent: "social" })` and keep the chosen IDs as the first non-doctype line in `index.html`.
+Typical skeleton:
+
+```
+hook -> social-card -> quote -> metric -> outro
+```
+
+The `social-card` scene-type is already self-framed (it renders the post card) — do not wrap it in an extra card. Read each chosen scene-type's slots via `get_scene_type` (or its `manifest.json`), then write `scene-spec.json`.
 
 ## Handoff
 

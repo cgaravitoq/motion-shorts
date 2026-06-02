@@ -1,12 +1,15 @@
-# Catalog preflight reference
+# Scene preflight reference
 
-Run this contract before entering a short-production skill:
+> Filename kept for stable cross-links. This is the **scene-type preflight** for the scene-hub flow. There is no catalog: a short is a typed `scene-spec.json` that a deterministic assembler turns into the monolithic `index.html`. You fill slots; you never hand-author HTML/CSS/GSAP.
 
-1. Read the catalog manifest summary by calling `route({ intent, tags?, source? })` for the selected short intent.
-2. Treat every returned component with `status: required` as mandatory for the episode.
-3. Pick optional `status: first-class` and `status: copy-paste` components by intent fit; keep the set minimal.
-   - For generated raster scenes, prefer image-friendly components such as `screenshot-spotlight`, `image-ken-burns`, `asset-stack-parallax`, `device-screen-pan`, or `source-image-reveal` when they fit the scene.
-   - If the visual needs product/workspace screenshots, handoff bundles, or dense connector diagrams, invoke `.agents/skills/generated-raster-assets/SKILL.md` before authoring the HTML.
-4. Refuse every `status: deprecated` component, even when it appears relevant.
-5. Persist the final chosen component IDs as `<!-- catalog: [id1, id2, ...] -->` on the line immediately after `<!doctype html>` in `index.html` (no blank line, no other comments between).
-6. Continue into `canonical-short`, `produce-from-notion`, or `audio-pipeline` only after the catalog comment is present.
+Run this before entering a short-production skill:
+
+1. Classify the short into one intent (`informative` | `data` | `workflow` | `social` | `brand` | `vfx`).
+2. Get the recommended scene-types and a starter spine for that intent:
+   - MCP: `recommend_scene_types({ intent })` — returns `skeleton` (ordered, hook-first/outro-last), `recommended` (scene-types tagged for the intent), and `structural` (`hook`, `outro`).
+   - or list every scene-type with `list_scene_types` / `bun run scene:gallery` (CWD `apps/hyperframe`).
+3. Pick a scene skeleton from the returned `skeleton`, adapting counts/types to the script's beats. **`hook` is always first; `outro` is always last** (the pinned brand sign-off — never a plain `@handle` card). The 11 scene-types are the only building blocks: `hook, title-cards, flow, metric, big-stat, comparison, timeline, quote, code, social-card, outro`.
+4. Learn each chosen scene-type's exact slots with `get_scene_type` (MCP) or by reading its `apps/hyperframe/templates/scenes/<type>/v1/manifest.json`. Respect repeatable-slot ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12).
+5. Write `apps/hyperframe/src/episodes/<slug>/scene-spec.json` filling only the slot parameters (the assembler owns background, brand-corner, timeline, crossfades, track allocation, captions/audio). `code` and `social-card` are already self-framed — do not wrap them in an extra glass/card frame.
+6. Validate the spec, then assemble: `bun run scene:check <slug>` then `bun run assemble <slug>` (or scaffold from scratch with `bun run new:episode <slug> --intent=<intent>`).
+7. Continue into `canonical-short`, `produce-from-notion`, or `audio-pipeline` only after the spec validates.

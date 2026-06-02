@@ -1,85 +1,106 @@
 ---
 name: new-episode
 description: >
-  Use when the user wants to start a new video episode -- scaffolding the project directory, HTML
-  template, and metadata under apps/hyperframe/src/episodes/. Defer to this skill whenever the
-  user says "create a new episode", "scaffold a short", or "start a new video", even without
-  mentioning the scaffolder tool directly. Skip for rendering or editing existing episodes.
+  Use when the user wants to start a new video episode -- scaffolding the project directory,
+  starter scene-spec.json, and metadata under apps/hyperframe/src/episodes/. Defer to this skill
+  whenever the user says "create a new episode", "scaffold a short", or "start a new video", even
+  without mentioning the scaffolder tool directly. Skip for rendering or editing existing episodes.
 ---
 
 # New episode
 
 > **CWD**: all bash commands below assume `cd apps/hyperframe` first. Paths like `examples/<slug>.txt`, `public/voice/<slug>/` are app-relative.
 
-Scaffold a new Hyperframes episode project at `apps/hyperframe/src/episodes/<slug>/`.
+Scaffold a new Hyperframes episode at `apps/hyperframe/src/episodes/<slug>/`. An episode is a typed **`scene-spec.json`**; a deterministic assembler turns that spec into the monolithic `index.html`. You author by editing the spec and re-assembling — **never hand-edit `index.html`** (it is generated, and identical specs produce identical bytes).
 
-> **Producing a vertical 9:16 short?** This skill only scaffolds the empty project. After scaffolding, follow `.agents/skills/canonical-short/SKILL.md` for the e2e playbook (voice config, 5-scene template, hierarchical spacing, brand-corner crossfade, render). The production shorts in `apps/hyperframe/src/episodes/short-{01..08}/` are reference implementations.
+> **Producing a vertical 9:16 short?** This skill only scaffolds the starter project. After scaffolding, follow `.agents/skills/canonical-short/SKILL.md` for the e2e playbook (voice config, scene-type selection, per-scene QA gate, render).
 
 ## Pre-flight
 
-1. **Slug uniqueness.** `ls apps/hyperframe/src/episodes/` -- abort if the slug already exists with content.
-2. **Slug format.** Lowercase kebab-case, regex `^[a-z0-9][a-z0-9-]*$`. Convention: `short-NN` for vertical reels, `ep-NN` for horizontal, topic-slug for one-offs.
+1. **Slug uniqueness.** `ls apps/hyperframe/src/episodes/` -- abort if the slug already exists with content (the scaffolder also refuses a non-empty dir).
+2. **Slug format.** Lowercase kebab-case, regex `^[a-z0-9][a-z0-9-]*$`. Convention: `short-NN` for vertical reels, topic-slug for one-offs.
 3. **Pick aspect.** Default vertical 9:16 (`--width=1080 --height=1920`). For horizontal `--width=1920 --height=1080`. For LinkedIn square `--width=1080 --height=1080`.
-4. **Catalog preflight.** Inspect `packages/catalog/manifest.json` and `.agents/skills/canonical-short/references/inline-components-catalog.md`, then run `bun run catalog:list` from `apps/hyperframe/`; remote agents use MCP `list_visual_components`.
+4. **Pick an intent (optional).** `--intent=` seeds the spec from an intent skeleton (a sensible hook-first / outro-last scene order). One of: `informative`, `data`, `workflow`, `social`, `brand`, `vfx`. Omit for a generic `hook -> title-cards -> outro` starter.
 
 ## Run
 
 ```bash
-bun run new:episode <slug> [--width=1080] [--height=1920] [--with-desktop] [--with-square]
+bun run new:episode <slug> [--intent=informative|data|workflow|social|brand|vfx] [--width=1080] [--height=1920]
 ```
 
-Pass `--with-desktop` to additionally stamp a 16:9 `index.desktop.html` (1920x1080, 30 fps) seeded from `apps/hyperframe/templates/desktop-1080p.html`. The vertical `index.html` is always written; the desktop variant is purely additive. See `docs/formats.md` for the desktop profile, title-safe / action-safe insets, and YouTube UI dead-zone callouts.
-
-Pass `--with-square` to additionally stamp a 1:1 `index.square.html` (1080x1080, 30 fps) seeded from `apps/hyperframe/templates/square-1080.html`. The square variant is additive and shares the same assets as the vertical short.
+The scaffolder seeds the starter `scene-spec.json` from the intent skeleton (each scene pre-filled with its scene-type's `sample.json` params), then assembles `index.html` so the episode is immediately previewable.
 
 ## What the scaffolder writes
 
 ```
 apps/hyperframe/src/episodes/<slug>/
-  index.html          # root composition: stage + <audio id="voiceover"> + #captions overlay
-  index.desktop.html  # optional, only with --with-desktop (16:9 1920x1080)
-  index.square.html   # optional, only with --with-square (1:1 1080x1080)
+  scene-spec.json     # the source of truth: slug, lang, width/height, palette, scenes[]
+  index.html          # GENERATED from the spec by the assembler — never hand-edit
   meta.json           # { "id": "<slug>", "name": "<slug>", "description": "", "tail": 3 }
-  hyperframes.json    # registry + paths config
+  hyperframes.json    # { paths: { assets: "assets" } } registry/paths config
   assets/.gitkeep     # placeholder; voice.mp3 + captions.json drop in later
   lib -> ../../lib    # symlink so relative lib/... imports resolve
 ```
 
-The desktop variant shares `assets/voice.mp3` and `assets/captions.json` with the short — same narration, two layouts. Render with `bun run render:episode <slug> --variant=desktop-1080p`. Render the square variant with `bun run render:episode <slug> --variant=square-1080`.
+The starter `scene-spec.json` looks like this (intent skeleton + sample slots):
 
-The line immediately after `<!doctype html>` in `index.html` is `<!-- catalog: [brand-logo-watermark, brand-logo-outro] -->`. The template includes the matching track-97 `#brand-corner` watermark and the production track-7 `#scene-brand-outro` from `packages/catalog/snippets/brand-logo-outro.html`: full 578x320 logo SVG split into animated pieces, grouped blur scale-up reveal for `cgaravitoq` / `AI Engineering` / source attribution, and logo pulse. Extend this declaration with IDs selected from the catalog before authoring scenes.
+```json
+{
+  "slug": "<slug>",
+  "lang": "es",
+  "width": 1080,
+  "height": 1920,
+  "palette": { "accent": "#5b6cff", "accent2": "#e9ff00" },
+  "scenes": [
+    { "id": "hook", "type": "hook", "slots": { "eyebrow": "...", "title": "...", "subtitle": "..." } },
+    { "id": "title-cards", "type": "title-cards", "slots": { "title": "...", "cards": [ /* ... */ ] } },
+    { "id": "outro", "type": "outro", "slots": { "source": "" } }
+  ]
+}
+```
 
-The scaffold does NOT create per-episode JSON props. Episodes are **monolithic single-file** -- write content directly into `index.html`.
+The assembler owns everything universal — background layers, the track-97 `#brand-corner` watermark, the single paused GSAP timeline + crossfades, track allocation (scenes on 4,5,6,8,9..; outro fixed on 7; 97 corner; 98 audio; 99 captions), captions/audio tracks, and the `window.__timelines["<slug>"]` registry. Scene-types own only their content + entrance motion. There are **no per-episode JSON props files** beyond the spec.
 
-The scaffold also does NOT create `out/<slug>/` or `public/voice/<slug>/` -- those are produced by `bun run audio`.
+The scaffold does NOT create `out/<slug>/` or `public/voice/<slug>/` — those come from `bun run audio`.
 
-## After scaffolding
+## After scaffolding (author the spec)
 
-1. **Write the narration** in `examples/<slug>.txt`.
-2. **Generate voice + captions:**
+1. **Pick scene-types & fill slots.** Edit `scene-spec.json`: per scene set `id` (unique kebab), `type` (one of the 11 scene-types), optional `duration` (else the type default), optional `status` (`draft`/`approved` for the HITL loop), and `slots`. To see a type's exact slots and repeat ranges, run `bun run scene:gallery` or read `templates/scenes/<type>/v1/manifest.json` (remote agents: `list_scene_types` / `get_scene_type`). Keep `outro` as the final scene (it's pinned to track 7). Self-framed types (`code`, `social-card`) already encode the no-double-frame rule.
+2. **Validate fast (no assembly):**
+   ```bash
+   bun run scene:check src/episodes/<slug>/scene-spec.json
+   ```
+3. **Re-assemble after every spec edit:**
+   ```bash
+   bun run assemble <slug>
+   ```
+4. **Per-scene visual QA:**
+   ```bash
+   bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]
+   ```
+   Re-assembles, captures entry/mid/late key frames per scene, and runs `hyperframes inspect` for overflow/overlap (no full mp4). Iterate only the scenes you changed via `--scenes=<id>`.
+5. **Generate voice + captions:**
    ```bash
    bun run audio examples/<slug>.txt --lang=es --out=public/voice/<slug>/
    ```
-3. **Stage the assets:**
+6. **Stage the assets** (the renderer does not auto-copy):
    ```bash
-   cp public/voice/<slug>/voice.mp3     apps/hyperframe/src/episodes/<slug>/assets/voice.mp3
-   cp public/voice/<slug>/captions.json apps/hyperframe/src/episodes/<slug>/assets/captions.json
+   cp public/voice/<slug>/voice.mp3     src/episodes/<slug>/assets/voice.mp3
+   cp public/voice/<slug>/captions.json src/episodes/<slug>/assets/captions.json
    ```
-4. **Extend the catalog declaration** -- keep the scaffolded brand IDs and add intent-specific component IDs from `packages/catalog/manifest.json`.
-5. **Build the HTML** -- author inline markup inside the stage `<div>`. Keep `class="clip" data-start data-duration data-track-index` on every timed element. Follow `canonical-short` for the full pattern.
-6. **Render:**
+7. **Final render** (only after per-scene approval):
    ```bash
    bun run render:episode <slug> --format=mp4
    ```
 
 ## Gotchas
 
-- **Track-index convention is consistent now.** The scaffolder writes `data-track-index="98"` for audio and `"99"` for captions, matching production shorts. Brand corner uses `97`; production logo outro should be the final scene, normally `8`, unless the episode intentionally uses fewer scene tracks.
-- **`#scene-brand-outro` is required.** Do not replace it with a text-only `@handle`, `#scene-logo-outro`, or a generic CTA. If a non-production demo disables it, the catalog comment must include `disabled: [brand-logo-outro] reason: "..."`.
-- **Outro text motion is required.** `#brand-name`, `#brand-tagline`, and source attribution when present must use the standard blur scale-up reveal from `packages/catalog/snippets/brand-logo-outro.html`.
-- **`render-episode.mjs` does NOT auto-copy assets.** Copy `voice.mp3` and `captions.json` manually from `public/voice/<slug>/` to `apps/hyperframe/src/episodes/<slug>/assets/`.
+- **Never hand-edit `index.html`.** It is fully generated from `scene-spec.json`. Any manual change is lost on the next `assemble`. Edit the spec, then `bun run assemble <slug>`.
+- **`outro` is always last.** It's the pinned brand sign-off on fixed track 7; the brand corner fades out as it enters. Do not replace it with a plain text `@handle` card — the brand presence is the `outro` scene-type plus the shell's `#brand-corner`.
+- **`render-episode.mjs` does NOT auto-copy assets.** Copy `voice.mp3` and `captions.json` manually from `public/voice/<slug>/` into the episode's `assets/`. Render is silent if `assets/voice.mp3` is absent.
+- **Re-assemble after editing the spec, before QA or render.** `scene-qa` re-assembles for you, but `render:episode` reads whatever `index.html` is on disk.
 
 ## When NOT to use
 
-- For a **one-off square loop** (LinkedIn 1080x1080) without voiceover -- author directly, skip audio + captions.
-- For a **render of an existing episode** -- just run `bun run render:episode <slug>`.
+- For a **render of an existing episode** — just run `bun run render:episode <slug>`.
+- For **editing an existing short** — edit its `scene-spec.json` and `bun run assemble <slug>`; no scaffold needed.

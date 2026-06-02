@@ -1,118 +1,127 @@
 ---
 name: hyperframes-visual-qa
 description: >
-  Use when a Hyperframes short or scene must be visually verified with rendered screenshots,
-  contact sheets, and iterative inspection before claiming the work is done. Trigger for scene
-  redesigns, overlap/clipping fixes, "looks bad" feedback, caption-safe checks, final MP4 QA,
-  or any request that mentions screenshots, stills, contact sheets, visual QA, malformed visuals,
-  weak scenes, crowded elements, or semantic mismatch.
+  Use when a Hyperframes short must be visually verified before claiming the work is done — the
+  per-scene visual gate (Gate 3) of the production pipeline. Trigger for scene redesigns,
+  overlap/clipping fixes, "looks bad" feedback, caption-safe checks, weak or crowded scenes,
+  semantic mismatch, or any request that mentions screenshots, key frames, visual QA, malformed
+  visuals, or overflow/overlap inspection.
 ---
 
 # Hyperframes Visual QA
 
-Use this skill after any meaningful visual change to a Hyperframes episode. Code review is not enough: the output must be rendered, sampled as screenshots, inspected, and iterated until the visible frames pass.
+Use this skill after any meaningful visual change to a Hyperframes episode. A passing lint is not enough: each scene must be assembled, captured as key frames, inspected for overflow/overlap, and approved per scene before the final render.
+
+This skill drives **Gate 3** of the pipeline (per-scene visual approval), which precedes Gate 4 (final `render:episode`). It does **not** render the full MP4.
+
+## What QA runs on
+
+A short is a typed `scene-spec.json` at `apps/hyperframe/src/episodes/<slug>/scene-spec.json`. You edit scene **slots** there, never the generated `index.html`. The assembler turns the spec into `index.html` (1:1 deterministic). QA re-assembles for you, so the loop is always: **edit slots → scene-qa → review frames → repeat**.
 
 ## Core Loop
 
-1. Read the episode file and current artifacts before editing.
-2. Make the smallest visual change that addresses the actual scene problem.
-3. Run static checks from `apps/hyperframe/`.
-4. Render the MP4.
-5. Extract representative stills from the rendered MP4.
-6. Inspect the stills visually, not just their existence.
-7. Iterate if any frame has overlap, clipping, dead space, weak composition, unreadable text, caption collisions, or semantic mismatch.
+1. Read the episode's `scene-spec.json` and the latest QA artifacts before editing.
+2. Make the smallest slot change that addresses the actual scene problem.
+3. Run the static pre-flight (`scene:check`, then `assemble`, then lint).
+4. Run per-scene QA — it re-assembles, captures key frames, and inspects.
+5. Review the per-scene key frames against the rubric, not just their existence.
+6. Iterate **only the rejected scenes** with `--scenes=<id>` until every scene passes.
 
-Do not claim a visual fix passed unless rendered screenshots were inspected in the current turn.
+Do not claim a visual fix passed unless the current turn captured and reviewed the key frames.
 
-## Static Checks
+## Static pre-flight
 
 Run from `apps/hyperframe/`:
 
 ```bash
-bun run catalog:check src/episodes/<slug>/index.html
+bun run scene:check src/episodes/<slug>/scene-spec.json
+bun run assemble <slug>
 bun run lint:seek-safe src/episodes/<slug>
 bunx hyperframes lint src/episodes/<slug>
 ```
 
-Then render:
+`scene:check` validates the spec against the scene-type manifests (slot names, repeatable-slot ranges, required fields) without assembling — the fast gate. `assemble` regenerates `index.html` from the spec. `scene-qa` re-assembles too, so a clean `scene:check` is the real blocker here.
+
+## Per-scene capture + inspect
+
+This replaces the old `ffmpeg -ss` still extraction and contact sheets. One command:
 
 ```bash
-bun run render:episode <slug> --format=mp4
+bun run scripts/scene-qa.mjs <slug>
 ```
 
-Verify the final file:
+It (1) re-assembles `index.html` from `scene-spec.json`, (2) materialises a working copy under `out/episodes/<slug>` (src/ untouched, captions inlined if present), (3) runs `hyperframes snapshot` to produce per-scene key frames at **entry / mid / late**, and (4) runs `hyperframes inspect --json` for a mechanical overflow/overlap verdict. No MP4 is produced.
 
-```bash
-ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate,duration -show_entries format=duration,size -of json renders/<slug>.mp4
-ffmpeg -v error -i renders/<slug>.mp4 -f null -
-```
-
-## Screenshot Sampling
-
-For a full rebuild, sample each scene at entry, mid, and exit. For a scoped scene fix, sample at least three meaningful timestamps inside that scene.
-
-Choose timestamps from the actual timeline:
-
-- entry: after the scene content is visible, not during a blank fade
-- mid: where the main visual state is present
-- exit: where late evidence, captions, or final state could collide
-
-Save evidence under:
+Output:
 
 ```text
-apps/hyperframe/renders/<slug>-qa/<pass-name>/frames/
-apps/hyperframe/renders/<slug>-qa/<pass-name>/contact.jpg
+apps/hyperframe/renders/<slug>-qa/<scene-id>/entry-<t>s.png
+apps/hyperframe/renders/<slug>-qa/<scene-id>/mid-<t>s.png
+apps/hyperframe/renders/<slug>-qa/<scene-id>/late-<t>s.png
+apps/hyperframe/renders/<slug>-qa/report.json
 ```
 
-Extract frames from `apps/hyperframe/`:
+`report.json` carries the verdict and per-scene index: `inspectOk` (boolean), `inspectIssues` (count), and for each scene its `type`, `track`, time `window`, and `frames` paths. If `inspectOk` is false, the run prints the issue list.
+
+Read the frames directly (they are PNGs in the per-scene folders) and read `report.json` for the inspect verdict.
+
+### Iterating only rejected scenes
+
+After the user rejects specific scenes, edit those scenes' slots in `scene-spec.json` and re-QA just those ids:
 
 ```bash
-mkdir -p renders/<slug>-qa/<pass-name>/frames
-ffmpeg -v error -ss <seconds> -i renders/<slug>.mp4 -frames:v 1 -q:v 2 renders/<slug>-qa/<pass-name>/frames/<label>.jpg
+bun run scripts/scene-qa.mjs <slug> --scenes=hook,pieces
 ```
 
-Create a contact sheet:
+Add `--frames=N` only if you need denser sampling; default is the three entry/mid/late key frames per scene.
 
-```bash
-ffmpeg -v error -pattern_type glob -i 'renders/<slug>-qa/<pass-name>/frames/*.jpg' -vf scale=360:-1,tile=<cols>x<rows> -frames:v 1 renders/<slug>-qa/<pass-name>/contact.jpg
-```
+## Acceptance
+
+A scene passes only when **both** gates clear:
+
+1. **Mechanical (blocking):** `inspect` reports `inspectOk: true` / `inspectIssues: 0` for the scene. Any overflow/overlap issue blocks — fix the slots and re-QA.
+2. **Human (final):** the per-scene key frames are reviewed against the rubric below and the user approves that scene.
+
+The episode advances to Gate 4 (final render) only when every scene is approved.
 
 ## Visual Inspection Rubric
 
-Inspect the screenshots directly. A frame passes only if:
+Apply this to each scene's entry / mid / late frames. A scene passes only if:
 
 - visible text is readable at 1080x1920
 - elements do not overlap, collide, or feel cramped
-- no important content is clipped
-- captions do not cover important visuals
+- no important content is clipped or pushed off-frame
+- captions (track 99) and the brand-corner watermark (track 97) do not cover important visuals
 - the scene has a clear focal point and balanced spacing
 - the visual directly supports the narration at that timestamp
-- screenshots do not rely on random or unrelated decorative assets
-- transitions are seek-safe and no state depends on playback-only callbacks
+- the scene does not lean on random or unrelated decorative content
+- **orthography is correct for Spanish** — accents and ñ render intact (á é í ó ú ñ ¿ ¡), no mojibake or dropped diacritics in titles, slots, or captions
+- transitions are seek-safe (state materialises at any seek position; nothing depends on playback-only callbacks)
 
-If one frame fails, fix the scene and repeat the render/screenshot inspection cycle.
+If one frame fails, fix that scene's slots and repeat the `--scenes=<id>` QA cycle.
 
 ## Hyperframes Constraints
 
-Keep the episode contract intact:
+The episode contract is owned by the assembler — keep edits inside `scene-spec.json` slots so it stays intact:
 
-- monolithic `index.html` with inline CSS/HTML/JS
-- `paused: true`
-- registered `window.__timelines["<slug>"]`
-- deterministic timeline construction
-- seconds-based timing
+- monolithic generated `index.html` (never hand-edit it), inline CSS/HTML/JS, no `data-composition-src`
+- single `paused: true` GSAP timeline registered as `window.__timelines["<slug>"]`
+- deterministic, seconds-based timing
 - no `Math.random`, `Date.now`, `repeat: -1`, async timeline construction, or seek-unsafe `tl.call()` / `onStart` / `onComplete` for visual state
+- track allocation: scenes on 4,5,6,8,9..; `outro` on 7; brand-corner 97; audio 98; captions 99
+- brand sign-off is the pinned `outro` scene-type plus the shell's brand-corner — never a plain @handle card
+- self-framed scene-types (`code`, `social-card`) already provide their own container; do not double-frame them
 
-Do not change narration, captions, audio, or unrelated scenes unless the user explicitly asks or timing makes the requested visual impossible.
+Do not change narration, captions, audio, or unrelated scenes unless the user explicitly asks or the timing makes the requested visual impossible.
 
 ## Reporting
 
 Final response should include:
 
-- what visual problem was fixed
-- screenshot/contact-sheet path
-- render path
-- checks run and whether they passed
+- what visual problem was fixed (which scenes / slots)
+- the per-scene QA path (`renders/<slug>-qa/`) and the key frames reviewed
+- the `inspect` verdict (`inspectOk` / `inspectIssues`) from `report.json`
+- which scenes are approved vs. still pending the user's per-scene call
 - any unrelated dirty worktree files left untouched
 
 Do not commit, push, or delete generated assets unless the user explicitly asks in the current turn.

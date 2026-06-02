@@ -12,7 +12,8 @@ permission:
     "rg *": allow
     "cat *": allow
     "sed *": allow
-    "bun run --filter @cgaravitoq/catalog route *": allow
+    "bun run scene:gallery *": allow
+    "bun run scene:check *": allow
   task: deny
   skill:
     "short-router": allow
@@ -53,5 +54,5 @@ Rules:
 
 - Apply Spanish TTS pronunciation preflight: dotted short acronyms, Spanish cognates for common tech terms, numbers written as words.
 - Preserve the user's stated thesis. Do not replace it with a generic AI-agent explainer.
-- Make the visual job explicit enough for `short-visual-director` to choose catalog components.
+- Make the visual job of each scene explicit enough for `short-visual-director` to choose scene-types and fill `scene-spec.json` slots.
 - If the idea is too broad, still produce three narrowed options and flag the assumption.

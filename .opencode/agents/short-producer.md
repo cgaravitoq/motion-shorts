@@ -7,6 +7,14 @@ permission:
   edit: deny
   bash:
     "*": allow
+    "bun run new:episode *": allow
+    "bun run assemble *": allow
+    "bun run scene:check *": allow
+    "bun run scripts/scene-qa.mjs *": allow
+    "bun run scene-qa *": allow
+    "bun run render:episode *": allow
+    "bun run audio *": allow
+    "bunx hyperframes lint *": allow
     "git push*": ask
     "gh pr create*": ask
     "gh pr edit*": ask
@@ -21,11 +29,9 @@ permission:
     "short-qa": allow
     "short-publisher": allow
   skill:
-    "short-router": allow
     "produce-from-notion": allow
     "canonical-short": allow
     "new-episode": allow
-    "audio-pipeline": allow
     "generated-raster-assets": allow
     "hyperframes-visual-qa": allow
 ---
@@ -51,20 +57,22 @@ If the request is ambiguous, ask one concise question before delegating.
    - Notion brief: load `produce-from-notion`, then use `short-strategist` only for the script alternatives required by that skill.
    - Raw idea: invoke `short-strategist`.
    - Source URL: invoke `short-researcher`, then `short-strategist`.
-2. Gate 1: present exactly three distinct script/storyboard options. Stop until the user chooses one or asks for revisions.
-3. Invoke `short-visual-director` with the chosen script and target platform.
-4. Invoke `short-audio-producer` to generate voice and captions.
-5. Gate 2: ask the user to approve the audio before HTML work starts.
-6. Invoke `short-composer` to scaffold/build the monolithic Hyperframes episode.
-7. Invoke `short-qa` to run static checks, render, sample frames, inspect, and iterate.
-8. Gate 3: ask the user to approve the rendered MP4.
-9. Invoke `short-publisher` only after explicit approval.
+2. **Gate 1 (script)**: present exactly three distinct script/storyboard options. Stop until the user chooses one or asks for revisions.
+3. Invoke `short-visual-director` with the chosen script and target platform. It scaffolds the episode (`bun run new:episode <slug> --intent=...`) and **writes `apps/hyperframe/src/episodes/<slug>/scene-spec.json`**, choosing scene-types and filling their typed slots. It never hand-authors HTML.
+4. Invoke `short-audio-producer` to generate voice and captions (`bun run audio ...`).
+5. **Gate 2 (audio)**: ask the user to approve `voice.mp3` after an audible check before any visual assembly.
+6. Invoke `short-composer` to validate the spec (`bun run scene:check`), assemble the monolithic `index.html` (`bun run assemble <slug>`), and lint it (`bunx hyperframes lint`). `index.html` is generated — never hand-edited.
+7. Invoke `short-qa` to run per-scene visual QA (`bun run scripts/scene-qa.mjs <slug>`): it re-assembles, captures entry/mid/late key frames per scene, and runs `hyperframes inspect` for overflow/overlap (no full mp4).
+8. **Gate 3 (per-scene visual, looped)**: present the per-scene key frames + inspect verdict and have the user approve/reject EACH scene. For every rejected scene, the visual-director edits that scene's slots, the composer re-assembles, and qa re-runs `scene-qa --scenes=<id>` for only the changed scenes. Repeat until all scenes are approved.
+9. **Gate 4 (final render)**: only after all scenes are approved, qa runs the final full render (`bun run render:episode <slug> --format=mp4`); ask the user to approve the mp4.
+10. Invoke `short-publisher` (R2 + Notion) only after explicit approval.
 
 ## Hard Rules
 
-- Do not continue past a gate without explicit user approval.
+- Do not continue past a gate without explicit user approval. Gate 3 is per-scene and loops: iterate only the rejected scenes, never re-run the whole short.
 - Do not commit, push, upload to R2, update Notion, or open PRs unless the user explicitly asks.
-- Keep all Hyperframes work inside the existing canonical pipeline. Do not invent a second renderer or sidecar JSON composition system.
+- A short is a typed `scene-spec.json`; agents fill slots and a deterministic assembler emits `index.html` (identical spec => identical bytes). Never hand-author or hand-edit HTML/CSS/GSAP — `index.html` is generated.
+- Monolithic single file, no `data-composition-src`, one paused GSAP timeline in `window.__timelines["<slug>"]`, times in seconds, deterministic + seek-safe only. Brand = the pinned `outro` scene-type (always last) + the shell's brand-corner, never a plain @handle card.
 - Required repository skills are authoritative. Load the relevant skill before asking a subagent to execute its stage.
 - When a subagent reports a blocker, surface it directly. Do not silently retry the same action.
 
@@ -77,6 +85,6 @@ Every subagent call must include:
 - Target slug, if known
 - Target language and platform
 - Required gate status
-- Exact files the subagent may touch, or "no file writes" for strategy/research
+- Exact files the subagent may touch (e.g. `scene-spec.json` for the visual-director, `assets/` for audio), or "no file writes" for strategy/research. The assembled `index.html` is generated, never hand-edited.
 
 Collect reports in the parent conversation, but keep them brief.

@@ -1,8 +1,8 @@
 ---
 name: short-workflow-explainer
 description: >
-  Use for vertical shorts that explain workflows, pipelines, automations, decisions, or agent flows
-  with the mandatory catalog preflight.
+  Use for vertical shorts that explain workflows, pipelines, automations, decisions, or agent flows,
+  built from typed scene-types.
 ---
 
 # Workflow explainer short
@@ -11,18 +11,21 @@ description: >
 
 Use for processes, agent flows, decision trees, automations, pipelines, and step-by-step systems.
 
-## Catalog preflight
+## Scene-type preflight
 
 Follow `.agents/skills/references/catalog-preflight.md` before production.
 
-- Required: `brand-logo-outro`, `brand-logo-watermark`
-- First-class: `flowchart`
-- Copy-paste: none
-- Deprecated: none
+Call `recommend_scene_types({ intent: "workflow" })`. Recommended scene-types lean on `flow`, `code`, and `timeline` for step-by-step systems; `hook` and `outro` are structural (always first / always last).
 
-Call `route({ intent: "workflow" })` and keep the chosen IDs as the first non-doctype line in `index.html`.
+Typical skeleton:
 
-If the workflow needs more than four nodes, crossing connectors, product/workspace UI, or a handoff bundle, invoke `.agents/skills/generated-raster-assets/SKILL.md` after catalog preflight and before `canonical-short`.
+```
+hook -> flow -> code -> timeline -> outro
+```
+
+Respect repeatable-slot ranges (`flow.steps` 2-6, `timeline.events` 3-6, `code.lines` 1-12). The `code` scene-type is already self-framed — do not wrap it in an extra card. Read each chosen scene-type's slots via `get_scene_type` (or its `manifest.json`), then write `scene-spec.json`.
+
+If the workflow needs product/workspace UI, a handoff bundle, or a connector-heavy diagram beyond what `flow` expresses cleanly, invoke `.agents/skills/generated-raster-assets/SKILL.md` before `canonical-short`.
 
 ## Handoff
 
