@@ -1,7 +1,6 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { dirname, isAbsolute, join, normalize, resolve } from "node:path";
-import { manifest as catalogManifest, checkEpisode } from "@cgaravitoq/catalog";
 
 type ProducerRenderStatus =
   | "queued"
@@ -37,18 +36,6 @@ export type RenderAsset = {
   name: string;
   data: string;
 };
-
-export class CatalogCheckError extends Error {
-  readonly failures: ReturnType<typeof checkEpisode>["failures"];
-
-  constructor(failures: ReturnType<typeof checkEpisode>["failures"]) {
-    super(
-      `catalog-check-failed: ${failures.map((item) => `${item.rule}: ${item.fix}`).join("; ")}`,
-    );
-    this.name = "CatalogCheckError";
-    this.failures = failures;
-  }
-}
 
 const importProducer = new Function("specifier", "return import(specifier)") as (
   specifier: "@hyperframes/producer",
@@ -114,11 +101,6 @@ export const renderCompositionToFile = async ({
 
   try {
     await materialiseProject(projectDir, html, assets);
-
-    const catalogCheck = checkEpisode(join(projectDir, "index.html"), catalogManifest);
-    if (!catalogCheck.ok) {
-      throw new CatalogCheckError(catalogCheck.failures);
-    }
 
     const { createRenderJob, executeRenderJob } = await importProducer("@hyperframes/producer");
     const renderJob = createRenderJob({ fps, quality, format });

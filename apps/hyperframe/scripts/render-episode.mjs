@@ -33,8 +33,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { getAudioDurationSeconds } from "@cgaravitoq/audio";
-import { checkEpisode } from "@cgaravitoq/catalog";
-import manifest from "../../../packages/catalog/manifest.json";
 import {
   publishEpisodeArtifacts,
   resolveR2PublishOptions,
@@ -341,14 +339,6 @@ const main = async () => {
           ? " Scaffold one with `bun run new:episode <slug> --with-square` or copy templates/square-1080.html (see docs/formats.md)."
         : "";
     console.error(`render-episode: missing required file ${indexPath} for variant=${variant}.${hint}`);
-    process.exit(1);
-  }
-
-  const catalogCheck = checkEpisode(indexPath, manifest);
-  if (!catalogCheck.ok) {
-    console.error(
-      JSON.stringify({ error: "catalog-check-failed", failures: catalogCheck.failures }, null, 2),
-    );
     process.exit(1);
   }
 

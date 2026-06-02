@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="product-turntable-lite preview">
-  <rect width="720" height="405" fill="#10151f"/>
-  <ellipse cx="360" cy="326" rx="142" ry="24" fill="#000" opacity=".34"/>
-  <rect x="260" y="78" width="200" height="234" rx="34" fill="#f8d66d"/>
-  <rect x="286" y="110" width="148" height="154" rx="18" fill="#0b1020"/>
-  <path d="M320 212 360 156 400 212Z" fill="#5eead4"/>
-  <text x="48" y="58" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">product-turntable-lite</text>
-</svg>

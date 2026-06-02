@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="source-image-reveal preview">
-  <rect width="720" height="405" fill="#111827"/>
-  <rect x="88" y="92" width="544" height="226" rx="8" fill="#203149"/>
-  <rect x="88" y="92" width="310" height="226" rx="8" fill="#5eead4" opacity=".42"/>
-  <path d="M88 278 206 170l76 64 64-88 286 172H88Z" fill="#f8d66d" opacity=".42"/>
-  <rect x="384" y="92" width="56" height="226" fill="#fff" opacity=".2"/>
-  <text x="48" y="58" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700">source-image-reveal</text>
-</svg>
