@@ -2,7 +2,9 @@ import { describe, expect, it, mock } from "bun:test";
 import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { compliantBrandHtml } from "./catalog-fixtures";
+
+const SAMPLE_HTML =
+  '<!doctype html>\n<html><body><div id="ep-stage" data-composition-id="t" data-duration="2"></div></body></html>';
 
 const executeRenderJob = mock(async () => {
   throw new Error("simulated render failure");
@@ -35,7 +37,7 @@ describe("renderCompositionToFile temp dir cleanup", () => {
     await expect(
       renderCompositionToFile({
         jobId,
-        html: compliantBrandHtml,
+        html: SAMPLE_HTML,
         assets: [],
         format: "mp4",
         fps: 30,
@@ -57,7 +59,7 @@ describe("renderCompositionToFile temp dir cleanup", () => {
     await expect(
       renderCompositionToFile({
         jobId,
-        html: compliantBrandHtml,
+        html: SAMPLE_HTML,
         assets: [{ name: "../escape.txt", data: "" }],
         format: "mp4",
         fps: 30,

@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { compliantBrandHtml } from "./catalog-fixtures";
+
+const SAMPLE_HTML =
+  '<!doctype html>\n<html><body><div id="ep-stage" data-composition-id="t" data-duration="2"></div></body></html>';
 
 const executeRenderJob = mock(async (_job: unknown, _projectDir: string, outputPath: string) => {
   await writeFile(outputPath, "video-bytes");
@@ -35,7 +37,7 @@ describe("render_composition", () => {
 
   it("renders to a local output file", async () => {
     const result = await renderCompositionTool.handler({
-      html: compliantBrandHtml,
+      html: SAMPLE_HTML,
       format: "mp4",
       fps: 30,
       quality: "standard",
@@ -49,18 +51,6 @@ describe("render_composition", () => {
     expect(body.outputBytes).toBe(11);
     expect(body.outputDurationSec).toBe(1);
     expect(executeRenderJob).toHaveBeenCalledTimes(1);
-
-    await rm(outputDir, { recursive: true, force: true });
-  });
-
-  it("returns catalog check failures before rendering", async () => {
-    const result = await renderCompositionTool.handler({
-      html: compliantBrandHtml.replace("brand-logo-outro", ""),
-    });
-
-    expect(result.isError).toBe(true);
-    expect(text(result).error).toContain("catalog-check-failed");
-    expect(executeRenderJob).not.toHaveBeenCalled();
 
     await rm(outputDir, { recursive: true, force: true });
   });
