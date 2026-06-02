@@ -55,8 +55,8 @@ jobs:
       - name: Env discipline
         run: bun run lint:env
 
-      - name: Catalog reference freshness
-        run: bun run catalog:check-generated
+      - name: Scene-spec validation
+        run: bun run --cwd apps/hyperframe scene:check
 
       - name: Test
         run: bun run test

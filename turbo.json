@@ -12,11 +12,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [
-        "dist/**",
-        "manifest.json",
-        "../../.agents/skills/canonical-short/references/inline-components-catalog.md"
-      ]
+      "outputs": ["dist/**"]
     },
     "dev": {
       "persistent": true,

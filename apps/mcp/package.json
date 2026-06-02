@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@cgaravitoq/audio": "workspace:*",
-    "@cgaravitoq/catalog": "workspace:*",
     "@hyperframes/core": "0.6.7",
     "@hyperframes/producer": "0.6.7",
     "@modelcontextprotocol/sdk": "1.29.0",

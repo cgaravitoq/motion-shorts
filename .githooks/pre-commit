@@ -3,25 +3,13 @@ set -euo pipefail
 
 scripts/check-no-process-env.sh
 
-catalog_reference=".agents/skills/canonical-short/references/inline-components-catalog.md"
-catalog_tmp=$(mktemp)
-catalog_staged=$(mktemp)
-trap 'rm -f "$catalog_tmp" "$catalog_staged"' EXIT
-bun run --cwd packages/catalog scripts/generate-reference-md.ts "$catalog_tmp"
-git show ":$catalog_reference" > "$catalog_staged" 2>/dev/null || cp "$catalog_reference" "$catalog_staged"
-if ! diff -u "$catalog_staged" "$catalog_tmp"; then
-  echo "catalog reference is stale or unstaged. Stage the regenerated file: bun run --cwd packages/catalog build && git add $catalog_reference" >&2
-  exit 1
-fi
-
-staged_episode_indexes=$(git diff --cached --name-only --diff-filter=ACMR -- 'apps/hyperframe/src/episodes/**/index.html')
-if [[ -n "$staged_episode_indexes" ]]; then
-  tmpdir=$(mktemp -d)
-  trap 'rm -f "$catalog_tmp" "$catalog_staged"; rm -rf "$tmpdir"' EXIT
-  while IFS= read -r episode_index; do
-    [[ -z "$episode_index" ]] && continue
-    staged_blob="$tmpdir/$(echo "$episode_index" | tr '/' '_')"
-    git show ":$episode_index" > "$staged_blob"
-    bun run --cwd apps/hyperframe catalog:check "$staged_blob"
-  done <<< "$staged_episode_indexes"
+# Validate any staged scene-spec.json against the scene-type manifests.
+staged_specs=$(git diff --cached --name-only --diff-filter=ACMR -- 'apps/hyperframe/src/episodes/**/scene-spec.json')
+if [[ -n "$staged_specs" ]]; then
+  abs_specs=()
+  while IFS= read -r spec; do
+    [[ -z "$spec" ]] && continue
+    abs_specs+=("$PWD/$spec")
+  done <<< "$staged_specs"
+  bun run --cwd apps/hyperframe scene:check "${abs_specs[@]}"
 fi

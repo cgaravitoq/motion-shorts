@@ -37,7 +37,6 @@
     "typecheck": "turbo run typecheck",
     "lint": "biome lint .",
     "lint:env": "bash scripts/check-no-process-env.sh",
-    "catalog:check-generated": "bunx turbo run --filter @cgaravitoq/catalog build && git diff --exit-code packages/catalog/manifest.json .agents/skills/canonical-short/references/inline-components-catalog.md",
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
     "check": "biome check --write .",

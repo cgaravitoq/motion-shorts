@@ -7,9 +7,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "bun run scripts/dev.mjs",
-    "catalog:check": "bun run ../../packages/catalog/scripts/check.ts",
-    "catalog:check:all": "bun run scripts/catalog-check-all.mjs",
-    "catalog:list": "bun run ../../packages/catalog/scripts/list.ts",
+    "assemble": "bun run scripts/assemble.mjs",
+    "scene-qa": "bun run scripts/scene-qa.mjs",
+    "scene:check": "bun run scripts/scene-check-all.mjs",
+    "scene:gallery": "bun run scripts/build-catalog-demo.mjs",
     "lint:seek-safe": "bun run scripts/lint-seek-safe.mjs",
     "lint:desktop-safe": "bun run scripts/lint-desktop-safe.mjs",
     "preview": "bunx hyperframes preview",
@@ -21,14 +22,12 @@
     "metrics:dashboard": "bun run scripts/metrics-dashboard.mjs",
     "new-episode": "bun run scripts/new-episode.mjs",
     "new:episode": "bun run scripts/new-episode.mjs",
-    "templates:list": "bun run scripts/list-templates.mjs",
     "audio": "bun run scripts/generate-audio.mjs",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cgaravitoq/audio": "workspace:*",
-    "@cgaravitoq/catalog": "workspace:*"
+    "@cgaravitoq/audio": "workspace:*"
   },
   "devDependencies": {
     "hyperframes": "0.6.29"

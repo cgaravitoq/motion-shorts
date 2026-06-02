@@ -16,7 +16,6 @@
       "version": "0.1.0",
       "dependencies": {
         "@cgaravitoq/audio": "workspace:*",
-        "@cgaravitoq/catalog": "workspace:*",
       },
       "devDependencies": {
         "hyperframes": "0.6.29",
@@ -27,7 +26,6 @@
       "version": "0.1.0",
       "dependencies": {
         "@cgaravitoq/audio": "workspace:*",
-        "@cgaravitoq/catalog": "workspace:*",
         "@hyperframes/core": "0.6.7",
         "@hyperframes/producer": "0.6.7",
         "@modelcontextprotocol/sdk": "1.29.0",
@@ -46,16 +44,6 @@
         "@elevenlabs/elevenlabs-js": "2.47.0",
         "@inworld/tts": "1.1.1",
         "@t3-oss/env-core": "0.13.11",
-        "zod": "4.4.3",
-      },
-      "devDependencies": {
-        "vitest": "4.1.6",
-      },
-    },
-    "packages/catalog": {
-      "name": "@cgaravitoq/catalog",
-      "version": "0.1.0",
-      "dependencies": {
         "zod": "4.4.3",
       },
       "devDependencies": {
@@ -102,8 +90,6 @@
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.4.15", "", { "os": "win32", "cpu": "x64" }, "sha512-zBrGq5mx5wwpnow4+2BxUvleDM+GNd4sLbPaMapsSLQLD0NGRCquqPBTgN+7XkUteHvj7M+BstuI8tmnV7+HgQ=="],
 
     "@cgaravitoq/audio": ["@cgaravitoq/audio@workspace:packages/audio"],
-
-    "@cgaravitoq/catalog": ["@cgaravitoq/catalog@workspace:packages/catalog"],
 
     "@cgaravitoq/hyperframe": ["@cgaravitoq/hyperframe@workspace:apps/hyperframe"],
 
