@@ -1,0 +1,26 @@
+.pr-title { margin: 0; }
+.pr-title:empty { display: none; }
+.pr-eyebrow:empty { display: none; }
+
+.pr-row { list-style: none; margin: var(--title-block-gap) 0 0; padding: 0; display: flex; justify-content: center; align-items: flex-start; }
+.pr-row[data-count="1"] { gap: 0; }
+.pr-row[data-count="2"] { gap: 72px; }
+.pr-row[data-count="3"] { gap: 48px; }
+
+.pr-ring { display: flex; flex-direction: column; align-items: center; gap: 32px; }
+
+.pr-dial { position: relative; width: 460px; height: 460px; }
+.pr-row[data-count="2"] .pr-dial { width: 380px; height: 380px; }
+.pr-row[data-count="3"] .pr-dial { width: 280px; height: 280px; }
+
+.pr-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pr-track { fill: none; stroke: var(--line); stroke-width: 14; }
+.pr-arc { fill: none; stroke: var(--source-accent); stroke-width: 16; stroke-linecap: round; filter: drop-shadow(0 0 20px color-mix(in srgb, var(--source-accent) 36%, transparent)); }
+.pr-ring:nth-child(2) .pr-arc { stroke: var(--source-accent-2); filter: drop-shadow(0 0 20px color-mix(in srgb, var(--source-accent-2) 36%, transparent)); }
+
+.pr-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 116px; font-weight: 780; letter-spacing: -0.02em; color: var(--paper); font-variant-numeric: tabular-nums; }
+.pr-row[data-count="2"] .pr-num { font-size: 92px; }
+.pr-row[data-count="3"] .pr-num { font-size: 64px; }
+
+.pr-label { margin: 0; font-size: 34px; line-height: 1.18; font-weight: 640; color: var(--paper); text-align: center; max-width: 360px; }
+.pr-row[data-count="3"] .pr-label { font-size: 28px; max-width: 260px; }

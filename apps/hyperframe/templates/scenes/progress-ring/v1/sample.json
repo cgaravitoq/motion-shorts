@@ -1,0 +1,9 @@
+{
+  "eyebrow": "Cobertura",
+  "title": "El sistema, en <strong>cifras</strong>",
+  "rings": [
+    { "pct": "98", "label": "Reproducibilidad 1:1" },
+    { "pct": "74", "label": "Escenas reutilizadas", "value": "74%" },
+    { "pct": "92", "label": "Cobertura de QA" }
+  ]
+}
