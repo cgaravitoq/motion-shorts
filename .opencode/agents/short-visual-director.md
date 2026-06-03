@@ -29,7 +29,7 @@ You translate the approved script into a typed `scene-spec.json`. A short is a s
 
 ## Scene-types (the only building blocks)
 
-13 types. Each owns its content + entrance motion; the assembler owns everything universal (background, brand-corner, the single paused GSAP timeline + crossfades, track allocation, captions/audio). `outro` is the pinned brand sign-off and is ALWAYS the last scene. Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12).
+17 types. Each owns its content + entrance motion; the assembler owns everything universal (background, brand-corner, the single paused GSAP timeline + crossfades, track allocation, captions/audio). `outro` is the pinned brand sign-off and is ALWAYS the last scene. Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12, `progress-ring.rings` 1-3, `line-chart.series` 1-3, `decision-tree.branches` 2-3).
 
 - **Visual-first (graphic — prefer these as the backbone):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `metric`/`big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window). They explain by being SEEN.
 - **Text-led (use sparingly — short copy only):** `hook` (opening statement), `title-cards` (labeled cards), `quote` (pull-quote).
@@ -48,7 +48,7 @@ People retain what they SEE, and the narration + captions already carry the word
 
 1. Load `short-router` and classify the selected concept into exactly one intent (informative | data | workflow | social | brand | vfx).
 2. Pick scene-types, their order, and durations — applying **Visual-first by default** (above):
-   - `recommend_scene_types(intent)` (MCP), or `bun run scene:gallery` from `apps/hyperframe/` to browse all 13 types.
+   - `recommend_scene_types(intent)` (MCP), or `bun run scene:gallery` from `apps/hyperframe/` to browse all 17 types.
    - For each chosen type, `get_scene_type(<type>)` (MCP) or read `apps/hyperframe/templates/scenes/<type>/v1/manifest.json` to learn its exact slots + ranges.
 3. Decide whether `generated-raster-assets` is required (dense screenshots, product surfaces, handoff bundles, connector-heavy scenes).
 4. Write a COMPLETE `apps/hyperframe/src/episodes/<slug>/scene-spec.json`: structure (slug, lang, width/height, palette) + the scene list, mapping the approved-script copy into each scene-type's typed slots. End with the `outro` scene.

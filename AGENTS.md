@@ -22,8 +22,9 @@ Shorts are authored as a typed **scene-spec.json** (an ordered list of parametri
 ```
 apps/hyperframe/               Shorts pipeline (Hyperframes 0.6.x + GSAP 3.15.x)
   templates/_shell/            Universal shell: look + paused timeline + tracks, emitted into every episode
-  templates/scenes/<type>/v1/  13 parametric scene-types (hook, title-cards, flow, fanout, metric, bars,
-                               big-stat, comparison, timeline, quote, code, social-card, outro)
+  templates/scenes/<type>/v1/  17 parametric scene-types (hook, title-cards, flow, fanout, metric, bars,
+                               big-stat, comparison, timeline, quote, code, social-card,
+                               progress-ring, line-chart, contrib-heatmap, decision-tree, outro)
   scripts/lib/                 Engine: scene-instantiator, assemble-episode, scene-spec, scene-router
   src/episodes/<slug>/         scene-spec.json (source of truth) -> generated index.html
 apps/mcp/                      Local stdio MCP server (scene-hub + lint/audio/render tools)
@@ -50,7 +51,7 @@ Breaking any of these will corrupt the render. They are non-negotiable.
 
 A short is a `scene-spec.json`. To author one (CWD `apps/hyperframe/`):
 
-1. **Pick scene-types.** `bun run scene:gallery` (or MCP `recommend_scene_types <intent>` / `list_scene_types`) to choose from the 13 types. Each type's exact slots: `get_scene_type <type>` or `templates/scenes/<type>/v1/manifest.json`. Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4). `outro` is the pinned brand sign-off, always last.
+1. **Pick scene-types.** `bun run scene:gallery` (or MCP `recommend_scene_types <intent>` / `list_scene_types`) to choose from the 17 types. Each type's exact slots: `get_scene_type <type>` or `templates/scenes/<type>/v1/manifest.json`. Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4). `outro` is the pinned brand sign-off, always last.
 2. **Scaffold + fill.** `bun run new:episode <slug> [--intent=...]` writes a starter spec; edit `src/episodes/<slug>/scene-spec.json` slots, then `bun run scene:check <slug-spec>` to validate.
 3. **Assemble.** `bun run assemble <slug>` regenerates `index.html` (run after every spec edit).
 4. **Per-scene QA (HITL).** `bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]` snapshots each scene + runs `hyperframes inspect` (overflow/overlap), no full render. Iterate only rejected scenes.

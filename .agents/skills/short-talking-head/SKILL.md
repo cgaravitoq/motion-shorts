@@ -6,7 +6,7 @@ description: >
   Covers presenter sourcing (HeyGen or any MP4) and background removal via
   `hyperframes remove-background` -> `speaker.webm` + `plate.webm`. Defer to this skill when
   the user says "add a talking head", "presenter cutout", "avatar in the short", "HeyGen
-  avatar", or asks to composite a person over motion-graphics. NOTE: the 13-type scene-hub
+  avatar", or asks to composite a person over motion-graphics. NOTE: the 17-type scene-hub
   has no avatar/cutout scene-type yet, so this skill currently produces the *asset* only --
   scene integration is a documented follow-up (see "Integration status"). Skip for static
   portraits, static PFP overlays (use the `social-card` scene-type), or full-frame webcam
@@ -24,9 +24,9 @@ generation step (`hyperframes remove-background`) and the compositing knowledge 
 wire it later.
 
 **Integration status (read first):** the current short pipeline assembles a monolithic
-`index.html` from a typed `scene-spec.json` using the 13-type scene-hub (hook, title-cards,
+`index.html` from a typed `scene-spec.json` using the 17-type scene-hub (hook, title-cards,
 flow, fanout, metric, bars, big-stat, comparison, timeline, quote, code, social-card,
-outro). None of
+progress-ring, line-chart, contrib-heatmap, decision-tree, outro). None of
 those scene-types wraps an alpha-video presenter. So this skill **stops at the asset** --
 `speaker.webm` + `plate.webm`. Dropping the cutout into a short requires a future
 avatar-capable scene-type (see "Integration status" at the bottom). The rest of this file is
@@ -197,9 +197,9 @@ If a teammate's local episode is missing the WebMs, hydration recreates them fro
 
 ## Integration status (follow-up)
 
-The scene-hub (`apps/hyperframe/templates/scenes/<type>/v1/`) has 13 scene-types: hook,
+The scene-hub (`apps/hyperframe/templates/scenes/<type>/v1/`) has 17 scene-types: hook,
 title-cards, flow, fanout, metric, bars, big-stat, comparison, timeline, quote, code,
-social-card, outro.
+social-card, progress-ring, line-chart, contrib-heatmap, decision-tree, outro.
 **None of them wraps an alpha-video presenter.** A short is assembled deterministically from
 `scene-spec.json` by the engine in `apps/hyperframe/scripts/lib/` (`scene-instantiator`,
 `assemble-episode`, `scene-spec`, `scene-router`) -- `index.html` is generated, never
@@ -237,7 +237,7 @@ short is blocked on that follow-up.
 
 - `AGENTS.md` -- critical constraints (monolithic generated single file, paused timeline +
   registry, seek-safe, track convention).
-- `apps/hyperframe/templates/scenes/` -- the 13 scene-types (none avatar-capable yet).
+- `apps/hyperframe/templates/scenes/` -- the 17 scene-types (none avatar-capable yet).
 - `apps/hyperframe/scripts/lib/` -- the assembler engine the future avatar scene-type plugs
   into.
 - `.agents/skills/canonical-short/SKILL.md` -- the full short pipeline.

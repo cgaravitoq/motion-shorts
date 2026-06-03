@@ -65,7 +65,7 @@ The scaffold does NOT create `out/<slug>/` or `public/voice/<slug>/` — those c
 
 ## After scaffolding (author the spec)
 
-1. **Pick scene-types & fill slots.** Edit `scene-spec.json`: per scene set `id` (unique kebab), `type` (one of the 13 scene-types), optional `duration` (else the type default), optional `status` (`draft`/`approved` for the HITL loop), and `slots`. To see a type's exact slots and repeat ranges, run `bun run scene:gallery` or read `templates/scenes/<type>/v1/manifest.json` (remote agents: `list_scene_types` / `get_scene_type`). Keep `outro` as the final scene (it's pinned to track 7). Self-framed types (`code`, `social-card`) already encode the no-double-frame rule.
+1. **Pick scene-types & fill slots.** Edit `scene-spec.json`: per scene set `id` (unique kebab), `type` (one of the 17 scene-types), optional `duration` (else the type default), optional `status` (`draft`/`approved` for the HITL loop), and `slots`. To see a type's exact slots and repeat ranges, run `bun run scene:gallery` or read `templates/scenes/<type>/v1/manifest.json` (remote agents: `list_scene_types` / `get_scene_type`). Keep `outro` as the final scene (it's pinned to track 7). Self-framed types (`code`, `social-card`) already encode the no-double-frame rule.
 2. **Validate fast (no assembly):**
    ```bash
    bun run scene:check src/episodes/<slug>/scene-spec.json

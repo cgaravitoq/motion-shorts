@@ -9,7 +9,7 @@ scene-spec.json  ──(assembler)──>  index.html  ──(render)──>  mp
 
 `index.html` is **generated**. Never edit it by hand; edit the spec and re-run `bun run assemble <slug>`.
 
-This doc is the **scene-type authoring reference**: the shell, the 13 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
+This doc is the **scene-type authoring reference**: the shell, the 17 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
 
 ## Layout
 
@@ -47,7 +47,7 @@ The build engine is `apps/hyperframe/scripts/lib/`:
 | `scene-spec.mjs` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
 | `scene-router.mjs` | intent → recommended scene-type skeleton + typed summaries |
 
-## The 13 scene-types
+## The 17 scene-types
 
 These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count.
 
@@ -65,6 +65,10 @@ These are the only building blocks. `hook` opens; `outro` is the pinned brand si
 | `quote` | Pull quote + attribution | 6 | — | `quote*` (rich), `name*`, `role?` |
 | `code` | Terminal/code window | 7 | `lines` **1-12** (`text*`, `kind?`) | `filename?`, `title?`, `eyebrow?` |
 | `social-card` | Platform-native social post | 7 | — | `name*`, `body*` (rich), `handle?`, `avatarInitials?`, `replies?`, `reposts?`, `likes?`, `title?` (rich), `eyebrow?` |
+| `progress-ring` | 1-3 circular progress rings (radial KPI gauges) | 8 | `rings` **1-3** (`pct*`, `label*`, `value?`) | `title?` (rich), `eyebrow?` |
+| `line-chart` | Time-series line chart, 1-3 series | 8 | `series` **1-3** (`label*`, `values*`) | `title?` (rich), `eyebrow?`, `unit?`, `xLabels?` |
+| `contrib-heatmap` | GitHub-style contribution heatmap | 8 | — | `data*`, `caption?`, `highlight?`, `title?` (rich), `eyebrow?` |
+| `decision-tree` | Conditional decision tree (IF/THEN branching) | 8 | `branches` **2-3** (`label*`, `result*`, `tone?`) | `question*`, `title?` (rich), `eyebrow?` |
 | `outro` | Pinned brand sign-off (track 7, last) | 5.5 | — | `source?` |
 
 `*` = required, `?` = optional. "(rich)" slots accept inline HTML (`<strong>`, `<em>`, `<br>`); everything else is escaped as plain text. The same `*`/`?`/`[min-max]` summary is what `recommend_scene_types` and `scene:check` print.

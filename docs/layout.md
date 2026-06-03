@@ -110,7 +110,7 @@ motion-shorts/                 (monorepo root)
 | Episode source of truth | `apps/hyperframe/src/episodes/<slug>/scene-spec.json` |
 | Generated render input | `apps/hyperframe/src/episodes/<slug>/index.html` (never hand-edit) |
 | Universal shell | `apps/hyperframe/templates/_shell/{shell.css,shell.html.tmpl}` |
-| Scene-type building blocks (13) | `apps/hyperframe/templates/scenes/<type>/v1/` |
+| Scene-type building blocks (17) | `apps/hyperframe/templates/scenes/<type>/v1/` |
 | Assembler engine | `apps/hyperframe/scripts/lib/{scene-instantiator,assemble-episode,scene-spec,scene-router}.mjs` |
 
 Scene-types (the only building blocks): `hook`, `title-cards`, `flow`, `metric`, `big-stat`,

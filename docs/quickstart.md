@@ -99,7 +99,7 @@ bunx hyperframes lint src/episodes/short-09
 
 ## Scene-hub preflight
 
-Each short is built from 13 scene-types — the only building blocks: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`. `outro` is the pinned brand sign-off and is always last. The scene-hub lives at `apps/hyperframe/templates/`: `_shell/` holds the universal look (tokens, background layers, brand-corner watermark, the single paused GSAP timeline + crossfades, captions/audio, track allocation, registry), and `scenes/<type>/v1/` holds each scene-type's `manifest.json`, `fragment.html`, `styles.css`, `timeline.js`, and `sample.json`.
+Each short is built from 17 scene-types — the only building blocks: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `outro`. `outro` is the pinned brand sign-off and is always last. The scene-hub lives at `apps/hyperframe/templates/`: `_shell/` holds the universal look (tokens, background layers, brand-corner watermark, the single paused GSAP timeline + crossfades, captions/audio, track allocation, registry), and `scenes/<type>/v1/` holds each scene-type's `manifest.json`, `fragment.html`, `styles.css`, `timeline.js`, and `sample.json`.
 
 Repeatable slots have ranges: `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12. Validate any spec with `bun run scene:check` before assembling. Remote agents can call MCP `list_scene_types`, `get_scene_type`, and `recommend_scene_types(intent)` for the same lookup.
 

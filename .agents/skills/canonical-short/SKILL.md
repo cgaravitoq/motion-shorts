@@ -45,7 +45,7 @@ To learn the exact slots for a type, run `get_scene_type` (MCP) or read `templat
 
 People retain what they see, and the narration + captions already deliver the words — so the screen should show the **picture**, not the script. When authoring the spec:
 
-- **Prefer graphic scene-types.** Make ≥ half the content scenes visual-first. Reach for a graphic before a text card: process → `fanout`/`flow`; number → `big-stat`/`metric` (count-up); quantities → `bars`; A vs B → `comparison`; chronology → `timeline`; command/output → `code`.
+- **Prefer graphic scene-types.** Make ≥ half the content scenes visual-first. Reach for a graphic before a text card: process → `fanout`/`flow`; conditional branch → `decision-tree`; number → `big-stat`/`metric` (count-up); percentage/gauge → `progress-ring`; quantities → `bars`; trend over time → `line-chart`; activity cadence → `contrib-heatmap`; A vs B → `comparison`; chronology → `timeline`; command/output → `code`.
 - **Cap text scenes** at 1–2 (`title-cards`/`quote`) plus the `hook`; never two text-led scenes back to back.
 - **Trim on-screen copy:** short titles, labels of 1–4 words, drop optional body lines when a label suffices, don't restate the narration.
 - **Never invent data** — only use `bars`/`metric`/`big-stat` with real numbers; for qualitative topics lean on `fanout`/`flow`/`code`.

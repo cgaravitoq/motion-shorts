@@ -25,7 +25,7 @@ Stay in pure scene-type HTML/CSS/SVG when the scene needs editable live counters
 
 ## Integration Point
 
-A generated image must be referenced from a scene-type slot that takes an image. As of now the 13 scene-types (`hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`) expose only `text`, `richText`, and `repeat` slots — **none currently exposes an image slot**.
+A generated image must be referenced from a scene-type slot that takes an image. As of now the 17 scene-types (`hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `outro`) expose only `text`, `richText`, and `repeat` slots — **none currently exposes an image slot**.
 
 So before generating, confirm where the asset will land:
 

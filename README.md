@@ -24,9 +24,10 @@ deterministic assembler turns the spec into one monolithic, paused
 **scene-type hub** under `apps/hyperframe/templates/` — a universal
 `_shell/` (tokens, background layers, brand-corner watermark, the single
 paused GSAP timeline + crossfades, captions/audio, track allocation) plus
-13 typed scene-types in `scenes/<type>/v1/`: `hook`, `title-cards`,
+17 typed scene-types in `scenes/<type>/v1/`: `hook`, `title-cards`,
 `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`,
-`quote`, `code`, `social-card`, and `outro` (the pinned brand sign-off,
+`quote`, `code`, `social-card`, `progress-ring`, `line-chart`,
+`contrib-heatmap`, `decision-tree`, and `outro` (the pinned brand sign-off,
 always last).
 Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps`
 2-6, `metric.stats` 1-4, `timeline.events` 3-6, `code.lines` 1-12).
@@ -229,10 +230,11 @@ apps/hyperframe/
                            _shell/        Universal look (tokens, bg layers,
                                           brand-corner, paused GSAP timeline,
                                           captions/audio, track allocation)
-                           scenes/<type>/v1/  13 scene-types: hook, title-cards,
+                           scenes/<type>/v1/  17 scene-types: hook, title-cards,
                                           flow, fanout, metric, bars, big-stat,
                                           comparison, timeline, quote, code,
-                                          social-card, outro
+                                          social-card, progress-ring, line-chart,
+                                          contrib-heatmap, decision-tree, outro
   examples/<slug>.txt    Narration scripts (one per episode)
   public/voice/<slug>/   Canonical audio assets (gitignored, regenerable)
   renders/               Local render + scene-qa cache (gitignored)
