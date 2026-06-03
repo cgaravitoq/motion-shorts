@@ -1,0 +1,10 @@
+{
+  "eyebrow": "Latencia",
+  "title": "El render se vuelve <strong>constante</strong>",
+  "unit": "ms",
+  "xLabels": "Ene, Feb, Mar, Abr, May, Jun",
+  "series": [
+    { "label": "Antes", "values": "820, 760, 690, 540, 420, 310" },
+    { "label": "Con caché", "values": "640, 480, 360, 230, 160, 120" }
+  ]
+}

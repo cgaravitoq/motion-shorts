@@ -1,0 +1,31 @@
+.lc-title { margin: 0; }
+.lc-title:empty { display: none; }
+.lc-eyebrow:empty { display: none; }
+
+.lc-figure { margin: var(--title-block-gap) 0 0; padding: 0; display: flex; flex-direction: column; align-items: stretch; gap: 36px; }
+.lc-svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.lc-grid line { stroke: var(--line); stroke-width: 2; }
+.lc-grid line.lc-grid__base { stroke: color-mix(in srgb, var(--paper) 34%, transparent); stroke-width: 3; }
+
+.lc-ylabels text { fill: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 32px; font-weight: 560; text-anchor: end; dominant-baseline: middle; }
+.lc-xlabels text { fill: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 32px; font-weight: 560; text-anchor: middle; dominant-baseline: hanging; }
+
+.lc-line { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.lc-line--0 { stroke: var(--source-accent); }
+.lc-line--1 { stroke: var(--source-accent-2); }
+.lc-line--2 { stroke: color-mix(in srgb, var(--paper) 60%, transparent); }
+
+.lc-dot { stroke: var(--ink); stroke-width: 3; }
+.lc-dot--0 { fill: var(--source-accent); }
+.lc-dot--1 { fill: var(--source-accent-2); }
+.lc-dot--2 { fill: color-mix(in srgb, var(--paper) 72%, transparent); }
+
+.lc-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 40px; }
+.lc-figure[data-count="1"] .lc-legend { display: none; }
+.lc-legend__item { display: flex; align-items: center; gap: 16px; }
+.lc-legend__swatch { width: 36px; height: 8px; border-radius: 999px; background: var(--muted); }
+.lc-legend__item:nth-child(1) .lc-legend__swatch { background: var(--source-accent); }
+.lc-legend__item:nth-child(2) .lc-legend__swatch { background: var(--source-accent-2); }
+.lc-legend__item:nth-child(3) .lc-legend__swatch { background: color-mix(in srgb, var(--paper) 60%, transparent); }
+.lc-legend__label { font-size: 30px; line-height: 1.1; font-weight: 640; color: var(--paper); letter-spacing: 0; white-space: nowrap; }
