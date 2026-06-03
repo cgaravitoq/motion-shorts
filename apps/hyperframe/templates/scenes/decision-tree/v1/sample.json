@@ -1,0 +1,9 @@
+{
+  "eyebrow": "Decisión",
+  "title": "¿El test pasó en <strong>CI</strong>?",
+  "question": "¿El build pasó en CI?",
+  "branches": [
+    { "label": "sí", "result": "Despliega a producción", "tone": "positive" },
+    { "label": "no", "result": "Bloquea el merge y avisa", "tone": "negative" }
+  ]
+}

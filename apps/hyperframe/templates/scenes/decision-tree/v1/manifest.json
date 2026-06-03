@@ -1,0 +1,33 @@
+{
+  "id": "decision-tree@1",
+  "type": "decision-tree",
+  "version": 1,
+  "label": "Vertical decision tree",
+  "description": "A conditional decision tree: one root question node on top, elbow connectors fanning down into 2-3 result nodes in a row. Each branch carries a small condition badge on its connector (e.g. \"sí\" / \"no\" / \"> 100ms\") and its result node is tinted by tone (positive=accent, negative=accent-2, neutral=muted). Distinct from flow (linear chain) and fanout (orchestration): this encodes IF/THEN branching. Branch count is a parameter; geometry adapts.",
+  "builder": "build_decisionTree",
+  "classPrefix": "dt",
+  "defaultDuration": 8,
+  "intentTags": ["workflow", "informative", "data"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "question": { "kind": "text", "required": true },
+    "branches": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 3,
+      "item": {
+        "label": { "kind": "text", "required": true },
+        "result": { "kind": "text", "required": true },
+        "tone": { "kind": "text", "required": false, "default": "neutral" }
+      }
+    }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "branch count within [2,3]",
+    "each .dt-branch tinted by data-tone",
+    "connector stroke-dasharray = real px length computed in builder",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}
