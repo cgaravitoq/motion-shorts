@@ -108,7 +108,14 @@ export function assembleEpisode(spec, { hubRoot } = {}) {
   }
 
   // timeline
-  const allSel = scenes.map((sc) => `"#scene-${sc.id}"`).join(", ");
+  // The opening scene is excluded from the t=0 hide: a hide + show pair on the
+  // same property at the same instant resolves in reverse insertion order when
+  // the playhead moves backwards (GSAP), which blanked the first scene under
+  // capture engines that pre-seek past it (hyperframes >= 0.6.57 volume probe).
+  const laterSel = scenes
+    .slice(1)
+    .map((sc) => `"#scene-${sc.id}"`)
+    .join(", ");
   const grainInterval = (totalDuration / GRAIN_DRIFT.length).toFixed(2);
   const lines = [
     `const tl = gsap.timeline({ paused: true });`,
@@ -116,8 +123,9 @@ export function assembleEpisode(spec, { hubRoot } = {}) {
     `const sceneSel = (id) => (suffix) => (suffix ? "#" + id + " " + suffix : "#" + id);`,
     ``,
     ...builderBlocks.flatMap((b) => [b, ``]),
-    `const ALL_SCENES = [${allSel}];`,
-    `tl.set(ALL_SCENES, { autoAlpha: 0, scale: 1.02, filter: "blur(8px)" }, 0);`,
+    ...(scenes.length > 1
+      ? [`tl.set([${laterSel}], { autoAlpha: 0, scale: 1.02, filter: "blur(8px)" }, 0);`]
+      : []),
     `${JSON.stringify(GRAIN_DRIFT)}.forEach(([gx, gy], i) => { tl.set(".hf-grain-overlay__texture", { "--grain-x": gx + "%", "--grain-y": gy + "%" }, i * ${grainInterval}); });`,
     ``,
   ];
