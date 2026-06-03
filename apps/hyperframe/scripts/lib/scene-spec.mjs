@@ -48,6 +48,11 @@ export function validateSceneSpec(spec, { hubRoot } = {}) {
 
   if (!spec || typeof spec !== "object") return { ok: false, errors: ["spec is not an object"], warnings };
   if (!spec.slug || !SLUG_RE.test(spec.slug)) errors.push(`spec.slug must be kebab-case, got "${spec.slug}"`);
+  for (const key of ["width", "height", "audioDuration"]) {
+    if (spec[key] != null && (typeof spec[key] !== "number" || !Number.isFinite(spec[key]))) {
+      errors.push(`spec.${key} must be a finite number`);
+    }
+  }
   if (!Array.isArray(spec.scenes) || spec.scenes.length === 0) {
     errors.push("spec.scenes must be a non-empty array");
     return { ok: false, errors, warnings };
@@ -58,6 +63,11 @@ export function validateSceneSpec(spec, { hubRoot } = {}) {
     if (!sc.id || !SLUG_RE.test(sc.id)) errors.push(`scene id must be kebab-case, got "${sc.id}"`);
     else if (ids.has(sc.id)) errors.push(`duplicate scene id "${sc.id}"`);
     else ids.add(sc.id);
+
+    if (typeof sc.type !== "string" || sc.type === "") {
+      errors.push(`scene "${sc.id}" type must be a non-empty string`);
+      continue;
+    }
 
     let resolved;
     try {
@@ -74,7 +84,7 @@ export function validateSceneSpec(spec, { hubRoot } = {}) {
     for (const key of Object.keys(params)) {
       if (!(key in slots)) warnings.push(`scene "${sc.id}" (${sc.type}) has unknown param "${key}" — ignored`);
     }
-    if (sc.duration != null && (typeof sc.duration !== "number" || sc.duration <= 0)) {
+    if (sc.duration != null && (typeof sc.duration !== "number" || !Number.isFinite(sc.duration) || sc.duration <= 0)) {
       errors.push(`scene "${sc.id}" duration must be a positive number`);
     }
   }
