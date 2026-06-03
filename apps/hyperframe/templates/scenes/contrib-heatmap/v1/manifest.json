@@ -1,0 +1,25 @@
+{
+  "id": "contrib-heatmap@1",
+  "type": "contrib-heatmap",
+  "version": 1,
+  "label": "GitHub-style contribution heatmap",
+  "description": "A GitHub-style contribution grid: 7 rows (days of the week) by N columns (weeks). Each cell is a small rounded square tinted by an intensity level 0-4 (0 = empty panel, 1-4 = increasing accent tint). Cells pop in on a diagonal left-to-right sweep. Optional eyebrow + title above, an optional contextual caption and a highlighted badge below, plus a less->more legend. The grid IS the scene; cell size adapts to the column count so it stays inside the 9:16 safe band.",
+  "builder": "build_contrib_heatmap",
+  "classPrefix": "ch",
+  "defaultDuration": 8,
+  "intentTags": ["data", "informative", "brand", "social"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "data": { "kind": "text", "required": true },
+    "caption": { "kind": "text", "required": false, "default": "" },
+    "highlight": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "section #scene-<id> present",
+    "data parses into 7 rows of digits 0-4 separated by '/'",
+    "every row has the same column count, within [12,26]",
+    "cells are generated deterministically by the builder from p.data",
+    "all timeline selectors scoped to #scene-<id>"
+  ]
+}
