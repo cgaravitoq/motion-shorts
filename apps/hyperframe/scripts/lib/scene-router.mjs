@@ -15,8 +15,8 @@ export const INTENTS = ["informative", "data", "workflow", "social", "brand", "v
 // narration + captions carry the words, the scene carries the picture.
 const SKELETONS = {
   informative: ["hook", "flow", "big-stat", "title-cards", "outro"],
-  data: ["hook", "bars", "metric", "big-stat", "outro"],
-  workflow: ["hook", "fanout", "flow", "code", "outro"],
+  data: ["hook", "bars", "line-chart", "big-stat", "outro"],
+  workflow: ["hook", "fanout", "flow", "decision-tree", "outro"],
   social: ["hook", "social-card", "metric", "quote", "outro"],
   brand: ["hook", "big-stat", "bars", "title-cards", "outro"],
   vfx: ["hook", "big-stat", "fanout", "title-cards", "outro"],
