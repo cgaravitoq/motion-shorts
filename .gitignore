@@ -22,6 +22,10 @@ out
 renders
 .hyperframes
 
+# Local render browser (chrome-headless-shell, ~260MB, reinstallable via
+# `bunx @puppeteer/browsers install chrome-headless-shell`)
+apps/hyperframe/chrome-headless-shell/
+
 # Render telemetry ledger (local-only, regenerated per run)
 apps/hyperframe/.metrics/
 
