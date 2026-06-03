@@ -1,5 +1,5 @@
-.soc-title { margin: 0 0 56px; font-size: 64px; }
-.soc-card { box-sizing: border-box; max-width: 860px; padding: 52px 52px 48px; border: 1px solid var(--line); border-radius: 36px; background: var(--panel); box-shadow: 0 30px 90px rgba(0,0,0,0.34); backdrop-filter: blur(8px); }
+.soc-title { margin: 0 0 var(--title-block-gap); font-size: 64px; }
+.soc-card { box-sizing: border-box; max-width: 100%; padding: 52px 52px 48px; border: 1px solid var(--line); border-radius: 36px; background: var(--panel); box-shadow: 0 30px 90px rgba(0,0,0,0.34); backdrop-filter: blur(8px); }
 .soc-card__head { display: flex; align-items: center; gap: 26px; }
 .soc-card__avatar { flex: none; width: 104px; height: 104px; border-radius: 999px; display: grid; place-items: center; background: linear-gradient(135deg, var(--source-accent), var(--source-accent-2)); color: var(--ink); font-size: 44px; font-weight: 800; letter-spacing: 0; }
 .soc-card__id { min-width: 0; }

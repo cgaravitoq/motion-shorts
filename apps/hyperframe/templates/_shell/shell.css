@@ -17,6 +17,16 @@
   --accent: var(--source-accent);
   --accent-2: var(--source-accent-2);
   --title-line-height: 1.03;
+  /* 9:16 safe band: content sits BELOW the brand-corner watermark (top:96px,
+     ~53px tall) and ABOVE the captions strip (spans ~86-316px from the bottom).
+     Scene content must fill this band, never collide with captions/watermark. */
+  --safe-top: 200px;
+  --safe-bottom: 336px;
+  --safe-x: 84px;
+  /* Consistent, generous gap between a scene's heading (eyebrow+title) and its
+     primary component (cards/graph/window/chart). Scene content centers as ONE
+     cohesive group — never spread heading and component apart. */
+  --title-block-gap: 72px;
 }
 
 html, body { width: __WIDTH__px; height: __HEIGHT__px; margin: 0; padding: 0; overflow: hidden; background: var(--ink); color: var(--paper); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
@@ -31,7 +41,7 @@ html, body { width: __WIDTH__px; height: __HEIGHT__px; margin: 0; padding: 0; ov
 
 /* ── Scene container + shared typography roles ────────────────────────── */
 .scene { opacity: 0; will-change: opacity, transform, filter; }
-.scene-pad { width: 100%; height: 100%; box-sizing: border-box; padding: 128px 78px 200px; display: flex; flex-direction: column; justify-content: center; }
+.scene-pad { width: 100%; height: 100%; box-sizing: border-box; padding: var(--safe-top) var(--safe-x) var(--safe-bottom); display: flex; flex-direction: column; justify-content: center; gap: 0; }
 .eyebrow { margin: 0 0 30px; color: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 24px; font-weight: 590; letter-spacing: 0; text-transform: uppercase; }
 .headline { margin: 0; max-width: 920px; font-size: 92px; line-height: var(--title-line-height); letter-spacing: 0; font-weight: 760; text-wrap: balance; }
 .headline strong { color: var(--source-accent-2); font-weight: 820; }

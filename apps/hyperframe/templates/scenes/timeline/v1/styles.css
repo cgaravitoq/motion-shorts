@@ -1,4 +1,4 @@
-.tln-title { margin: 0 0 56px; }
+.tln-title { margin: 0 0 var(--title-block-gap); }
 .tln-list { position: relative; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 44px; }
 .tln-list[data-count="5"] { gap: 36px; }
 .tln-list[data-count="6"] { gap: 30px; }

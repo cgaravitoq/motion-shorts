@@ -1,7 +1,7 @@
-.cmp-title { margin: 0 0 18px; font-size: 68px; }
+.cmp-title { margin: 0; font-size: 68px; }
 .cmp-title:empty { display: none; }
 .cmp-eyebrow:empty { display: none; }
-.cmp-grid { margin-top: 56px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 28px; }
+.cmp-grid { margin-top: var(--title-block-gap); display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 28px; }
 .cmp-col { box-sizing: border-box; padding: 40px 34px; border: 1px solid var(--line); border-radius: 28px; background: var(--panel); box-shadow: 0 24px 80px rgba(0,0,0,0.28); }
 .cmp-col--b { border-color: color-mix(in srgb, var(--source-accent-2) 52%, var(--line)); background: color-mix(in srgb, var(--source-accent-2) 8%, var(--panel)); box-shadow: 0 24px 90px color-mix(in srgb, var(--source-accent-2) 14%, rgba(0,0,0,0.3)); }
 .cmp-col__title { margin: 0 0 28px; font-size: 44px; line-height: 1.05; font-weight: 800; letter-spacing: 0; color: var(--paper); }

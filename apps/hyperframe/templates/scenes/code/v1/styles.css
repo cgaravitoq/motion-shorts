@@ -2,7 +2,7 @@
 .cd-title:empty { display: none; }
 .cd-eyebrow:empty { display: none; }
 
-.cd-window { margin-top: 56px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 26px; background: rgba(8, 9, 10, 0.92); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55); overflow: hidden; }
+.cd-window { margin-top: var(--title-block-gap); box-sizing: border-box; border: 1px solid var(--line); border-radius: 26px; background: rgba(8, 9, 10, 0.92); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55); overflow: hidden; }
 
 .cd-window__bar { display: flex; align-items: center; gap: 16px; padding: 26px 34px; border-bottom: 1px solid var(--line); background: rgba(247, 248, 248, 0.04); }
 .cd-window__dot { width: 22px; height: 22px; border-radius: 999px; background: var(--muted); flex: 0 0 auto; }
@@ -12,7 +12,7 @@
 .cd-window__file { margin-left: 16px; color: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 26px; font-weight: 590; letter-spacing: 0.5px; }
 .cd-window__file:empty { display: none; }
 
-.cd-window__body { padding: 40px 44px; display: flex; flex-direction: column; gap: 14px; }
+.cd-window__body { padding: 44px 44px; display: flex; flex-direction: column; gap: 18px; }
 .cd-line { display: flex; }
 .cd-line__text { font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 32px; line-height: 1.4; font-weight: 510; letter-spacing: 0; color: var(--paper); white-space: pre-wrap; word-break: break-word; }
 

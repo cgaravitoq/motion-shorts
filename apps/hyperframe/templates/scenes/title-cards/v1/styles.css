@@ -1,10 +1,15 @@
 .tc-title { margin: 0; }
-.tc-grid { margin-top: 60px; display: grid; gap: 22px; }
-.tc-grid[data-count="2"] { grid-template-columns: 1fr 1fr; }
-.tc-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+.tc-grid { margin-top: var(--title-block-gap); display: grid; gap: 26px; }
+/* Low counts stack vertically so the cards fill the 9:16 band; 4+ use columns. */
+.tc-grid[data-count="2"] { grid-template-columns: 1fr; }
+.tc-grid[data-count="3"] { grid-template-columns: 1fr; }
 .tc-grid[data-count="4"] { grid-template-columns: 1fr 1fr; }
 .tc-grid[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
 .tc-grid[data-count="6"] { grid-template-columns: repeat(3, 1fr); }
-.tc-card { box-sizing: border-box; padding: 32px 30px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); box-shadow: 0 24px 80px rgba(0,0,0,0.28); }
-.tc-card__title { margin: 0; font-size: 42px; line-height: 1.04; font-weight: 790; color: var(--paper); letter-spacing: 0; }
-.tc-card__body { margin: 16px 0 0; font-size: 28px; line-height: 1.24; font-weight: 510; color: var(--muted); }
+.tc-card { box-sizing: border-box; min-height: 240px; padding: 44px 44px; border: 1px solid var(--line); border-radius: 28px; background: var(--panel); box-shadow: 0 24px 80px rgba(0,0,0,0.28); display: flex; flex-direction: column; justify-content: center; }
+.tc-card__title { margin: 0; font-size: 50px; line-height: 1.04; font-weight: 790; color: var(--paper); letter-spacing: 0; }
+.tc-card__body { margin: 20px 0 0; font-size: 34px; line-height: 1.26; font-weight: 510; color: var(--muted); }
+/* Tighten card type when many cards share the frame. */
+.tc-grid[data-count="5"] .tc-card, .tc-grid[data-count="6"] .tc-card { min-height: 0; padding: 30px 28px; }
+.tc-grid[data-count="5"] .tc-card__title, .tc-grid[data-count="6"] .tc-card__title { font-size: 40px; }
+.tc-grid[data-count="5"] .tc-card__body, .tc-grid[data-count="6"] .tc-card__body { font-size: 27px; margin-top: 14px; }

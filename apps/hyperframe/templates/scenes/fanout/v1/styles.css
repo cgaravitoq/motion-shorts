@@ -2,7 +2,7 @@
 .fo-title:empty { display: none; }
 .fo-eyebrow:empty { display: none; }
 
-.fo-graph { margin: 64px auto 0; width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
+.fo-graph { margin: var(--title-block-gap) auto 0; width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
 
 .fo-row { display: flex; justify-content: center; width: 100%; }
 .fo-row--workers { gap: 28px; flex-wrap: wrap; align-items: stretch; }
@@ -20,9 +20,9 @@
 .fo-node--synth { padding: 28px 40px; border-color: color-mix(in srgb, var(--source-accent-2) 55%, var(--line)); background: color-mix(in srgb, var(--source-accent-2) 8%, var(--panel)); }
 .fo-node--synth .fo-node__dot { background: var(--source-accent-2); box-shadow: 0 0 0 7px color-mix(in srgb, var(--source-accent-2) 24%, transparent); }
 
-.fo-links { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; width: 100%; height: 64px; }
+.fo-links { display: flex; justify-content: center; gap: 28px; flex-wrap: nowrap; width: 100%; height: 150px; }
 .fo-graph[data-count="5"] .fo-links,
-.fo-graph[data-count="6"] .fo-links { gap: 22px; height: 52px; }
+.fo-graph[data-count="6"] .fo-links { gap: 22px; height: 120px; }
 .fo-link { flex: none; width: 4px; height: 100%; border-radius: 999px; }
 .fo-link--out { background: linear-gradient(180deg, var(--source-accent), color-mix(in srgb, var(--source-accent) 45%, transparent)); transform-origin: 50% 0%; }
 .fo-link--in { background: linear-gradient(180deg, color-mix(in srgb, var(--source-accent-2) 45%, transparent), var(--source-accent-2)); transform-origin: 50% 100%; }
