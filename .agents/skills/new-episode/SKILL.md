@@ -78,7 +78,7 @@ The scaffold does NOT create `out/<slug>/` or `public/voice/<slug>/` — those c
    ```bash
    bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]
    ```
-   Re-assembles, captures entry/mid/late key frames per scene, and runs `hyperframes inspect` for overflow/overlap (no full mp4). Iterate only the scenes you changed via `--scenes=<id>`.
+   Re-assembles, captures one settled "final" frame per scene plus a `contact-sheet.jpg` grid (`--frames=3` for entry/mid/late motion debugging), and runs `hyperframes inspect` for overflow/overlap (no full mp4). Show the contact sheet in the chat for review; iterate only the scenes you changed via `--scenes=<id>`.
 5. **Generate voice + captions:**
    ```bash
    bun run audio examples/<slug>.txt --lang=es --out=public/voice/<slug>/

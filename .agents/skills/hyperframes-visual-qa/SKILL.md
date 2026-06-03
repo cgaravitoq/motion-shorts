@@ -50,7 +50,7 @@ This replaces the old `ffmpeg -ss` still extraction and contact sheets. One comm
 bun run scripts/scene-qa.mjs <slug>
 ```
 
-It (1) re-assembles `index.html` from `scene-spec.json`, (2) materialises a working copy under `out/episodes/<slug>` (src/ untouched, captions inlined if present), (3) runs `hyperframes snapshot` to produce per-scene key frames at **entry / mid / late**, and (4) runs `hyperframes inspect --json` for a mechanical overflow/overlap verdict. No MP4 is produced.
+It (1) re-assembles `index.html` from `scene-spec.json`, (2) materialises a working copy under `out/episodes/<slug>` (src/ untouched, captions inlined if present), (3) runs `hyperframes snapshot` to produce one settled **final** frame per scene plus a `contact-sheet.jpg` grid of every sampled scene, and (4) runs `hyperframes inspect --json` for a mechanical overflow/overlap verdict. No MP4 is produced.
 
 Output:
 
@@ -73,7 +73,7 @@ After the user rejects specific scenes, edit those scenes' slots in `scene-spec.
 bun run scripts/scene-qa.mjs <slug> --scenes=hook,pieces
 ```
 
-Add `--frames=N` only if you need denser sampling; default is the three entry/mid/late key frames per scene.
+Default is one settled final frame per scene; add `--frames=3` only when you need entry/mid/late key frames to debug motion.
 
 ## Acceptance
 
@@ -86,7 +86,7 @@ The episode advances to Gate 4 (final render) only when every scene is approved.
 
 ## Visual Inspection Rubric
 
-Apply this to each scene's entry / mid / late frames. A scene passes only if:
+Apply this to each scene's final frame (and to entry/mid/late when running `--frames=3`). A scene passes only if:
 
 - visible text is readable at 1080x1920
 - elements do not overlap, collide, or feel cramped
@@ -118,6 +118,7 @@ Do not change narration, captions, audio, or unrelated scenes unless the user ex
 
 Final response should include:
 
+- the `contact-sheet.jpg` shown **in the chat** (CLI session: deliver the file into the conversation; MCP client: `scene_qa` already returns it as an inline image) — the user reviews from the chat, never by opening folders
 - what visual problem was fixed (which scenes / slots)
 - the per-scene QA path (`renders/<slug>-qa/`) and the key frames reviewed
 - the `inspect` verdict (`inspectOk` / `inspectIssues`) from `report.json`

@@ -31,13 +31,13 @@ The assembler owns everything universal: background layers, the brand-corner wat
 
 ## Scene-types (the building blocks)
 
-Thirteen scene-types live under `templates/scenes/<type>/v1/`:
+Seventeen scene-types live under `templates/scenes/<type>/v1/`:
 
-- **Visual-first (graphic — prefer these):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `metric` / `big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window).
+- **Visual-first (graphic — prefer these):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `line-chart` (time series with axes, 1-3 series), `progress-ring` (1-3 animated rings/gauges), `contrib-heatmap` (GitHub-style activity grid), `decision-tree` (question + 2-3 tone-coloured branches), `metric` / `big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window).
 - **Text-led (use sparingly):** `hook` (opening statement), `title-cards` (labeled cards), `quote` (pull-quote).
 - **Brand:** `outro` (pinned, always last).
 
-Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12).
+Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `line-chart.series` 1-3, `progress-ring.rings` 1-3, `decision-tree.branches` 2-3, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12).
 
 To learn the exact slots for a type, run `get_scene_type` (MCP) or read `templates/scenes/<type>/v1/manifest.json`. To list/preview all types: `bun run scene:gallery` (or MCP `list_scene_types`). Don't guess slot names — read the manifest.
 
@@ -71,6 +71,8 @@ People retain what they see, and the narration + captions already deliver the wo
 **Stage 3 (audible check) is non-negotiable.** TTS issues caught at script-edit cost (cheap) instead of re-render cost (expensive).
 
 **Gate 3 replaces the old "render the whole mp4 then eyeball" gate.** Reject loops re-QA only the changed scenes (`--scenes=<id>`), never the whole short.
+
+**Every gate is reviewed inside the session — the user never opens repo folders.** Gate 1: paste the candidate scripts inline in the chat, including `<break>` tags, so pacing is visible. Gate 2: deliver `voice.mp3` into the chat (plus the STT transcript as a pronunciation proxy). Gate 3: send `renders/<slug>-qa/contact-sheet.jpg` into the chat (the MCP `scene_qa` tool returns it as an inline image). Gate 4: deliver the mp4 into the chat.
 
 ## Voice + TTS gotchas
 
@@ -173,9 +175,9 @@ bun run scripts/scene-qa.mjs <slug>                 # all scenes
 bun run scripts/scene-qa.mjs <slug> --scenes=hook,pieces   # only changed scenes
 ```
 
-This re-assembles, captures key frames per scene (entry/mid/late), and runs `hyperframes inspect` for overflow/overlap. It writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. **No full mp4 render.**
+This re-assembles, captures one settled "final" frame per scene (use `--frames=3` only to debug motion with entry/mid/late), runs `hyperframes inspect` for overflow/overlap, and writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json` + a single **`contact-sheet.jpg`** grid of every sampled scene. **No full mp4 render.**
 
-Present the per-scene key frames + inspect verdict to the user. They approve or reject EACH scene. For rejected scenes: edit that scene's slots in `scene-spec.json` -> `bun run assemble <slug>` -> `bun run scripts/scene-qa.mjs <slug> --scenes=<id>`. Loop until all scenes are approved (mark `status: "approved"` as you go).
+**Review happens in the chat, never in folders.** Send `contact-sheet.jpg` into the conversation (CLI session: deliver the file; MCP client: the `scene_qa` tool already returns it as an inline image) together with the inspect verdict. The user approves or rejects EACH scene from that one image. For rejected scenes: edit that scene's slots in `scene-spec.json` -> `bun run assemble <slug>` -> `bun run scripts/scene-qa.mjs <slug> --scenes=<id>` (other scenes' frames and report entries are preserved and merged). Loop until all scenes are approved (mark `status: "approved"` as you go).
 
 ## Final render (Gate 4)
 
