@@ -19,7 +19,7 @@ description: >
 
 A short is a typed `scene-spec.json` at `src/episodes/<slug>/scene-spec.json`. A deterministic assembler turns it into the monolithic `index.html` (1:1; identical spec => identical bytes). **`index.html` is generated — never hand-edit it.** Every spec edit is followed by `bun run assemble <slug>`.
 
-Scenes are composed only from the 11 scene-types: `hook`, `title-cards`, `flow`, `metric`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`. `outro` is the pinned brand sign-off, always last. See `AGENTS.md` (repo map) and the intent short skills for the scene-type slots and ranges.
+Scenes are composed only from the 13 scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`. `outro` is the pinned brand sign-off, always last. See `AGENTS.md` (repo map) and the intent short skills for the scene-type slots and ranges.
 
 ## When to invoke
 
@@ -118,7 +118,7 @@ Generate **3 script drafts** with explicitly different angles. Don't write the s
 **Why this angle:** <one sentence>
 ```
 
-Pick scene-types per beat from the 11 available; map the brief's intent (informative / data / workflow / social / brand / vfx) to the appropriate scene-types. The `outro` is always the last scene.
+Pick scene-types per beat from the 13 available; map the brief's intent (informative / data / workflow / social / brand / vfx) to the appropriate scene-types. The `outro` is always the last scene.
 
 ### Angle diversification rule
 
@@ -180,7 +180,7 @@ cp public/voice/<slug>/captions.json src/episodes/<slug>/assets/captions.json
 
 Then edit `src/episodes/<slug>/scene-spec.json` so the scenes match the chosen outline. Follow the matching intent short skill (`short-informative`, `short-data-visual`, `short-workflow-explainer`, `short-social-overlay`, `short-brand-system`, or `short-vfx-experimental`) for scene-type selection, slot ranges, and copy, and use `audio-pipeline` for caption alignment notes.
 
-- Compose scenes only from the 11 scene-types; respect each type's slot ranges.
+- Compose scenes only from the 13 scene-types; respect each type's slot ranges.
 - `outro` is the final scene (brand sign-off).
 - Palette from stage 2, NOT reusing previous short's primary.
 - Time scene durations to the word-level timestamps in `captions.json` so beats land on the right words.

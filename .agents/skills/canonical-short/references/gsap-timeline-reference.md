@@ -42,9 +42,9 @@ tl.to("#scene-concept",
 ## GSAP callbacks during seek
 
 Hyperframes seeks (doesn't play), so:
-- `onStart` / `onComplete` / `tl.add(callback)` / `tl.call(...)` do **NOT** fire
-- `onUpdate` **IS seek-safe** — use for animated counters, bar fills
+- `onStart` / `onComplete` / `onUpdate` / `tl.add(callback)` / `tl.call(...)` do **NOT** fire
 - `tl.set(target, props, t)` — zero-duration tween, materialises at any seek position. Use for discrete transitions (class toggle, textContent swap)
+- For animated counters and bar fills use staggered `tl.set(target, props, t)` keyframes (the pattern used by `metric`/`big-stat`) — `onUpdate` does **NOT** fire during seek
 
 ## Brand corner crossfade
 

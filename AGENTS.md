@@ -22,8 +22,8 @@ Shorts are authored as a typed **scene-spec.json** (an ordered list of parametri
 ```
 apps/hyperframe/               Shorts pipeline (Hyperframes 0.6.x + GSAP 3.15.x)
   templates/_shell/            Universal shell: look + paused timeline + tracks, emitted into every episode
-  templates/scenes/<type>/v1/  11 parametric scene-types (hook, title-cards, flow, metric, big-stat,
-                               comparison, timeline, quote, code, social-card, outro)
+  templates/scenes/<type>/v1/  13 parametric scene-types (hook, title-cards, flow, fanout, metric, bars,
+                               big-stat, comparison, timeline, quote, code, social-card, outro)
   scripts/lib/                 Engine: scene-instantiator, assemble-episode, scene-spec, scene-router
   src/episodes/<slug>/         scene-spec.json (source of truth) -> generated index.html
 apps/mcp/                      Local stdio MCP server (scene-hub + lint/audio/render tools)
@@ -42,7 +42,7 @@ Breaking any of these will corrupt the render. They are non-negotiable.
 4. **Deterministic only.** No `Math.random`, `Date.now`, `repeat: -1`, or async timeline construction. Lint catches it.
 5. **CWD for CLI.** Run `bunx hyperframes` and `bun run <script>` from `apps/hyperframe/` (or via `turbo run`). Running from root fails to find episodes.
 6. **bun + biome.** `bun install` always from repo root. Biome for TS/JSON lint; `bunx hyperframes lint <dir>` for HTML compositions. No eslint, no prettier, no npm.
-7. **Seek-safe GSAP.** `onStart` / `onComplete` / `tl.call()` do NOT fire during seek — Hyperframes seeks frame-by-frame, never plays. Use `tl.set(target, props, t)` (zero-duration tween) for discrete transitions; materialises at any seek position. `onUpdate` IS seek-safe (use for animated counters, bar fills).
+7. **Seek-safe GSAP.** `onStart` / `onComplete` / `onUpdate` / `tl.call()` do NOT fire during seek — Hyperframes seeks frame-by-frame, never plays. Use `tl.set(target, props, t)` (zero-duration tween) for discrete transitions; it materialises at any seek position. For animated counters, bar fills, and discrete transitions use staggered `tl.set(target, props, t)` keyframes (the pattern used by `metric`/`big-stat`).
 8. **Track-index convention (assembler-allocated).** `0..3` BG layers, `4,5,6,8,9..` scenes, `7` for the `outro` scene, `97` for `#brand-corner`, `98` for audio, `99` for captions. The assembler owns allocation — don't hand-assign.
 9. **Artifact persistence.** R2 + remote manifests (`render.remote.json`, `assets.remote.json`) are canonical for render/audio/image artifacts. Local generated media are cache/working copies only; do not commit heavy episode binaries. Hydrate first-time clones with `bun run hydrate:episode <slug>` when assets live only in R2.
 
@@ -50,7 +50,7 @@ Breaking any of these will corrupt the render. They are non-negotiable.
 
 A short is a `scene-spec.json`. To author one (CWD `apps/hyperframe/`):
 
-1. **Pick scene-types.** `bun run scene:gallery` (or MCP `recommend_scene_types <intent>` / `list_scene_types`) to choose from the 11 types. Each type's exact slots: `get_scene_type <type>` or `templates/scenes/<type>/v1/manifest.json`. Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4). `outro` is the pinned brand sign-off, always last.
+1. **Pick scene-types.** `bun run scene:gallery` (or MCP `recommend_scene_types <intent>` / `list_scene_types`) to choose from the 13 types. Each type's exact slots: `get_scene_type <type>` or `templates/scenes/<type>/v1/manifest.json`. Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4). `outro` is the pinned brand sign-off, always last.
 2. **Scaffold + fill.** `bun run new:episode <slug> [--intent=...]` writes a starter spec; edit `src/episodes/<slug>/scene-spec.json` slots, then `bun run scene:check <slug-spec>` to validate.
 3. **Assemble.** `bun run assemble <slug>` regenerates `index.html` (run after every spec edit).
 4. **Per-scene QA (HITL).** `bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]` snapshots each scene + runs `hyperframes inspect` (overflow/overlap), no full render. Iterate only rejected scenes.

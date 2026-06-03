@@ -9,7 +9,7 @@ scene-spec.json  ──(assembler)──>  index.html  ──(render)──>  mp
 
 `index.html` is **generated**. Never edit it by hand; edit the spec and re-run `bun run assemble <slug>`.
 
-This doc is the **scene-type authoring reference**: the shell, the 11 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
+This doc is the **scene-type authoring reference**: the shell, the 13 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
 
 ## Layout
 
@@ -47,7 +47,7 @@ The build engine is `apps/hyperframe/scripts/lib/`:
 | `scene-spec.mjs` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
 | `scene-router.mjs` | intent → recommended scene-type skeleton + typed summaries |
 
-## The 11 scene-types
+## The 13 scene-types
 
 These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count.
 
@@ -56,7 +56,9 @@ These are the only building blocks. `hook` opens; `outro` is the pinned brand si
 | `hook` | Full-frame opening statement | 6 | — | `title*` (rich), `eyebrow?`, `subtitle?` |
 | `title-cards` | Headline + grid of labeled cards | 7 | `cards` **2-6** (`title*`, `body?`) | `title*` (rich), `eyebrow?` |
 | `flow` | Vertical pipeline of connected steps | 8 | `steps` **2-6** (`label*`, `detail?`) | `title?` (rich), `eyebrow?` |
+| `fanout` | Fan-out → workers → synthesize graph | 8 | `workers` **2-6** (`label*`) | `sourceLabel*`, `synthLabel*`, `title?` (rich), `eyebrow?` |
 | `metric` | KPI panel of stat cards | 7 | `stats` **1-4** (`value*`, `label*`, `delta?`) | `title?` (rich), `eyebrow?` |
+| `bars` | Animated horizontal bar chart | 7.5 | `bars` **2-6** (`label*`, `value*`, `pct*`) | `title?` (rich), `eyebrow?` |
 | `big-stat` | One enormous hero number | 6 | — | `value*`, `suffix?`, `label?`, `context?` |
 | `comparison` | Two columns, A vs B | 8 | `leftPoints` **1-5** + `rightPoints` **1-5** (`text*`) | `leftTitle*`, `rightTitle*`, `title?` (rich), `eyebrow?` |
 | `timeline` | Chronological events on a rail | 8 | `events` **3-6** (`marker*`, `text*`) | `title?` (rich), `eyebrow?` |
@@ -122,7 +124,7 @@ Rules:
 
 - **Always scope selectors through `s()`.** Never write a bare selector that could match another scene. (Exception: the outro deliberately targets the global `#brand-corner` to fade the watermark.)
 - **Times in seconds**, positioned at `t + offset`. Frame/30 = sec.
-- **Seek-safe constructs only**: `tl.from / tl.to / tl.fromTo / tl.set`. Hyperframes seeks frame-by-frame and never plays, so `onStart` / `onComplete` / `tl.call()` do **not** fire. `onUpdate` is seek-safe (use it for animated counters / bar fills).
+- **Seek-safe constructs only**: `tl.from / tl.to / tl.fromTo / tl.set`. Hyperframes seeks frame-by-frame and never plays, so `onStart` / `onComplete` / `onUpdate` / `tl.call()` do **not** fire. For animated counters and bar fills use staggered `tl.set(target, props, t)` keyframes (the pattern used by `metric`/`big-stat`).
 - **No `repeat: -1`, `Math.random`, `Date.now`, or async.** Determinism is enforced by lint.
 - If an element animates **to** visible or needs a hidden initial state (drawing connectors, blurred-in text), **hide it at literal time `0` first** with `tl.set(s(...), {...}, 0)` so it materialises correctly at any seek position. See `flow/v1/timeline.js` (connectors) and `outro/v1/timeline.js` (text + watermark fade) for the pattern.
 - The assembler already reveals/hides the `<section>` via the generic crossfade. Your builder only animates the scene's **own content**.

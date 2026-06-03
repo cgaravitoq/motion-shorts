@@ -15,7 +15,7 @@ A short is a typed `scene-spec.json` at `apps/hyperframe/src/episodes/<slug>/sce
 
 ## 2. Scene-types — the only building blocks
 
-There are 11 scene-types: `hook`, `title-cards`, `flow`, `metric`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`.
+There are 13 scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`.
 
 Repeatable slots have ranges:
 
@@ -53,9 +53,9 @@ No `Math.random`, `Date.now`, `repeat: -1`, or async timeline construction. Lint
 
 ## 7. Seek-safe GSAP
 
-Hyperframes seeks the timeline frame-by-frame (it never "plays" it). `onStart` / `onComplete` / `onRepeat` / `onReverseComplete` / `tl.add(callback)` / `tl.call(...)` do NOT fire during seek.
+Hyperframes seeks the timeline frame-by-frame (it never "plays" it). `onStart` / `onComplete` / `onUpdate` / `onRepeat` / `onReverseComplete` / `tl.add(callback)` / `tl.call(...)` do NOT fire during seek.
 Use `tl.set(target, props, t)` (zero-duration tween) for discrete transitions — it materialises at any seek position.
-`onUpdate` IS seek-safe — use it for animated counters, bar fills, saturating progress.
+For animated counters, bar fills, and saturating progress use staggered `tl.set(target, props, t)` keyframes (the pattern used by `metric`/`big-stat`) — `onUpdate` does NOT fire during seek.
 
 Run `bun run lint:seek-safe` from `apps/hyperframe/` to catch antipatterns before render. The linter (`apps/hyperframe/scripts/lint-seek-safe.mjs`) scans inline `<script>` blocks in every episode's generated `index.html` and enforces this rule plus rules 4 and 6:
 
