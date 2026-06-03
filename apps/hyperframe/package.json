@@ -30,6 +30,6 @@
     "@cgaravitoq/audio": "workspace:*"
   },
   "devDependencies": {
-    "hyperframes": "0.6.29"
+    "hyperframes": "0.6.70"
   }
 }
