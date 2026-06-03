@@ -10,7 +10,7 @@ const inputSchema = z.object({ intent: z.enum(INTENT_ENUM) });
 export const recommendSceneTypesTool: ToolDefinition = {
   name: "recommend_scene_types",
   description:
-    "Recommend scene-types for an intent. Returns a `skeleton` (a sensible ordered scene spine, hook-first/outro-last), `recommended` scene-types tagged for the intent, and the `structural` scenes every short needs.",
+    "Recommend scene-types for an intent. `intent` is a closed enum — one of: informative | data | workflow | social | brand | vfx. Returns a `skeleton` (a sensible ordered scene spine, hook-first/outro-last), `recommended` scene-types tagged for the intent, and the `structural` scenes every short needs.",
   inputSchema: {
     type: "object",
     properties: { intent: { type: "string", enum: [...INTENT_ENUM] } },

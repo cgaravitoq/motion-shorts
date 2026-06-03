@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getAudioDurationSeconds, getSTTProvider, getTTSProvider } from "@cgaravitoq/audio";
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import type { ToolDefinition } from ".";
+import { failure, success } from "./_helpers";
 import { createJobId, ensureOutputDir } from "./local-runtime";
 
 const inputSchema = z.object({
-  text: z.string().min(1),
+  text: z.string().min(1).max(5000, "text exceeds the 5000-char hard limit per request"),
   lang: z.enum(["en", "es"]),
   voice: z.string().optional(),
   stability: z.number().optional(),
@@ -19,7 +19,7 @@ const inputSchema = z.object({
 const jsonSchema = {
   type: "object" as const,
   properties: {
-    text: { type: "string", minLength: 1 },
+    text: { type: "string", minLength: 1, maxLength: 5000 },
     lang: { type: "string", enum: ["en", "es"] },
     voice: { type: "string" },
     stability: { type: "number" },
@@ -28,29 +28,6 @@ const jsonSchema = {
     speed: { type: "number" },
   },
   required: ["text", "lang"],
-};
-
-const success = (body: unknown): CallToolResult => ({
-  content: [{ type: "text", text: JSON.stringify(body, null, 2) }],
-});
-
-const failure = (error: unknown): CallToolResult => {
-  const message = error instanceof Error ? error.message : String(error);
-  const code = Number(message.match(/API (\d+)/)?.[1]);
-
-  return {
-    isError: true,
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify(
-          { ok: false, error: message, ...(Number.isFinite(code) ? { code } : {}) },
-          null,
-          2,
-        ),
-      },
-    ],
-  };
 };
 
 export const generateAudioTool: ToolDefinition = {
