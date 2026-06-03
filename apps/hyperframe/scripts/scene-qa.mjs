@@ -2,17 +2,23 @@
 /**
  * Per-scene visual QA for the scene-hub — the engine behind the HITL loop.
  *
- *   bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2] [--frames=3]
+ *   bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2] [--frames=1|3]
  *
  * Pipeline (NO full mp4 render):
  *   1. (re)assemble index.html from scene-spec.json
  *   2. materialise a working copy under out/episodes/<slug> (symlink lib+assets,
  *      inline captions if present) — does NOT touch src/
- *   3. hyperframes snapshot  -> per-scene PNG key frames (entry / mid / late)
+ *   3. hyperframes snapshot  -> one settled "final" PNG per scene (default), plus
+ *      a contact-sheet.jpg grid of every sampled scene for one-glance review.
+ *      --frames=3 restores entry/mid/late key frames for motion debugging.
  *   4. hyperframes inspect --json -> mechanical overflow/overlap verdict
  *   5. sort frames into renders/<slug>-qa/<scene-id>/ and write report.json
  *
- * --scenes limits work to specific scene ids (iterate ONLY rejected scenes).
+ * --scenes limits work to specific scene ids (iterate ONLY rejected scenes);
+ * other scenes' frames and report entries are preserved and merged.
+ *
+ * HITL contract: the reviewing agent shows contact-sheet.jpg (or the per-scene
+ * frame) directly in the chat/session — the user never browses folders.
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -30,7 +36,7 @@ const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
   options: {
     scenes: { type: "string" },
-    frames: { type: "string", default: "3" },
+    frames: { type: "string", default: "1" },
     timeout: { type: "string", default: "10000" },
   },
   allowPositionals: true,
@@ -94,13 +100,17 @@ if (scenes.length === 0) {
 }
 
 const round = (n) => Number(n.toFixed(2));
+const threeFrames = values.frames === "3";
 for (const sc of scenes) {
   const d = sc.duration;
-  sc.samples = [
-    { phase: "entry", t: round(sc.start + Math.min(1.2, d * 0.35)) },
-    { phase: "mid", t: round(sc.start + d / 2) },
-    { phase: "late", t: round(sc.start + d - 0.4) },
-  ];
+  // "final" = fully revealed but before the outgoing crossfade (starts at end-0.55s)
+  sc.samples = threeFrames
+    ? [
+        { phase: "entry", t: round(sc.start + Math.min(1.2, d * 0.35)) },
+        { phase: "mid", t: round(sc.start + d / 2) },
+        { phase: "late", t: round(sc.start + d - 0.4) },
+      ]
+    : [{ phase: "final", t: round(sc.start + Math.max(d * 0.6, d - 0.8)) }];
 }
 const allTimes = [...new Set(scenes.flatMap((s) => s.samples.map((x) => x.t)))].sort((a, b) => a - b);
 
@@ -111,6 +121,8 @@ const run = (args) => {
 };
 
 console.log(`[scene-qa] ${slug}: ${scenes.length} scene(s), ${allTimes.length} key frames at [${allTimes.join(", ")}]`);
+const snapDir = path.join(workDir, "snapshots");
+fs.rmSync(snapDir, { recursive: true, force: true });
 const snap = run(["hyperframes", "snapshot", workDir, "--at", allTimes.join(","), "--timeout", values.timeout]);
 if (snap.status !== 0) {
   console.error(`[scene-qa] snapshot failed:\n${snap.stderr}`);
@@ -125,7 +137,6 @@ try {
 }
 
 // ── sort frames into per-scene folders ────────────────────────────────────
-const snapDir = path.join(workDir, "snapshots");
 const frameFor = (t) => {
   const files = fs.existsSync(snapDir) ? fs.readdirSync(snapDir) : [];
   // hyperframes names frames frame-NN-at-<t>s.png (t may be rounded to 1 dp)
@@ -136,10 +147,26 @@ const frameFor = (t) => {
 };
 
 const qaRoot = path.resolve("renders", `${slug}-qa`);
-fs.rmSync(qaRoot, { recursive: true, force: true });
+if (wanted) {
+  // subset run: refresh only the re-QA'd scenes, keep the rest
+  for (const sc of scenes) fs.rmSync(path.join(qaRoot, sc.id), { recursive: true, force: true });
+  for (const f of fs.existsSync(qaRoot) ? fs.readdirSync(qaRoot) : [])
+    if (f.startsWith("contact-sheet")) fs.rmSync(path.join(qaRoot, f), { force: true });
+} else {
+  fs.rmSync(qaRoot, { recursive: true, force: true });
+}
 fs.mkdirSync(qaRoot, { recursive: true });
 
+const reportPath = path.join(qaRoot, "report.json");
+let previousScenes = [];
+if (wanted && fs.existsSync(reportPath)) {
+  try {
+    previousScenes = JSON.parse(fs.readFileSync(reportPath, "utf8")).scenes ?? [];
+  } catch {}
+}
+
 const report = { slug, total: built.totalDuration, inspectOk: inspect?.ok ?? null, inspectIssues: inspect?.issueCount ?? null, scenes: [] };
+const fresh = new Map();
 for (const sc of scenes) {
   const dir = path.join(qaRoot, sc.id);
   fs.mkdirSync(dir, { recursive: true });
@@ -152,11 +179,28 @@ for (const sc of scenes) {
       frames.push(path.relative(expectedCwd, dest));
     }
   }
-  report.scenes.push({ id: sc.id, type: sc.type, track: sc.track, window: [sc.start, round(sc.start + sc.duration)], frames });
+  fresh.set(sc.id, { id: sc.id, type: sc.type, track: sc.track, window: [sc.start, round(sc.start + sc.duration)], frames });
+}
+// merged report keeps the episode's scene order; stale entries survive subset runs
+for (const sc of built.scenes) {
+  const entry = fresh.get(sc.id) ?? previousScenes.find((p) => p.id === sc.id);
+  if (entry) report.scenes.push(entry);
 }
 
-fs.writeFileSync(path.join(qaRoot, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
+const sheets = fs.existsSync(snapDir)
+  ? fs.readdirSync(snapDir).filter((f) => f.startsWith("contact-sheet")).sort()
+  : [];
+report.contactSheets = sheets.map((f, i) => {
+  const dest = path.join(qaRoot, sheets.length === 1 ? "contact-sheet.jpg" : `contact-sheet-${i + 1}.jpg`);
+  fs.copyFileSync(path.join(snapDir, f), dest);
+  return path.relative(expectedCwd, dest);
+});
+
+fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 console.log(`[scene-qa] wrote ${path.relative(expectedCwd, qaRoot)}/ (report.json + per-scene frames)`);
+if (report.contactSheets.length) {
+  console.log(`[scene-qa] contact sheet: ${report.contactSheets.join(", ")} — show it in the chat for review`);
+}
 console.log(`[scene-qa] inspect: ${inspect ? `ok=${inspect.ok} issues=${inspect.issueCount}` : "unavailable"}`);
 console.table(report.scenes.map((s) => ({ id: s.id, type: s.type, window: s.window.join("-"), frames: s.frames.length })));
 if (inspect && !inspect.ok) {
