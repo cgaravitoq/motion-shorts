@@ -10,7 +10,6 @@
 .dt-node { box-sizing: border-box; border: 1px solid var(--line); border-radius: 26px; background: var(--panel); box-shadow: 0 24px 80px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
 
 .dt-node__text { margin: 0; color: var(--paper); font-weight: 720; letter-spacing: 0; line-height: 1.1; text-wrap: balance; }
-.dt-node__kind { font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 22px; font-weight: 590; letter-spacing: 0.04em; text-transform: uppercase; color: var(--source-accent); }
 
 .dt-node--root { position: absolute; top: 0; left: 456px; width: 560px; min-height: 196px; padding: 34px 48px; border-color: color-mix(in srgb, var(--source-accent) 60%, var(--line)); box-shadow: 0 24px 90px color-mix(in srgb, var(--source-accent) 22%, rgba(0,0,0,0.32)); }
 .dt-node--root .dt-node__text { font-size: 48px; }
