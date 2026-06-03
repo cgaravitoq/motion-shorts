@@ -1,2 +1,5 @@
 .hk-title--xl { font-size: 116px; line-height: 0.98; font-weight: 800; }
 .hk-subtitle { margin-top: 40px; }
+.hk-subtitle:empty { display: none; }
+.hk-image { margin-top: var(--title-block-gap); display: block; width: 100%; height: auto; border-radius: 28px; }
+.hk-image[src=""] { display: none; }

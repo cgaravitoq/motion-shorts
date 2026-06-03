@@ -11,7 +11,8 @@
   "slots": {
     "eyebrow": { "kind": "text", "required": false, "default": "" },
     "title": { "kind": "richText", "required": true },
-    "subtitle": { "kind": "text", "required": false, "default": "" }
+    "subtitle": { "kind": "text", "required": false, "default": "" },
+    "image": { "kind": "text", "required": false, "default": "" }
   },
   "validation": [
     "section #scene-<id> present",
