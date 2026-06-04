@@ -86,6 +86,11 @@ Options:
                            hold for reading. Resolution order: CLI flag >
                            meta.json "tail" field > 0.3 fallback.
   --crf=<value>            Forward CRF to Hyperframes render when supported.
+  --workers=<n|auto>       Parallel render workers (1-8). Forwarded to
+                           hyperframes render. Default: renderer's auto.
+  --browser-gpu            Force host GPU (instead of SwiftShader) for the
+                           Chrome capture. Faster on machines with a real GPU.
+  --gpu                    Hardware ffmpeg encoding (VAAPI/NVENC) when available.
   --upload=r2              Upload verified artifacts to R2 and write remote
                            manifests. Omit for local review renders.
   --local-only             Back-compat no-op; local-only is the default.
@@ -287,6 +292,9 @@ const main = async () => {
       crf: { type: "string" },
       upload: { type: "string" },
       "run-id": { type: "string" },
+      workers: { type: "string" },
+      "browser-gpu": { type: "boolean", default: false },
+      gpu: { type: "boolean", default: false },
       "delete-local": { type: "boolean" },
       "local-only": { type: "boolean", default: false },
       "keep-local": { type: "boolean", default: false },
@@ -528,6 +536,15 @@ const main = async () => {
     renderArgs.push("--crf", values.crf);
   } else {
     renderArgs.push("--video-bitrate", bitrateForFps(VARIANT_RENDER[variant].bitrate30, fpsParsed));
+  }
+  if (values.workers !== undefined) {
+    renderArgs.push("--workers", values.workers);
+  }
+  if (values["browser-gpu"]) {
+    renderArgs.push("--browser-gpu");
+  }
+  if (values.gpu) {
+    renderArgs.push("--gpu");
   }
 
   timer.start("render");
