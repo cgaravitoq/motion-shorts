@@ -12,14 +12,23 @@
  *     (Instagram API with Instagram Login > generate token for your own
  *     professional account). Resolves and stores the IG user id.
  *
+ *   bun run publish:auth tiktok [--code=<code>]
+ *     Paste-code OAuth (TikTok only accepts registered HTTPS redirect
+ *     URIs): without --code it prints the consent URL; authorize, copy
+ *     the `code` query param from the redirect URL, and re-run with
+ *     --code. Requires TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET /
+ *     TIKTOK_REDIRECT_URI in .env.
+ *
  * See docs/publishing.md for the one-time platform setup.
  */
 import crypto from "node:crypto";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import {
+  exchangeTiktokCode,
   exchangeYoutubeCode,
   instagramMe,
+  tiktokAuthUrl,
   writeStoredToken,
   youtubeAuthUrl,
 } from "@cgaravitoq/publish";
@@ -33,7 +42,7 @@ if (path.resolve(process.cwd()) !== expectedCwd) {
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
-  options: { token: { type: "string" } },
+  options: { token: { type: "string" }, code: { type: "string" } },
 });
 
 const platform = positionals[0];
@@ -115,7 +124,44 @@ if (platform === "youtube") {
   console.log(
     `✓ Instagram token for @${me.username} (user ${me.igUserId}) stored at ${path.relative(expectedCwd, file)}`,
   );
+} else if (platform === "tiktok") {
+  const clientKey = process.env.TIKTOK_CLIENT_KEY;
+  const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI;
+  if (!clientKey || !clientSecret || !redirectUri) {
+    console.error(
+      "publish-auth: set TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET and TIKTOK_REDIRECT_URI in .env (docs/publishing.md)",
+    );
+    process.exit(1);
+  }
+  if (!values.code) {
+    const state = crypto.randomBytes(8).toString("hex");
+    console.log("\n1. Open this URL and authorize the video.upload scope:\n");
+    console.log(tiktokAuthUrl({ clientKey, redirectUri, state }));
+    console.log(
+      `\n2. After authorizing you land on ${redirectUri}?code=...&state=... — copy the \`code\` value (URL-decode it if it contains %).\n3. Re-run: bun run publish:auth tiktok --code=<that code>`,
+    );
+    process.exit(0);
+  }
+  const tokens = await exchangeTiktokCode({
+    config: { clientKey, clientSecret },
+    code: values.code,
+    redirectUri,
+  });
+  const file = writeStoredToken(SECRETS_DIR, {
+    platform: "tiktok",
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    openId: tokens.openId,
+    obtainedAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + tokens.refreshExpiresInSeconds * 1000).toISOString(),
+  });
+  console.log(
+    `✓ TikTok tokens for open_id ${tokens.openId} stored at ${path.relative(expectedCwd, file)}`,
+  );
 } else {
-  console.error("usage: bun run publish:auth <youtube|instagram> [--token=...]");
+  console.error(
+    "usage: bun run publish:auth <youtube|instagram|tiktok> [--token=...] [--code=...]",
+  );
   process.exit(1);
 }

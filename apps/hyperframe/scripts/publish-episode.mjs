@@ -15,7 +15,10 @@
  * render.remote.json — stale approvals never publish. Results land in
  * publish.remote.json (local + R2 manifests).
  *
- * TikTok and LinkedIn are manual platforms (assisted flow is roadmap step 4).
+ * TikTok uses the Upload-as-Draft inbox flow: the video lands in your
+ * TikTok inbox and you finish the post in the app (the API takes no
+ * caption — the approved caption is printed for pasting). LinkedIn stays
+ * manual.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -25,7 +28,9 @@ import {
   publishInstagramReel,
   readStoredToken,
   refreshInstagramToken,
+  refreshTiktokToken,
   refreshYoutubeAccessToken,
+  uploadTiktokDraft,
   uploadYoutubeVideo,
   upsertPublishRecord,
   writeStoredToken,
@@ -63,13 +68,14 @@ const fail = (message) => {
 };
 
 if (!slug || !platform)
-  fail("usage: bun run publish:episode <slug> --platform=youtube|instagram [--confirm]");
-if (platform === "tiktok" || platform === "linkedin") {
+  fail("usage: bun run publish:episode <slug> --platform=youtube|instagram|tiktok [--confirm]");
+if (platform === "linkedin") {
   fail(
-    `${platform} is a manual platform in v1 — paste the approved copy from distribution.json (assisted flow lands with roadmap step 4)`,
+    "linkedin is a manual platform — paste the approved copy from distribution.json (direct posting needs a 60-day OAuth re-consent cycle; see docs/research)",
   );
 }
-if (platform !== "youtube" && platform !== "instagram") fail(`unknown platform "${platform}"`);
+if (platform !== "youtube" && platform !== "instagram" && platform !== "tiktok")
+  fail(`unknown platform "${platform}"`);
 if (!["private", "unlisted", "public"].includes(values.privacy))
   fail(`invalid --privacy=${values.privacy}`);
 
@@ -111,7 +117,7 @@ const summary = {
   r2Key: context.renderRef.key,
   ...(platform === "youtube"
     ? { privacy: values.privacy }
-    : { account: token.username ? `@${token.username}` : token.igUserId }),
+    : { account: token.username ? `@${token.username}` : (token.igUserId ?? token.openId) }),
 };
 console.log("Publish plan:");
 for (const [key, value] of Object.entries(summary)) console.log(`  ${key}: ${value}`);
@@ -146,6 +152,22 @@ const writeLedger = (record) => {
   return ledger;
 };
 
+// The pin gate only compares manifests; the local file is regenerable cache
+// and may be a stale cut. Never upload bytes that don't match the pin.
+const verifiedLocalMp4 = async () => {
+  const localMp4 = path.join("renders", `${slug}.mp4`);
+  if (!fs.existsSync(localMp4)) {
+    fail(`no local mp4 at ${localMp4} — hydrate it first: bun run hydrate:episode ${slug} --final`);
+  }
+  const localSha = await sha256Hex(localMp4);
+  if (localSha !== context.renderRef.sha256) {
+    fail(
+      `${localMp4} sha256 (${localSha.slice(0, 12)}…) does not match the pinned render (${context.renderRef.sha256.slice(0, 12)}…) — re-hydrate: bun run hydrate:episode ${slug} --final`,
+    );
+  }
+  return localMp4;
+};
+
 const publish = async () => {
   if (platform === "youtube") {
     const clientId = process.env.YOUTUBE_CLIENT_ID;
@@ -154,20 +176,7 @@ const publish = async () => {
     if (!token.refreshToken)
       fail("stored YouTube token has no refresh token — re-run publish:auth youtube");
 
-    const localMp4 = path.join("renders", `${slug}.mp4`);
-    if (!fs.existsSync(localMp4)) {
-      fail(
-        `no local mp4 at ${localMp4} — hydrate it first: bun run hydrate:episode ${slug} --final`,
-      );
-    }
-    // The pin gate above only compares manifests; the local file is regenerable
-    // cache and may be a stale cut. Never upload bytes that don't match the pin.
-    const localSha = await sha256Hex(localMp4);
-    if (localSha !== context.renderRef.sha256) {
-      fail(
-        `${localMp4} sha256 (${localSha.slice(0, 12)}…) does not match the pinned render (${context.renderRef.sha256.slice(0, 12)}…) — re-hydrate: bun run hydrate:episode ${slug} --final`,
-      );
-    }
+    const localMp4 = await verifiedLocalMp4();
     const refreshed = await refreshYoutubeAccessToken({
       config: { clientId, clientSecret },
       refreshToken: token.refreshToken,
@@ -181,6 +190,31 @@ const publish = async () => {
       privacyStatus: values.privacy,
     });
     return { id: result.videoId, url: result.url, privacy: result.privacyStatus };
+  }
+
+  if (platform === "tiktok") {
+    const clientKey = process.env.TIKTOK_CLIENT_KEY;
+    const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+    if (!clientKey || !clientSecret) fail("set TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET in .env");
+    if (!token.refreshToken)
+      fail("stored TikTok token has no refresh token — re-run publish:auth tiktok");
+
+    const localMp4 = await verifiedLocalMp4();
+    // Access tokens last 24h; refresh every run and persist the rotated pair.
+    const refreshed = await refreshTiktokToken({
+      config: { clientKey, clientSecret },
+      refreshToken: token.refreshToken,
+    });
+    writeStoredToken(SECRETS_DIR, {
+      ...token,
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken,
+      obtainedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + refreshed.refreshExpiresInSeconds * 1000).toISOString(),
+    });
+    const video = new Uint8Array(await Bun.file(localMp4).arrayBuffer());
+    const result = await uploadTiktokDraft({ accessToken: refreshed.accessToken, video });
+    return { id: result.publishId, ledgerStatus: "inbox" };
   }
 
   // instagram: feed the container a presigned R2 GET URL (signed-headers-free)
@@ -215,9 +249,9 @@ const publish = async () => {
 };
 
 try {
-  const outcome = await publish();
+  const { ledgerStatus, ...outcome } = await publish();
   writeLedger({
-    status: "published",
+    status: ledgerStatus ?? "published",
     ...outcome,
     publishedAt: new Date().toISOString(),
     renderSha256: context.renderRef.sha256,
@@ -229,7 +263,15 @@ try {
     filePath: ledgerPath,
     key: objectKeyFor({ slug, category: "manifests", filename: "publish.remote.json" }),
   });
-  console.log(`\n✓ published ${slug} to ${platform}${outcome.url ? ` — ${outcome.url}` : ""}`);
+  if (platform === "tiktok") {
+    console.log(`\n✓ draft sent to your TikTok inbox (publish_id ${outcome.id})`);
+    console.log(
+      "  Open the TikTok app → inbox notification → edit the draft → PASTE this caption → publish:",
+    );
+    console.log(`\n${copy.caption}\n`);
+  } else {
+    console.log(`\n✓ published ${slug} to ${platform}${outcome.url ? ` — ${outcome.url}` : ""}`);
+  }
   console.log(`✓ ledger updated: ${ledgerPath} (+R2)`);
   if (platform === "youtube" && values.privacy !== "public") {
     console.log(`  note: video is ${values.privacy} — flip to public in YouTube Studio when ready`);
