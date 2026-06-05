@@ -582,12 +582,9 @@ const main = async () => {
 
   // Persist the freshly synthesised pair so subsequent runs hit the cache.
   if (cacheHash && (cacheStatus === "miss" || cacheStatus === "refresh")) {
-    const { dir } = writeCachedTts(cacheHash, { audio: audioBuffer, captions }) as {
-      audioPath: string;
-      captionsPath: string;
-      dir?: string;
-    };
+    writeCachedTts(cacheHash, { audio: audioBuffer, captions });
     await writeCachedTtsToR2(cacheHash, { audio: audioBuffer, captions }, { cacheMode });
+    const { dir } = cacheEntryPaths(cacheHash);
     console.log(`[generate-audio] cached hash=${cacheHash.slice(0, 12)} -> ${dir}`);
   }
 
