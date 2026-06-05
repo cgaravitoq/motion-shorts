@@ -14,6 +14,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { decodeSceneTypeManifest, formatParseError, ManifestInvalid } from "@cgaravitoq/spec";
+import { Either } from "effect";
 
 // hubRoot is the apps/hyperframe dir. Defaults to cwd (CLI runs from there);
 // the MCP server passes an absolute path so it works from any cwd.
@@ -46,9 +48,15 @@ export function resolveSceneType(type, version = 1, hubRoot) {
   if (!fs.existsSync(dir)) {
     throw new Error(`unknown scene-type "${type}@${version}" (looked in ${path.relative(process.cwd(), dir)})`);
   }
+  const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8"));
+  const decoded = decodeSceneTypeManifest(manifest);
+  if (Either.isLeft(decoded)) {
+    throw new ManifestInvalid({ type, version, issues: formatParseError(decoded.left, "manifest") });
+  }
   return {
     dir,
-    manifest: JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8")),
+    // keep the raw parse: the schema pass is validation-only, so instantiation bytes cannot change
+    manifest,
     fragment: fs.readFileSync(path.join(dir, "fragment.html"), "utf8"),
     styles: fs.readFileSync(path.join(dir, "styles.css"), "utf8"),
     timeline: fs.readFileSync(path.join(dir, "timeline.js"), "utf8"),

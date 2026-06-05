@@ -4,21 +4,13 @@
  * is a fast pre-flight (no assembly) used by the CLI and the MCP tools so an
  * agent gets precise, actionable errors before anything renders.
  *
- * Spec shape:
- *   {
- *     slug: "kebab-case",
- *     lang?: "es"|"en", width?: 1080, height?: 1920,
- *     palette?: { accent, accent2 },
- *     audioDuration?: number,
- *     scenes: [
- *       { id: "kebab", type: "<scene-type>", version?: 1, duration?: number,
- *         status?: "draft"|"approved", slots: { ... } }
- *     ]
- *   }
+ * Structural shape lives in @cgaravitoq/spec (Effect Schema — single source
+ * of truth shared with the MCP tools). The relational checks that need disk
+ * access (scene-type resolution, slot-vs-manifest, duplicate ids) stay here.
  */
+import { decodeSceneSpec, formatParseError } from "@cgaravitoq/spec";
+import { Either } from "effect";
 import { resolveSceneType } from "./scene-instantiator.mjs";
-
-const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
 function validateSlot(typeName, slotName, def, value, errors) {
   if (def.kind === "repeat") {
@@ -43,35 +35,33 @@ function validateSlot(typeName, slotName, def, value, errors) {
 }
 
 export function validateSceneSpec(spec, { hubRoot } = {}) {
-  const errors = [];
   const warnings = [];
 
   if (!spec || typeof spec !== "object") return { ok: false, errors: ["spec is not an object"], warnings };
-  if (!spec.slug || !SLUG_RE.test(spec.slug)) errors.push(`spec.slug must be kebab-case, got "${spec.slug}"`);
-  for (const key of ["width", "height", "audioDuration"]) {
-    if (spec[key] != null && (typeof spec[key] !== "number" || !Number.isFinite(spec[key]))) {
-      errors.push(`spec.${key} must be a finite number`);
-    }
-  }
+
+  const errors = Either.match(decodeSceneSpec(spec), {
+    onLeft: (parseError) => formatParseError(parseError),
+    onRight: () => [],
+  });
+
   if (!Array.isArray(spec.scenes) || spec.scenes.length === 0) {
-    errors.push("spec.scenes must be a non-empty array");
     return { ok: false, errors, warnings };
   }
 
   const ids = new Set();
   for (const sc of spec.scenes) {
-    if (!sc.id || !SLUG_RE.test(sc.id)) errors.push(`scene id must be kebab-case, got "${sc.id}"`);
-    else if (ids.has(sc.id)) errors.push(`duplicate scene id "${sc.id}"`);
-    else ids.add(sc.id);
-
-    if (typeof sc.type !== "string" || sc.type === "") {
-      errors.push(`scene "${sc.id}" type must be a non-empty string`);
-      continue;
+    const id = sc?.id;
+    if (id != null && id !== "") {
+      if (ids.has(id)) errors.push(`duplicate scene id "${id}"`);
+      else ids.add(id);
     }
+
+    const type = sc?.type;
+    if (typeof type !== "string" || type === "") continue; // structural error already reported by the schema
 
     let resolved;
     try {
-      resolved = resolveSceneType(sc.type, sc.version ?? 1, hubRoot);
+      resolved = resolveSceneType(type, sc.version ?? 1, hubRoot);
     } catch (err) {
       errors.push(err.message);
       continue;
@@ -79,13 +69,10 @@ export function validateSceneSpec(spec, { hubRoot } = {}) {
     const slots = resolved.manifest.slots ?? {};
     const params = sc.slots ?? {};
     for (const [name, def] of Object.entries(slots)) {
-      validateSlot(sc.type, name, def, params[name], errors);
+      validateSlot(type, name, def, params[name], errors);
     }
     for (const key of Object.keys(params)) {
-      if (!(key in slots)) warnings.push(`scene "${sc.id}" (${sc.type}) has unknown param "${key}" — ignored`);
-    }
-    if (sc.duration != null && (typeof sc.duration !== "number" || !Number.isFinite(sc.duration) || sc.duration <= 0)) {
-      errors.push(`scene "${sc.id}" duration must be a positive number`);
+      if (!(key in slots)) warnings.push(`scene "${id}" (${type}) has unknown param "${key}" — ignored`);
     }
   }
 

@@ -35,6 +35,7 @@
   "dependencies": {
     "@cgaravitoq/audio": "workspace:*",
     "@cgaravitoq/publish": "workspace:*",
+    "@cgaravitoq/spec": "workspace:*",
     "effect": "3.21.3"
   },
   "devDependencies": {
