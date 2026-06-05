@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { hydrateEpisodeArtifacts, hydrateEpisodeFinal } from "./lib/r2-artifacts.mjs";
+import { hydrateEpisodeArtifacts, hydrateEpisodeFinal } from "./lib/r2-artifacts";
 
 const HELP = `Usage: bun run scripts/hydrate-episode.mjs <slug> --manifest=render|assets|<path> [--output=<dir>]
        bun run scripts/hydrate-episode.mjs <slug> --final [--force]

@@ -2,7 +2,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { assertR2Config, objectKeyFor, uploadAndVerifyObject } from "./lib/r2-artifacts.mjs";
+import { assertR2Config, objectKeyFor, uploadAndVerifyObject } from "./lib/r2-artifacts";
 
 const EPISODES_ROOT = path.resolve("src/episodes");
 const ASSET_RE =

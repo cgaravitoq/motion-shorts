@@ -32,7 +32,7 @@ import {
   writeStoredToken,
   youtubeAuthUrl,
 } from "@cgaravitoq/publish";
-import { loadWorkspaceEnv } from "./lib/r2-artifacts.mjs";
+import { loadWorkspaceEnv } from "./lib/r2-artifacts";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {

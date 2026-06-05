@@ -2,6 +2,16 @@ import { createHash, createHmac } from "node:crypto";
 import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
+import {
+  decodeRemoteManifest,
+  type FetchLike,
+  fetchWithRetryPromise,
+  formatParseError,
+  type RemoteManifest,
+  type RemoteObject,
+  runPromiseOrThrow,
+} from "@cgaravitoq/spec";
+import { Effect, Either } from "effect";
 
 const DEFAULT_PROJECT_PREFIX = "motion-shorts";
 const REGION = "auto";
@@ -24,24 +34,26 @@ const BINARY_ASSET_EXTENSIONS = new Set([
 
 const TEXT_ASSET_NAMES = new Set(["captions.json"]);
 
+export type R2Env = Record<string, string | undefined>;
+
 const baseR2EnvKeys = ["R2_ACCOUNT_ID", "R2_BUCKET"];
 const gatewayR2EnvKeys = ["R2_UPLOAD_GATEWAY_URL", "R2_UPLOAD_GATEWAY_TOKEN"];
 const directS3R2EnvKeys = ["R2_ACCESS_KEY_ID_WRITE", "R2_SECRET_ACCESS_KEY_WRITE"];
 
 export const requiredR2EnvKeys = baseR2EnvKeys;
 
-const missingKeys = (env, keys) => keys.filter((key) => !env[key]);
+const missingKeys = (env: R2Env, keys: string[]): string[] => keys.filter((key) => !env[key]);
 
-const hasGatewayR2Transport = (env) => missingKeys(env, gatewayR2EnvKeys).length === 0;
+const hasGatewayR2Transport = (env: R2Env): boolean => missingKeys(env, gatewayR2EnvKeys).length === 0;
 
-const hasDirectS3R2Transport = (env) => missingKeys(env, directS3R2EnvKeys).length === 0;
+const hasDirectS3R2Transport = (env: R2Env): boolean => missingKeys(env, directS3R2EnvKeys).length === 0;
 
 const transportErrorMessage =
   "Set either R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or " +
   "R2_ACCESS_KEY_ID_WRITE + R2_SECRET_ACCESS_KEY_WRITE.";
 
-const parseDotenv = (source) => {
-  const entries = [];
+const parseDotenv = (source: string): Array<[string, string]> => {
+  const entries: Array<[string, string]> = [];
   for (const line of source.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) continue;
@@ -58,7 +70,7 @@ const parseDotenv = (source) => {
   return entries;
 };
 
-const findWorkspaceEnvPath = (startDir = import.meta.dirname) => {
+const findWorkspaceEnvPath = (startDir: string = import.meta.dirname): string | null => {
   let current = path.resolve(startDir);
   while (true) {
     const envPath = path.join(current, ".env");
@@ -74,7 +86,10 @@ const findWorkspaceEnvPath = (startDir = import.meta.dirname) => {
   }
 };
 
-export const loadWorkspaceEnv = ({ env = Bun.env, startDir = import.meta.dirname } = {}) => {
+export const loadWorkspaceEnv = ({
+  env = Bun.env as R2Env,
+  startDir = import.meta.dirname,
+}: { env?: R2Env; startDir?: string } = {}): boolean => {
   const envPath = findWorkspaceEnvPath(startDir);
   if (!envPath) return false;
 
@@ -87,7 +102,21 @@ export const loadWorkspaceEnv = ({ env = Bun.env, startDir = import.meta.dirname
   return true;
 };
 
-export const assertR2Config = (env = Bun.env) => {
+export interface R2ArtifactsConfig {
+  accountId: string;
+  bucket: string;
+  accessKeyId: string | undefined;
+  secretAccessKey: string | undefined;
+  endpoint: string;
+  endpointPrefix: string;
+  publicBaseUrl: string;
+  signedUrlTtlSeconds: number;
+  requestTimeoutMs: number;
+  uploadGatewayUrl: string;
+  uploadGatewayToken: string;
+}
+
+export const assertR2Config = (env: R2Env = Bun.env as R2Env): R2ArtifactsConfig => {
   if (env === Bun.env && missingKeys(env, baseR2EnvKeys).length > 0) {
     loadWorkspaceEnv({ env });
   }
@@ -115,8 +144,8 @@ export const assertR2Config = (env = Bun.env) => {
       : `/${env.R2_BUCKET}`;
 
   return {
-    accountId: env.R2_ACCOUNT_ID,
-    bucket: env.R2_BUCKET,
+    accountId: env.R2_ACCOUNT_ID as string,
+    bucket: env.R2_BUCKET as string,
     accessKeyId: env.R2_ACCESS_KEY_ID_WRITE,
     secretAccessKey: env.R2_SECRET_ACCESS_KEY_WRITE,
     endpoint: endpointUrl.origin,
@@ -129,7 +158,7 @@ export const assertR2Config = (env = Bun.env) => {
   };
 };
 
-export const missingR2EnvKeys = (env = Bun.env) => {
+export const missingR2EnvKeys = (env: R2Env = Bun.env as R2Env): string[] => {
   if (env === Bun.env && missingKeys(env, baseR2EnvKeys).length > 0) {
     loadWorkspaceEnv({ env });
   }
@@ -145,13 +174,26 @@ export const missingR2EnvKeys = (env = Bun.env) => {
   return [...missingBase, ...missingTransport];
 };
 
+export interface R2PublishOptions {
+  upload: boolean;
+  deleteLocal: boolean;
+  missing: string[];
+  warning: string | null;
+}
+
 export const resolveR2PublishOptions = ({
-  env = Bun.env,
+  env = Bun.env as R2Env,
   upload,
   localOnly = false,
   keepLocal = false,
   deleteLocal = true,
-} = {}) => {
+}: {
+  env?: R2Env;
+  upload?: string;
+  localOnly?: boolean;
+  keepLocal?: boolean;
+  deleteLocal?: boolean;
+} = {}): R2PublishOptions => {
   if (localOnly || upload !== "r2") {
     return { upload: false, deleteLocal: false, missing: [], warning: null };
   }
@@ -176,7 +218,7 @@ export const resolveR2PublishOptions = ({
   };
 };
 
-export const createRunId = (date = new Date()) =>
+export const createRunId = (date: Date = new Date()): string =>
   date
     .toISOString()
     .replace(/\.\d{3}Z$/, "Z")
@@ -188,35 +230,49 @@ export const objectKeyFor = ({
   category,
   filename,
   projectPrefix = DEFAULT_PROJECT_PREFIX,
-}) => `${projectPrefix}/episodes/${slug}/final/${category}/${filename}`;
+}: {
+  slug: string;
+  category: string;
+  filename: string;
+  projectPrefix?: string;
+}): string => `${projectPrefix}/episodes/${slug}/final/${category}/${filename}`;
 
-export const sha256Hex = async (filePath) => {
+export const sha256Hex = async (filePath: string): Promise<string> => {
   const bytes = await fs.readFile(filePath);
   return createHash("sha256").update(bytes).digest("hex");
 };
 
-const sha256Buffer = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const sha256Buffer = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
 
-const hmac = (key, value, encoding) => createHmac("sha256", key).update(value).digest(encoding);
+const hmac = (key: string | Buffer, value: string): Buffer =>
+  createHmac("sha256", key).update(value).digest();
+const hmacHex = (key: string | Buffer, value: string): string =>
+  createHmac("sha256", key).update(value).digest("hex");
 
-const signingKey = (secretAccessKey, dateStamp) => {
+const signingKey = (secretAccessKey: string, dateStamp: string): Buffer => {
   const kDate = hmac(`AWS4${secretAccessKey}`, dateStamp);
   const kRegion = hmac(kDate, REGION);
   const kService = hmac(kRegion, SERVICE);
   return hmac(kService, "aws4_request");
 };
 
-const encodeKey = (key) => key.split("/").map(encodeURIComponent).join("/");
+const encodeKey = (key: string): string => key.split("/").map(encodeURIComponent).join("/");
 
-const timestamp = (date) => date.toISOString().replace(/[:-]|\.\d{3}/g, "");
+const timestamp = (date: Date): string => date.toISOString().replace(/[:-]|\.\d{3}/g, "");
 
-const signedHeadersString = (headers) => Object.keys(headers).sort().join(";");
+const signedHeadersString = (headers: Record<string, string>): string =>
+  Object.keys(headers).sort().join(";");
 
-const canonicalHeaderString = (headers) =>
+const canonicalHeaderString = (headers: Record<string, string>): string =>
   `${Object.keys(headers)
     .sort()
     .map((key) => `${key}:${String(headers[key]).trim().replace(/\s+/g, " ")}`)
     .join("\n")}\n`;
+
+export interface SignedR2Request {
+  url: string;
+  headers: Record<string, string>;
+}
 
 export const signR2Request = ({
   config,
@@ -226,13 +282,21 @@ export const signR2Request = ({
   headers = {},
   now = new Date(),
   expiresSeconds,
-}) => {
+}: {
+  config: R2ArtifactsConfig;
+  method: string;
+  key: string;
+  payloadHash: string;
+  headers?: Record<string, string>;
+  now?: Date;
+  expiresSeconds?: number;
+}): SignedR2Request => {
   const host = new URL(config.endpoint).host;
   const amzDate = timestamp(now);
   const dateStamp = amzDate.slice(0, 8);
   const credentialScope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`;
   const canonicalUri = `${config.endpointPrefix}/${encodeKey(key)}`;
-  const normalizedHeaders = {
+  const normalizedHeaders: Record<string, string> = {
     host,
     "x-amz-content-sha256": payloadHash,
     "x-amz-date": amzDate,
@@ -272,7 +336,7 @@ export const signR2Request = ({
     credentialScope,
     createHash("sha256").update(canonicalRequest).digest("hex"),
   ].join("\n");
-  const signature = hmac(signingKey(config.secretAccessKey, dateStamp), stringToSign, "hex");
+  const signature = hmacHex(signingKey(config.secretAccessKey ?? "", dateStamp), stringToSign);
   const url = `${config.endpoint}${canonicalUri}${canonicalQueryString ? `?${canonicalQueryString}&X-Amz-Signature=${signature}` : ""}`;
 
   if (expiresSeconds !== undefined) {
@@ -290,7 +354,19 @@ export const signR2Request = ({
   };
 };
 
-export const buildRemoteUrl = ({ config, key }) => {
+export interface RemoteUrlInfo {
+  strategy: "signed-url" | "public-url";
+  url: string | null;
+  signedUrlTtlSeconds: number | null;
+}
+
+export const buildRemoteUrl = ({
+  config,
+  key,
+}: {
+  config: R2ArtifactsConfig;
+  key: string;
+}): RemoteUrlInfo => {
   if (!config.publicBaseUrl) {
     return {
       strategy: "signed-url",
@@ -305,68 +381,60 @@ export const buildRemoteUrl = ({ config, key }) => {
   };
 };
 
-const fetchWithTimeout = async (fetchImpl, url, init, timeoutMs) => {
+// Real fetch gets timeout + exponential backoff with jitter on transient
+// failures; an injected fetchImpl (tests) is called directly, preserving
+// exact call counts — same contract the old fetchWithTimeout had.
+const doFetch = (
+  fetchImpl: FetchLike,
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> => {
   if (fetchImpl !== fetch || !Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     return fetchImpl(url, init);
   }
-  return fetchImpl(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+  return fetchWithRetryPromise(url, init, { timeoutMs });
 };
 
-const readRemoteManifest = async (manifestPath) => {
-  let source;
+const readRemoteManifest = async (manifestPath: string): Promise<RemoteManifest> => {
+  let source: string;
   try {
     source = await fs.readFile(manifestPath, "utf8");
   } catch (error) {
-    throw new Error(`Unable to read remote manifest at ${manifestPath}: ${error.message}`);
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to read remote manifest at ${manifestPath}: ${detail}`);
   }
 
-  let manifest;
+  let manifest: unknown;
   try {
     manifest = JSON.parse(source);
   } catch (error) {
-    throw new Error(`Malformed remote manifest at ${manifestPath}: ${error.message}`);
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Malformed remote manifest at ${manifestPath}: ${detail}`);
   }
 
-  if (!manifest || typeof manifest !== "object" || !Array.isArray(manifest.objects)) {
-    throw new Error(`Malformed remote manifest at ${manifestPath}: expected an objects array.`);
+  const decoded = decodeRemoteManifest(manifest);
+  if (Either.isLeft(decoded)) {
+    throw new Error(
+      `Malformed remote manifest at ${manifestPath}: ${formatParseError(decoded.left, "manifest").join("; ")}.`,
+    );
   }
 
-  const invalid = [];
-  for (const [index, object] of manifest.objects.entries()) {
-    const label = object?.key ?? `objects[${index}]`;
-    if (!object || typeof object !== "object") {
-      invalid.push(`${label}: expected object`);
-      continue;
-    }
-    if (typeof object.key !== "string" || object.key.length === 0) {
-      invalid.push(`${label}: missing key`);
-    }
-    if (!Number.isSafeInteger(object.bytes) || object.bytes < 0) {
-      invalid.push(`${label}: invalid bytes`);
-    }
-    if (typeof object.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(object.sha256)) {
-      invalid.push(`${label}: invalid sha256`);
-    }
-  }
-
-  if (invalid.length > 0) {
-    throw new Error(`Malformed remote manifest at ${manifestPath}: ${invalid.join("; ")}.`);
-  }
-
-  return manifest;
+  // keep the raw parse: validation-only, hydrate paths read fields verbatim
+  return manifest as RemoteManifest;
 };
 
-const existingAssetMatches = async (outputPath, object) => {
+const existingAssetMatches = async (outputPath: string, object: RemoteObject): Promise<boolean> => {
   try {
     const bytes = await fs.readFile(outputPath);
     return bytes.byteLength === object.bytes && sha256Buffer(bytes) === object.sha256;
   } catch (error) {
-    if (error.code === "ENOENT") return false;
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
     throw error;
   }
 };
 
-const contentTypeFor = (filePath) => {
+const contentTypeFor = (filePath: string): string => {
   switch (path.extname(filePath).toLowerCase()) {
     case ".json":
       return "application/json";
@@ -393,8 +461,24 @@ const contentTypeFor = (filePath) => {
   }
 };
 
-const gatewayObjectUrl = (config, key) =>
+const gatewayObjectUrl = (config: R2ArtifactsConfig, key: string): string =>
   `${config.uploadGatewayUrl}/objects/${key.split("/").map(encodeURIComponent).join("/")}`;
+
+export interface UploadedObjectInfo extends RemoteUrlInfo {
+  key: string;
+  bytes: number;
+  sha256: string;
+  contentType: string;
+}
+
+interface UploadObjectArgs {
+  config: R2ArtifactsConfig;
+  filePath?: string;
+  key: string;
+  bytes?: Buffer;
+  contentType?: string;
+  fetchImpl?: FetchLike;
+}
 
 const uploadAndVerifyObjectViaGateway = async ({
   config,
@@ -402,16 +486,16 @@ const uploadAndVerifyObjectViaGateway = async ({
   key,
   bytes: bodyBytes,
   contentType,
-  fetchImpl,
-}) => {
+  fetchImpl = fetch,
+}: UploadObjectArgs): Promise<UploadedObjectInfo> => {
   if (!config.uploadGatewayToken) {
     throw new Error("R2_UPLOAD_GATEWAY_URL is set but R2_UPLOAD_GATEWAY_TOKEN is missing.");
   }
-  const bytes = bodyBytes ?? (await fs.readFile(filePath));
-  const type = contentType ?? contentTypeFor(filePath);
+  const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
+  const type = contentType ?? contentTypeFor(filePath ?? key);
   const hash = createHash("sha256").update(bytes).digest("hex");
   const url = gatewayObjectUrl(config, key);
-  const putResponse = await fetchWithTimeout(
+  const putResponse = await doFetch(
     fetchImpl,
     url,
     {
@@ -421,7 +505,7 @@ const uploadAndVerifyObjectViaGateway = async ({
         "x-content-sha256": hash,
         "x-upload-token": config.uploadGatewayToken,
       },
-      body: bytes,
+      body: bytes as Uint8Array<ArrayBuffer>,
     },
     config.requestTimeoutMs,
   );
@@ -431,7 +515,7 @@ const uploadAndVerifyObjectViaGateway = async ({
     );
   }
 
-  const getResponse = await fetchWithTimeout(
+  const getResponse = await doFetch(
     fetchImpl,
     url,
     {
@@ -462,11 +546,19 @@ const uploadAndVerifyObjectViaGateway = async ({
   };
 };
 
-const downloadAndVerifyObjectViaGateway = async ({ config, object, fetchImpl }) => {
+const downloadAndVerifyObjectViaGateway = async ({
+  config,
+  object,
+  fetchImpl = fetch,
+}: {
+  config: R2ArtifactsConfig;
+  object: RemoteObject;
+  fetchImpl?: FetchLike;
+}): Promise<Buffer> => {
   if (!config.uploadGatewayToken) {
     throw new Error("R2_UPLOAD_GATEWAY_URL is set but R2_UPLOAD_GATEWAY_TOKEN is missing.");
   }
-  const response = await fetchWithTimeout(
+  const response = await doFetch(
     fetchImpl,
     gatewayObjectUrl(config, object.key),
     {
@@ -497,7 +589,7 @@ export const uploadAndVerifyObject = async ({
   bytes: bodyBytes,
   contentType,
   fetchImpl = fetch,
-}) => {
+}: UploadObjectArgs): Promise<UploadedObjectInfo> => {
   if (config.uploadGatewayUrl) {
     return uploadAndVerifyObjectViaGateway({
       config,
@@ -509,20 +601,20 @@ export const uploadAndVerifyObject = async ({
     });
   }
 
-  const bytes = bodyBytes ?? (await fs.readFile(filePath));
+  const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
   const hash = createHash("sha256").update(bytes).digest("hex");
   const headers = {
-    "content-type": contentType ?? contentTypeFor(filePath),
+    "content-type": contentType ?? contentTypeFor(filePath ?? key),
     "x-amz-meta-sha256": hash,
   };
   const put = signR2Request({ config, method: "PUT", key, payloadHash: hash, headers });
-  const putResponse = await fetchWithTimeout(
+  const putResponse = await doFetch(
     fetchImpl,
     put.url,
     {
       method: "PUT",
       headers: put.headers,
-      body: bytes,
+      body: bytes as Uint8Array<ArrayBuffer>,
     },
     config.requestTimeoutMs,
   );
@@ -537,7 +629,7 @@ export const uploadAndVerifyObject = async ({
     payloadHash: "UNSIGNED-PAYLOAD",
     expiresSeconds: config.signedUrlTtlSeconds,
   });
-  const getResponse = await fetchWithTimeout(
+  const getResponse = await doFetch(
     fetchImpl,
     get.url,
     { method: "GET", headers: get.headers },
@@ -565,7 +657,7 @@ export const uploadAndVerifyObject = async ({
   };
 };
 
-const categoryForExt = (ext) => {
+const categoryForExt = (ext: string): string => {
   if (ext === ".json" || ext === ".mp3" || ext === ".wav" || ext === ".m4a") return "audio";
   if (ext === ".woff2") return "fonts";
   return "images";
@@ -578,8 +670,8 @@ const SOURCE_EPISODE_FILES = [
   "distribution.json",
 ];
 
-const listFilesRecursive = async (dir) => {
-  let entries;
+const listFilesRecursive = async (dir: string): Promise<string[]> => {
+  let entries: fsSync.Dirent[];
   try {
     entries = await fs.readdir(dir, { withFileTypes: true, recursive: true });
   } catch {
@@ -591,13 +683,29 @@ const listFilesRecursive = async (dir) => {
     .sort();
 };
 
-export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug }) => {
+export interface EpisodeArtifact {
+  category: string;
+  localPath: string;
+  manifest: "render" | "assets" | "source";
+  relPath: string | undefined;
+  key: string;
+}
+
+export const collectEpisodeArtifacts = async ({
+  episodeDir,
+  renderPath,
+  slug,
+}: {
+  episodeDir: string;
+  renderPath: string;
+  slug: string;
+}): Promise<EpisodeArtifact[]> => {
   const appRoot = path.resolve(episodeDir, "..", "..", "..");
-  const relTo = (filePath) => {
+  const relTo = (filePath: string): string | undefined => {
     const rel = path.relative(appRoot, path.resolve(filePath));
     return rel.startsWith("..") ? undefined : rel.split(path.sep).join("/");
   };
-  const artifacts = [
+  const artifacts: EpisodeArtifact[] = [
     {
       category: "renders",
       localPath: path.resolve(renderPath),
@@ -607,7 +715,7 @@ export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug }) 
     },
   ];
   const assetsDir = path.join(episodeDir, "assets");
-  let assetEntries = [];
+  let assetEntries: fsSync.Dirent[] = [];
   try {
     assetEntries = await fs.readdir(assetsDir, { withFileTypes: true });
   } catch {
@@ -632,7 +740,7 @@ export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug }) 
     });
   }
 
-  const sourceFiles = [];
+  const sourceFiles: Array<{ localPath: string; filename: string }> = [];
   for (const name of SOURCE_EPISODE_FILES) {
     const filePath = path.join(episodeDir, name);
     if (fsSync.existsSync(filePath)) sourceFiles.push({ localPath: filePath, filename: name });
@@ -660,14 +768,27 @@ export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug }) 
   return artifacts;
 };
 
-export const writeRemoteManifests = async ({
-  episodeDir,
+export type UploadedArtifact = EpisodeArtifact & UploadedObjectInfo;
+
+interface ManifestSet {
+  renderManifest: Record<string, unknown>;
+  assetsManifest: Record<string, unknown>;
+  sourceManifest: Record<string, unknown>;
+}
+
+const buildRemoteManifests = ({
   slug,
   runId,
   uploaded,
   config,
   deleteLocal,
-}) => {
+}: {
+  slug: string;
+  runId: string;
+  uploaded: UploadedArtifact[];
+  config: R2ArtifactsConfig;
+  deleteLocal: boolean;
+}): ManifestSet => {
   const generatedAt = new Date().toISOString();
   const base = {
     provider: "cloudflare-r2",
@@ -677,7 +798,7 @@ export const writeRemoteManifests = async ({
     generatedAt,
     deleteLocal,
   };
-  const toEntry = (item) => ({
+  const toEntry = (item: UploadedArtifact) => ({
     key: item.key,
     category: item.category,
     path: item.relPath,
@@ -691,36 +812,31 @@ export const writeRemoteManifests = async ({
 
   // The published final is a full replacement: each manifest lists exactly
   // what this publish uploaded, never merged leftovers from earlier versions.
-  const renderManifest = {
-    ...base,
-    objects: uploaded.filter((item) => item.manifest === "render").map(toEntry),
+  return {
+    renderManifest: {
+      ...base,
+      objects: uploaded.filter((item) => item.manifest === "render").map(toEntry),
+    },
+    assetsManifest: {
+      ...base,
+      objects: uploaded.filter((item) => item.manifest === "assets").map(toEntry),
+    },
+    sourceManifest: {
+      ...base,
+      objects: uploaded.filter((item) => item.manifest === "source").map(toEntry),
+    },
   };
-  const assetsManifest = {
-    ...base,
-    objects: uploaded.filter((item) => item.manifest === "assets").map(toEntry),
-  };
-  const sourceManifest = {
-    ...base,
-    objects: uploaded.filter((item) => item.manifest === "source").map(toEntry),
-  };
-
-  await fs.writeFile(
-    path.join(episodeDir, "render.remote.json"),
-    `${JSON.stringify(renderManifest, null, 2)}\n`,
-  );
-  await fs.writeFile(
-    path.join(episodeDir, "assets.remote.json"),
-    `${JSON.stringify(assetsManifest, null, 2)}\n`,
-  );
-  await fs.writeFile(
-    path.join(episodeDir, "source.remote.json"),
-    `${JSON.stringify(sourceManifest, null, 2)}\n`,
-  );
-
-  return { renderManifest, assetsManifest, sourceManifest };
 };
 
-export const downloadObjectBytes = async ({ config, key, fetchImpl = fetch }) => {
+export const downloadObjectBytes = async ({
+  config,
+  key,
+  fetchImpl = fetch,
+}: {
+  config: R2ArtifactsConfig;
+  key: string;
+  fetchImpl?: FetchLike;
+}): Promise<Buffer | null> => {
   const request = config.uploadGatewayUrl
     ? {
         url: gatewayObjectUrl(config, key),
@@ -733,7 +849,7 @@ export const downloadObjectBytes = async ({ config, key, fetchImpl = fetch }) =>
         payloadHash: "UNSIGNED-PAYLOAD",
         expiresSeconds: config.signedUrlTtlSeconds,
       });
-  const response = await fetchWithTimeout(
+  const response = await doFetch(
     fetchImpl,
     request.url,
     { method: "GET", headers: request.headers },
@@ -746,57 +862,106 @@ export const downloadObjectBytes = async ({ config, key, fetchImpl = fetch }) =>
   return Buffer.from(await response.arrayBuffer());
 };
 
+const toError = (cause: unknown): Error => (cause instanceof Error ? cause : new Error(String(cause)));
+
 export const publishEpisodeArtifacts = async ({
   slug,
   episodeDir,
   renderPath,
   runId = createRunId(),
   deleteLocal = false,
-  env = Bun.env,
+  env = Bun.env as R2Env,
   fetchImpl = fetch,
-}) => {
+}: {
+  slug: string;
+  episodeDir: string;
+  renderPath: string;
+  runId?: string;
+  deleteLocal?: boolean;
+  env?: R2Env;
+  fetchImpl?: FetchLike;
+}): Promise<{
+  runId: string;
+  uploaded: UploadedArtifact[];
+  manifests: ManifestSet;
+  indexKey: string;
+}> => {
   const config = assertR2Config(env);
-  const artifacts = await collectEpisodeArtifacts({ episodeDir, renderPath, slug, runId });
-  const uploaded = [];
-  for (const artifact of artifacts) {
-    const remote = await uploadAndVerifyObject({
-      config,
-      filePath: artifact.localPath,
-      key: artifact.key,
-      fetchImpl,
-    });
-    uploaded.push({ ...artifact, ...remote });
+  const artifacts = await collectEpisodeArtifacts({ episodeDir, renderPath, slug });
+
+  // Transactional: every object must upload and verify before a single
+  // manifest byte is written, locally or remotely. A mid-batch failure
+  // leaves the previously published final untouched.
+  const uploaded = await runPromiseOrThrow(
+    Effect.forEach(
+      artifacts,
+      (artifact) =>
+        Effect.tryPromise({
+          try: () =>
+            uploadAndVerifyObject({
+              config,
+              filePath: artifact.localPath,
+              key: artifact.key,
+              fetchImpl,
+            }),
+          catch: toError,
+        }).pipe(Effect.map((remote) => ({ ...artifact, ...remote }))),
+      { concurrency: 4 },
+    ),
+  );
+
+  const manifests = buildRemoteManifests({ slug, runId, uploaded, config, deleteLocal });
+  const manifestFiles = [
+    ["render.remote.json", manifests.renderManifest],
+    ["assets.remote.json", manifests.assetsManifest],
+    ["source.remote.json", manifests.sourceManifest],
+  ] as const;
+
+  await runPromiseOrThrow(
+    Effect.forEach(
+      manifestFiles,
+      ([name, manifest]) =>
+        Effect.tryPromise({
+          try: () =>
+            uploadAndVerifyObject({
+              config,
+              key: objectKeyFor({ slug, category: "manifests", filename: name }),
+              bytes: Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`),
+              contentType: "application/json",
+              fetchImpl,
+            }),
+          catch: toError,
+        }),
+      { concurrency: 3 },
+    ),
+  );
+
+  // Local copies land only after R2 accepted all three manifests, so local
+  // state never claims a final that is not actually published.
+  for (const [name, manifest] of manifestFiles) {
+    await fs.writeFile(path.join(episodeDir, name), `${JSON.stringify(manifest, null, 2)}\n`);
   }
-  const manifests = await writeRemoteManifests({
-    episodeDir,
-    slug,
-    runId,
-    uploaded,
-    config,
-    deleteLocal,
-  });
-  for (const name of ["render.remote.json", "assets.remote.json", "source.remote.json"]) {
-    await uploadAndVerifyObject({
-      config,
-      filePath: path.join(episodeDir, name),
-      key: objectKeyFor({ slug, category: "manifests", filename: name }),
-      fetchImpl,
-    });
-  }
+
   const indexKey = `${DEFAULT_PROJECT_PREFIX}/index.json`;
   const existingIndexBytes = await downloadObjectBytes({ config, key: indexKey, fetchImpl });
-  let index = { episodes: {} };
+  let index: { episodes: Record<string, unknown>; updatedAt?: string } = { episodes: {} };
   if (existingIndexBytes) {
-    let parsed;
+    let parsed: unknown;
     try {
       parsed = JSON.parse(existingIndexBytes.toString("utf8"));
     } catch {
       parsed = null;
     }
-    if (!parsed || typeof parsed !== "object" || !parsed.episodes || typeof parsed.episodes !== "object") {
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !("episodes" in parsed) ||
+      !parsed.episodes ||
+      typeof parsed.episodes !== "object"
+    ) {
       throw new Error(`Malformed R2 index at ${indexKey}; refusing to overwrite it.`);
     }
-    index = parsed;
+    index = parsed as { episodes: Record<string, unknown>; updatedAt?: string };
   }
   const updatedAt = new Date().toISOString();
   index.episodes[slug] = { finalRunId: runId, publishedAt: updatedAt };
@@ -823,12 +988,19 @@ export const hydrateEpisodeArtifacts = async ({
   destinationDir,
   appRoot,
   protectExisting = false,
-  env = Bun.env,
+  env = Bun.env as R2Env,
   fetchImpl = fetch,
-}) => {
+}: {
+  manifestPath: string;
+  destinationDir: string;
+  appRoot?: string;
+  protectExisting?: boolean;
+  env?: R2Env;
+  fetchImpl?: FetchLike;
+}): Promise<string[]> => {
   const config = assertR2Config(env);
   const manifest = await readRemoteManifest(manifestPath);
-  const outputPathFor = (object) => {
+  const outputPathFor = (object: RemoteObject): string => {
     if (appRoot && typeof object.path === "string" && object.path) {
       const resolvedRoot = path.resolve(appRoot);
       const outputPath = path.resolve(resolvedRoot, object.path);
@@ -872,7 +1044,7 @@ export const hydrateEpisodeArtifacts = async ({
             payloadHash: "UNSIGNED-PAYLOAD",
             expiresSeconds: config.signedUrlTtlSeconds,
           });
-          const response = await fetchWithTimeout(
+          const response = await doFetch(
             fetchImpl,
             signed.url,
             { method: "GET", headers: signed.headers },
@@ -903,19 +1075,25 @@ export const hydrateEpisodeFinal = async ({
   slug,
   appRoot = process.cwd(),
   force = false,
-  env = Bun.env,
+  env = Bun.env as R2Env,
   fetchImpl = fetch,
-}) => {
+}: {
+  slug: string;
+  appRoot?: string;
+  force?: boolean;
+  env?: R2Env;
+  fetchImpl?: FetchLike;
+}): Promise<{ runId: string | null; restored: string[] }> => {
   const config = assertR2Config(env);
   const episodeDir = path.resolve(appRoot, "src", "episodes", slug);
   await fs.mkdir(episodeDir, { recursive: true });
   try {
     await fs.symlink(path.join("..", "..", "lib"), path.join(episodeDir, "lib"));
   } catch (error) {
-    if (error.code !== "EEXIST") throw error;
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
   }
   const restored = [];
-  let runId = null;
+  let runId: string | null = null;
   let manifestsFound = 0;
   for (const name of ["source.remote.json", "assets.remote.json", "render.remote.json"]) {
     const key = objectKeyFor({ slug, category: "manifests", filename: name });
@@ -925,7 +1103,7 @@ export const hydrateEpisodeFinal = async ({
     const manifestPath = path.join(episodeDir, name);
     await fs.writeFile(manifestPath, bytes);
     restored.push(manifestPath);
-    runId ??= JSON.parse(bytes.toString("utf8")).runId ?? null;
+    runId ??= (JSON.parse(bytes.toString("utf8")) as { runId?: string }).runId ?? null;
     const destinationDir =
       name === "render.remote.json" ? path.resolve(appRoot, "renders") : path.join(episodeDir, "assets");
     restored.push(

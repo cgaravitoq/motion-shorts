@@ -36,7 +36,7 @@ import { getAudioDurationSeconds } from "@cgaravitoq/audio";
 import {
   publishEpisodeArtifacts,
   resolveR2PublishOptions,
-} from "./lib/r2-artifacts.mjs";
+} from "./lib/r2-artifacts";
 import {
   appendLedger,
   buildRecord,

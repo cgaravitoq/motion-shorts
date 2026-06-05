@@ -12,7 +12,7 @@ import {
   objectKeyFor,
   publishEpisodeArtifacts,
   resolveR2PublishOptions,
-} from "./r2-artifacts.mjs";
+} from "./r2-artifacts";
 
 const env = {
   R2_ACCOUNT_ID: "account-id",
@@ -356,6 +356,99 @@ describe("r2 artifact publishing", () => {
     );
     const index = JSON.parse(store.get("motion-shorts/index.json").toString("utf8"));
     expect(index.episodes["demo-short"].finalRunId).toBe("run-1");
+
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("writes no manifests, local or remote, when an object upload fails mid-batch", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "r2-txn-objects-"));
+    const episodeDir = path.join(root, "src/episodes/demo-short");
+    const assetsDir = path.join(episodeDir, "assets");
+    const renderPath = path.join(root, "demo-short.mp4");
+    await mkdir(assetsDir, { recursive: true });
+    await writeFile(renderPath, "video-bytes");
+    await writeFile(path.join(assetsDir, "voice.mp3"), "audio-bytes");
+    await writeFile(path.join(assetsDir, "captions.json"), "[]");
+    const { store, fetchImpl: s3Fetch } = createS3Store();
+    const fetchImpl = async (url, init) => {
+      if (init?.method === "PUT" && url.includes("voice.mp3")) {
+        return new Response(null, { status: 500, statusText: "Internal Server Error" });
+      }
+      return s3Fetch(url, init);
+    };
+
+    await expect(
+      publishEpisodeArtifacts({
+        slug: "demo-short",
+        episodeDir,
+        renderPath,
+        runId: "run-1",
+        env,
+        fetchImpl,
+      }),
+    ).rejects.toThrow("R2 PUT failed");
+
+    for (const name of ["render.remote.json", "assets.remote.json", "source.remote.json"]) {
+      await expect(readFile(path.join(episodeDir, name), "utf8")).rejects.toThrow();
+      expect(store.has(`motion-shorts/episodes/demo-short/final/manifests/${name}`)).toBe(false);
+    }
+    expect(store.has("motion-shorts/index.json")).toBe(false);
+
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("writes no local manifests when a remote manifest upload fails", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "r2-txn-manifests-"));
+    const episodeDir = path.join(root, "src/episodes/demo-short");
+    const renderPath = path.join(root, "demo-short.mp4");
+    await mkdir(path.join(episodeDir, "assets"), { recursive: true });
+    await writeFile(renderPath, "video-bytes");
+    const { store, fetchImpl: s3Fetch } = createS3Store();
+    const fetchImpl = async (url, init) => {
+      if (init?.method === "PUT" && url.includes("/manifests/assets.remote.json")) {
+        return new Response(null, { status: 503, statusText: "Service Unavailable" });
+      }
+      return s3Fetch(url, init);
+    };
+
+    await expect(
+      publishEpisodeArtifacts({
+        slug: "demo-short",
+        episodeDir,
+        renderPath,
+        runId: "run-1",
+        env,
+        fetchImpl,
+      }),
+    ).rejects.toThrow("R2 PUT failed");
+
+    for (const name of ["render.remote.json", "assets.remote.json", "source.remote.json"]) {
+      await expect(readFile(path.join(episodeDir, name), "utf8")).rejects.toThrow();
+    }
+    expect(store.has("motion-shorts/index.json")).toBe(false);
+
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("rejects a malformed remote manifest via the shared schema", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "r2-schema-manifest-"));
+    const manifestPath = await writeAssetsManifest({
+      root,
+      object: {
+        key: "motion-shorts/episodes/demo-short/final/audio/voice.mp3",
+        bytes: -5,
+        sha256: "not-hex",
+      },
+    });
+
+    await expect(
+      hydrateEpisodeArtifacts({
+        manifestPath,
+        destinationDir: path.join(root, "out"),
+        env,
+        fetchImpl: async () => new Response("x", { status: 200 }),
+      }),
+    ).rejects.toThrow(`Malformed remote manifest at ${manifestPath}`);
 
     await rm(root, { recursive: true, force: true });
   });

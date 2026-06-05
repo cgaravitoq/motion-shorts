@@ -16,7 +16,7 @@ import {
   loadWorkspaceEnv,
   objectKeyFor,
   uploadAndVerifyObject,
-} from "./lib/r2-artifacts.mjs";
+} from "./lib/r2-artifacts";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {

@@ -15,7 +15,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { loadWorkspaceEnv } from "./lib/r2-artifacts.mjs";
+import { loadWorkspaceEnv } from "./lib/r2-artifacts";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {
