@@ -6,7 +6,7 @@ description: >
   in-progress) short. Defer to this skill whenever the user says "write the copy", "dame la
   descripción", "prepare the LinkedIn post", or "copy de publicación" for an episode slug.
   Produces a validated src/episodes/<slug>/distribution.json with per-platform approval.
-  Skip for drafting the narration script itself (that is canonical-short / produce-from-notion).
+  Skip for drafting the narration script itself (that is canonical-short / produce-from-source).
 ---
 
 # Generate distribution copy
@@ -25,7 +25,7 @@ Returns narration (break tags stripped), `meta.json`, the scene-spec (titles, st
 
 ## 2. Draft per-platform copy
 
-Load `.agents/skills/produce-from-notion/references/publishing-copies.md` for tone and format per platform. **Hybrid voice contract**: YouTube/Instagram/TikTok are channel style (emoji bullets, 5-7 hashtags); LinkedIn is the user's personal voice (prose, zero emojis, no em dashes, ≤3 hashtags — gated in step 5). ES + EN for every platform, same hashtag set across languages within a platform.
+Load `references/publishing-copies.md` for tone and format per platform. **Hybrid voice contract**: YouTube/Instagram/TikTok are channel style (emoji bullets, 5-7 hashtags); LinkedIn is the user's personal voice (prose, zero emojis, no em dashes, ≤3 hashtags — gated in step 5). ES + EN for every platform, same hashtag set across languages within a platform.
 
 Hard limits (enforced by `copy:check`):
 
@@ -99,6 +99,18 @@ Approval rules enforced by the validator:
 - A re-render changes the mp4 sha256: `copy:check` then fails every `approved` platform. Reset them to `draft`, refresh `renderRef` from the new context, and re-review.
 
 Approving copy does NOT authorize publishing (Gate 2 lives with the publish step of the roadmap).
+
+## 7. Persist and mirror
+
+After any change to distribution.json (new draft, edits, approvals):
+
+```bash
+bun run copy:sync <slug>   # push the sidecar to R2 + patch source.remote.json
+```
+
+Then archive/mirror to the Notion **🎞️ Shorts Archive** following `references/notion-archive-page.md`: upsert the episode's page by `Asset Slug` (create on zero matches, update on one, abort on multiple) and replace the managed "📣 Publishing copies" section with per-platform status + the render sha pin. **One-way only**: Notion is the archive/visualization surface; edits go to distribution.json and re-mirror, never the reverse.
+
+If Notion MCP is unavailable, skip the archive with a warning — the sidecar + R2 remain the source of truth either way.
 
 ## Notes
 

@@ -1,6 +1,6 @@
 # MCP integrations
 
-The repo ships project-level MCP configs for Notion in three formats so agent surfaces (Claude Code, Codex, opencode) can read/write the content brief database without manual setup per CLI:
+The repo ships project-level MCP configs for Notion in three formats so agent surfaces (Claude Code, Codex, opencode) can write the downstream Shorts Archive (one-way mirror from distribution.json) without manual setup per CLI:
 
 | File | CLI | Config |
 |------|-----|--------|
@@ -32,8 +32,8 @@ The local motion-shorts MCP exposes the scene-hub pipeline plus lint, audio, and
 
 Do scene preflight with `list_scene_types` / `recommend_scene_types` before writing a spec so scene-type IDs and slot ranges come from the manifests. `render_composition` and `generate_audio` return absolute local paths under `MCP_OUTPUT_DIR` instead of signed URLs or async job IDs.
 
-## Notion database (optional)
+## Notion Shorts Archive (optional)
 
-The `produce-from-notion` skill is database-agnostic. To use it, create a Notion database matching the schema in [`.agents/skills/produce-from-notion/references/notion-db-schema.md`](../.agents/skills/produce-from-notion/references/notion-db-schema.md) and expose its identifiers via the `NOTION_SHORTS_DATABASE_ID` and `NOTION_SHORTS_DATA_SOURCE_ID` env vars.
+Notion is a **downstream archive only**: the repo is the single entry point for producing shorts (`produce-from-source`), and each finished episode is archived as a page in a Shorts Archive database — properties (Status, Asset Slug, Source URL, Platforms, Render Hash) plus a managed "Publishing copies" section mirrored one-way from the episode's `distribution.json`.
 
-The skill pulls entries with `Status: Hook Drafted` and pushes back `Status: Asset Ready` + render details. If you do not use Notion for content briefs, invoke the `canonical-short` skill directly and skip `produce-from-notion`.
+Create a database matching the contract in [`.agents/skills/generate-distribution-copy/references/notion-archive-page.md`](../.agents/skills/generate-distribution-copy/references/notion-archive-page.md) and expose its identifiers via the `NOTION_SHORTS_ARCHIVE_DATABASE_ID` and `NOTION_SHORTS_ARCHIVE_DATA_SOURCE_ID` env vars. Without Notion, the pipeline works the same — `distribution.json` + R2 remain the source of truth and the archive step is skipped.
