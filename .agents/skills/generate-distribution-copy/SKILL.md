@@ -18,7 +18,7 @@ Turn an episode into paste-ready, per-platform publishing copy persisted as a ty
 ## 1. Resolve episode context
 
 ```bash
-bun run scripts/episode-context.mjs <slug>
+bun run scripts/episode-context.ts <slug>
 ```
 
 Returns narration (break tags stripped), `meta.json`, the scene-spec (titles, stats, quotes, sources live in the slots), captions duration, and `renderRef` (the rendered mp4's R2 key + sha256), plus warnings for anything missing. Draft from THIS context — the copy must match what the video actually says. If a stat or source is not in the context, do not invent it (`[TODO: verify source]` per the copy contract).

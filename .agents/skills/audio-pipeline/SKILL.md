@@ -106,7 +106,7 @@ cp out/<slug>/voice.mp3     public/voice/<slug>/voice.mp3
 cp out/<slug>/captions.json public/voice/<slug>/captions.json
 ```
 
-Episode HTML references via `<audio src="assets/voice.mp3">`. Captions are inlined as `<script id="captions-data">` at render time by `render-episode.mjs`. **Don't paste captions JSON by hand** -- source stays diff-clean.
+Episode HTML references via `<audio src="assets/voice.mp3">`. Captions are inlined as `<script id="captions-data">` at render time by `render-episode.ts`. **Don't paste captions JSON by hand** -- source stays diff-clean.
 
 ## Gotchas (from prior incidents)
 

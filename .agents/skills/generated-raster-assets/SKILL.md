@@ -64,10 +64,10 @@ Minimum checks for an episode using generated raster assets (CWD = `apps/hyperfr
 bun run scene:check src/episodes/<slug>/scene-spec.json
 bun run assemble <slug>
 bunx hyperframes lint src/episodes/<slug>
-bun run scripts/scene-qa.mjs <slug>
+bun run scripts/scene-qa.ts <slug>
 ```
 
-`scene-qa.mjs` snapshots key frames per scene and runs `hyperframes inspect` for overflow/overlap, writing `renders/<slug>-qa/<scene-id>/*.png` + `report.json` (no full mp4). Use `--scenes=<id1>,<id2>` to re-check only the scenes whose assets changed. Inspect the per-scene frames near scene entry, mid-scene, and scene exit. Confirm:
+`scene-qa.ts` snapshots key frames per scene and runs `hyperframes inspect` for overflow/overlap, writing `renders/<slug>-qa/<scene-id>/*.png` + `report.json` (no full mp4). Use `--scenes=<id1>,<id2>` to re-check only the scenes whose assets changed. Inspect the per-scene frames near scene entry, mid-scene, and scene exit. Confirm:
 
 - Generated assets are visible, sharp enough, and not cropped unintentionally.
 - Connector-heavy visuals have no card/line collisions.

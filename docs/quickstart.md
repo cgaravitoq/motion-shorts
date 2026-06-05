@@ -50,8 +50,8 @@ bun run scene:check src/episodes/short-09/scene-spec.json
 
 # Per-scene visual QA: snapshot key frames per scene + hyperframes inspect.
 # Writes renders/short-09-qa/<scene-id>/*.png + report.json. No full mp4.
-bun run scripts/scene-qa.mjs short-09
-bun run scripts/scene-qa.mjs short-09 --scenes=hook,outro   # re-check only changed scenes
+bun run scripts/scene-qa.ts short-09
+bun run scripts/scene-qa.ts short-09 --scenes=hook,outro   # re-check only changed scenes
 
 # Live preview in Studio
 bun run dev                                          # opens the first episode
@@ -177,7 +177,7 @@ bun run audio examples/my-short.txt --lang=es \
   --out=public/voice/my-short
 
 # 6. Per-scene visual QA (iterate: edit spec, assemble, re-check changed scenes)
-bun run scripts/scene-qa.mjs my-short
+bun run scripts/scene-qa.ts my-short
 
 # 7. Final render
 bun run render:episode my-short --format=mp4

@@ -47,7 +47,7 @@ bunx hyperframes lint src/episodes/<slug>
 This replaces the old `ffmpeg -ss` still extraction and contact sheets. One command:
 
 ```bash
-bun run scripts/scene-qa.mjs <slug>
+bun run scripts/scene-qa.ts <slug>
 ```
 
 It (1) re-assembles `index.html` from `scene-spec.json`, (2) materialises a working copy under `out/episodes/<slug>` (src/ untouched, captions inlined if present), (3) runs `hyperframes snapshot` to produce one settled **final** frame per scene plus a `contact-sheet.jpg` grid of every sampled scene, and (4) runs `hyperframes inspect --json` for a mechanical overflow/overlap verdict. No MP4 is produced.
@@ -70,7 +70,7 @@ Read the frames directly (they are PNGs in the per-scene folders) and read `repo
 After the user rejects specific scenes, edit those scenes' slots in `scene-spec.json` and re-QA just those ids:
 
 ```bash
-bun run scripts/scene-qa.mjs <slug> --scenes=hook,pieces
+bun run scripts/scene-qa.ts <slug> --scenes=hook,pieces
 ```
 
 Default is one settled final frame per scene; add `--frames=3` only when you need entry/mid/late key frames to debug motion.

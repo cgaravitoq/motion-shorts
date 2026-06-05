@@ -35,6 +35,6 @@ bun run render:episode <slug>                     # reads meta.brand, stamps :ro
                                                   # into the working copy under out/
 ```
 
-`render-episode.mjs` warns when `publishable=false`; CI consumers should treat that as a publish gate. The stamp happens in `apps/hyperframe/out/episodes/<slug>/index.html` only — `src/` stays diff-clean.
+`render-episode.ts` warns when `publishable=false`; CI consumers should treat that as a publish gate. The stamp happens in `apps/hyperframe/out/episodes/<slug>/index.html` only — `src/` stays diff-clean.
 
 > Note: `brands/` does not exist yet — it's a planned feature. The first brand pack land creates `apps/hyperframe/brands/default/brand.json`.

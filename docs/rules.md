@@ -11,7 +11,7 @@ A short is a typed `scene-spec.json` at `apps/hyperframe/src/episodes/<slug>/sce
 - The scene-hub lives at `apps/hyperframe/templates/`:
   - `_shell/` (`shell.css` + `shell.html.tmpl`) — universal look: tokens, background layers, brand-corner watermark, the single paused GSAP timeline + crossfades, captions/audio, track allocation, and the timeline registry.
   - `scenes/<type>/v1/` (`manifest.json`, `fragment.html`, `styles.css`, `timeline.js`, `sample.json`) — one directory per scene-type.
-- Engine: `apps/hyperframe/scripts/lib/{scene-instantiator,assemble-episode,scene-spec,scene-router}.mjs`.
+- Engine: `apps/hyperframe/scripts/lib/{scene-instantiator,assemble-episode,scene-spec,scene-router}.ts`.
 
 ## 2. Scene-types — the only building blocks
 
@@ -57,7 +57,7 @@ Hyperframes seeks the timeline frame-by-frame (it never "plays" it). `onStart` /
 Use `tl.set(target, props, t)` (zero-duration tween) for discrete transitions — it materialises at any seek position.
 For animated counters, bar fills, and saturating progress use staggered `tl.set(target, props, t)` keyframes (the pattern used by `metric`/`big-stat`) — `onUpdate` does NOT fire during seek.
 
-Run `bun run lint:seek-safe` from `apps/hyperframe/` to catch antipatterns before render. The linter (`apps/hyperframe/scripts/lint-seek-safe.mjs`) scans inline `<script>` blocks in every episode's generated `index.html` and enforces this rule plus rules 4 and 6:
+Run `bun run lint:seek-safe` from `apps/hyperframe/` to catch antipatterns before render. The linter (`apps/hyperframe/scripts/lint-seek-safe.ts`) scans inline `<script>` blocks in every episode's generated `index.html` and enforces this rule plus rules 4 and 6:
 
 | Pattern | Severity | Rewrite |
 |---|---|---|
@@ -129,7 +129,7 @@ Run from `apps/hyperframe/` cwd:
 - `bun run assemble <slug>` — regenerate `index.html` from `scene-spec.json` (run after every spec edit).
 - `bun run scene:check [<spec>...]` — validate scene-spec(s) against scene-type manifests (no assembly).
 - `bun run scene:gallery` — generate the gallery episode exercising every scene-type.
-- `bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]` — per-scene visual QA: snapshots key frames per scene + `hyperframes inspect` for overflow/overlap. Writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. No full mp4. `--scenes` re-checks only changed scenes.
+- `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]` — per-scene visual QA: snapshots key frames per scene + `hyperframes inspect` for overflow/overlap. Writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. No full mp4. `--scenes` re-checks only changed scenes.
 - `bun run render:episode <slug> --format=mp4 [--keep-local]` — final full render (after per-scene approval).
 - `bun run audio examples/<slug>.txt --lang=es --speed=1.0 --pause-sentence=300 --pause-clause=0 --out=public/voice/<slug>` — TTS + captions.
 
@@ -175,7 +175,7 @@ One `AGENTS.md` at root, with `CLAUDE.md` as a symlink.
 ## 21. Audio assets location
 
 `apps/hyperframe/public/voice/<slug>/` (canonical). Copy `voice.mp3` and `captions.json` into `apps/hyperframe/src/episodes/<slug>/assets/` before render.
-`render-episode.mjs` auto-inlines `assets/captions.json` into `<script id="captions-data">` at render time.
+`render-episode.ts` auto-inlines `assets/captions.json` into `<script id="captions-data">` at render time.
 
 ## 22. TTS provider
 
@@ -207,7 +207,7 @@ Skip via `--no-pause-injection`. Override `--pause-sentence=<ms>` and `--pause-c
 
 ## 26. Episode duration
 
-`ffprobe(voice.mp3) + tail`. `render-episode.mjs` stamps `data-duration` and inlines captions in `apps/hyperframe/out/episodes/<slug>/`. Source episodes are never mutated.
+`ffprobe(voice.mp3) + tail`. `render-episode.ts` stamps `data-duration` and inlines captions in `apps/hyperframe/out/episodes/<slug>/`. Source episodes are never mutated.
 Tail resolution: `--tail` CLI flag > `meta.json` `tail` field > `0.3` fallback.
 Canonical default for shorts with brand-card lockups: `tail: 3` in `meta.json`.
 

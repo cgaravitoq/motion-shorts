@@ -14,7 +14,7 @@ description: >
 
 > **CWD**: all bash commands below assume `cd apps/hyperframe` first. Paths like `examples/<slug>.txt`, `public/voice/<slug>/`, `src/episodes/<slug>/`, `renders/<slug>.mp4` are app-relative.
 
-> Skill-only orchestrator. Shells out to existing `bun run capture:source` / `bun run audio` / `bun run new:episode` / `bun run assemble` / `bun run scene:check` / `bun run scripts/scene-qa.mjs` / `bun run render:episode`, defers visual construction to the intent short skills (which write `scene-spec.json`), copy to `generate-distribution-copy`, and the Notion archive push to its `references/notion-archive-page.md` contract.
+> Skill-only orchestrator. Shells out to existing `bun run capture:source` / `bun run audio` / `bun run new:episode` / `bun run assemble` / `bun run scene:check` / `bun run scripts/scene-qa.ts` / `bun run render:episode`, defers visual construction to the intent short skills (which write `scene-spec.json`), copy to `generate-distribution-copy`, and the Notion archive push to its `references/notion-archive-page.md` contract.
 
 ## The model (scene-hub)
 
@@ -171,11 +171,11 @@ Re-run `bun run assemble <slug>` after every spec edit.
 ## Stage 5 -- Per-scene visual QA + Gate 3
 
 ```bash
-bun run scripts/scene-qa.mjs <slug>
+bun run scripts/scene-qa.ts <slug>
 # writes renders/<slug>-qa/<scene-id>/*.png + report.json
 ```
 
-Present per-scene stills + flags; the user approves or rejects EACH scene. Reject -> edit only that scene, `bun run assemble <slug>`, re-QA scoped: `bun run scripts/scene-qa.mjs <slug> --scenes=<id1,id2>`. Loop until every scene is approved.
+Present per-scene stills + flags; the user approves or rejects EACH scene. Reject -> edit only that scene, `bun run assemble <slug>`, re-QA scoped: `bun run scripts/scene-qa.ts <slug> --scenes=<id1,id2>`. Loop until every scene is approved.
 
 ## Stage 6 -- Final render + Gate 4
 

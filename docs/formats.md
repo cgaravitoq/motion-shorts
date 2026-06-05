@@ -80,4 +80,4 @@ bun run lint:seek-safe src/episodes/<slug>     # scan one episode
 
 `lint:seek-safe` enforces AGENTS.md rule 7 (docs/rules.md rule 21): the timeline must be `paused: true` and registered in `window.__timelines["<id>"]`, and discrete transitions must use `tl.set(...)` — tween callbacks (`onStart` / `onComplete` / `onRepeat`) and `tl.call()` do not fire during frame-by-frame seek. It also flags `repeat: -1` (non-deterministic) and other determinism hazards.
 
-Validate the spec before assembling, and per-scene QA after, with `bun run scene:check` and `bun run scripts/scene-qa.mjs <slug>` (see AGENTS.md).
+Validate the spec before assembling, and per-scene QA after, with `bun run scene:check` and `bun run scripts/scene-qa.ts <slug>` (see AGENTS.md).

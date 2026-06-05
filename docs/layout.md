@@ -40,19 +40,19 @@ motion-shorts/                 (monorepo root)
 │       │       └── sample.json        Sample spec for the scene-type (used by the gallery).
 │       ├── scripts/
 │       │   ├── lib/
-│       │   │   ├── scene-instantiator.mjs   Renders one scene-type v1 against its spec slots.
-│       │   │   ├── assemble-episode.mjs      Assembles shell + scenes into the monolithic index.html.
-│       │   │   ├── scene-spec.mjs            scene-spec.json schema + validation against manifests.
-│       │   │   └── scene-router.mjs          Intent -> recommended scene-types mapping.
-│       │   ├── assemble.mjs           `bun run assemble <slug>`: regenerate index.html from scene-spec.json.
-│       │   ├── scene-qa.mjs           `bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]`: per-scene
+│       │   │   ├── scene-instantiator.ts   Renders one scene-type v1 against its spec slots.
+│       │   │   ├── assemble-episode.ts      Assembles shell + scenes into the monolithic index.html.
+│       │   │   ├── scene-spec.ts            scene-spec.json schema + validation against manifests.
+│       │   │   └── scene-router.ts          Intent -> recommended scene-types mapping.
+│       │   ├── assemble.ts           `bun run assemble <slug>`: regenerate index.html from scene-spec.json.
+│       │   ├── scene-qa.ts           `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]`: per-scene
 │       │   │                          visual QA (key-frame snapshots + hyperframes inspect). No full mp4.
-│       │   ├── scene-check-all.mjs    `bun run scene:check [<spec>...]`: validate scene-spec(s), no assembly.
-│       │   ├── build-catalog-demo.mjs `bun run scene:gallery`: gallery episode exercising every scene-type.
-│       │   ├── generate-audio.mjs     `bun run audio`: TTS + STT pipeline.
-│       │   ├── render-episode.mjs     `bun run render:episode <slug> --format=mp4 [--keep-local]`.
-│       │   ├── new-episode.mjs        `bun run new:episode <slug> [--intent=…]`: scaffold spec + assemble.
-│       │   └── dev.mjs                `bun run dev [dir]`: hyperframes preview wrapper.
+│       │   ├── scene-check-all.ts    `bun run scene:check [<spec>...]`: validate scene-spec(s), no assembly.
+│       │   ├── build-catalog-demo.ts `bun run scene:gallery`: gallery episode exercising every scene-type.
+│       │   ├── generate-audio.ts     `bun run audio`: TTS + STT pipeline.
+│       │   ├── render-episode.ts     `bun run render:episode <slug> --format=mp4 [--keep-local]`.
+│       │   ├── new-episode.ts        `bun run new:episode <slug> [--intent=…]`: scaffold spec + assemble.
+│       │   └── dev.ts                `bun run dev [dir]`: hyperframes preview wrapper.
 │       ├── examples/                Script .txt files (input to `bun run audio`).
 │       ├── public/voice/<slug>/     Canonical per-episode audio assets (mp3 + captions.json). Gitignored.
 │       ├── samples/                 Voice library samples for picking presets. Gitignored.
@@ -111,7 +111,7 @@ motion-shorts/                 (monorepo root)
 | Generated render input | `apps/hyperframe/src/episodes/<slug>/index.html` (never hand-edit) |
 | Universal shell | `apps/hyperframe/templates/_shell/{shell.css,shell.html.tmpl}` |
 | Scene-type building blocks (17) | `apps/hyperframe/templates/scenes/<type>/v1/` |
-| Assembler engine | `apps/hyperframe/scripts/lib/{scene-instantiator,assemble-episode,scene-spec,scene-router}.mjs` |
+| Assembler engine | `apps/hyperframe/scripts/lib/{scene-instantiator,assemble-episode,scene-spec,scene-router}.ts` |
 
 Scene-types (the only building blocks): `hook`, `title-cards`, `flow`, `metric`, `big-stat`,
 `comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`. Repeatable slots carry ranges

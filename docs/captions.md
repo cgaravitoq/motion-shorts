@@ -6,7 +6,7 @@ When you also need a **sidecar** (separate `.srt` / `.vtt` files), pass `--capti
 
 ```sh
 cd apps/hyperframe
-bun --env-file=../../.env run scripts/generate-audio.mjs <script.txt> \
+bun --env-file=../../.env run scripts/generate-audio.ts <script.txt> \
   --lang=<en|es> \
   --out=<dir> \
   --caption-format=srt,vtt

@@ -76,7 +76,7 @@ The scaffold does NOT create `out/<slug>/` or `public/voice/<slug>/` — those c
    ```
 4. **Per-scene visual QA:**
    ```bash
-   bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]
+   bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]
    ```
    Re-assembles, captures one settled "final" frame per scene plus a `contact-sheet.jpg` grid (`--frames=3` for entry/mid/late motion debugging), and runs `hyperframes inspect` for overflow/overlap (no full mp4). Show the contact sheet in the chat for review; iterate only the scenes you changed via `--scenes=<id>`.
 5. **Generate voice + captions:**
@@ -97,7 +97,7 @@ The scaffold does NOT create `out/<slug>/` or `public/voice/<slug>/` — those c
 
 - **Never hand-edit `index.html`.** It is fully generated from `scene-spec.json`. Any manual change is lost on the next `assemble`. Edit the spec, then `bun run assemble <slug>`.
 - **`outro` is always last.** It's the pinned brand sign-off on fixed track 7; the brand corner fades out as it enters. Do not replace it with a plain text `@handle` card — the brand presence is the `outro` scene-type plus the shell's `#brand-corner`.
-- **`render-episode.mjs` does NOT auto-copy assets.** Copy `voice.mp3` and `captions.json` manually from `public/voice/<slug>/` into the episode's `assets/`. Render is silent if `assets/voice.mp3` is absent.
+- **`render-episode.ts` does NOT auto-copy assets.** Copy `voice.mp3` and `captions.json` manually from `public/voice/<slug>/` into the episode's `assets/`. Render is silent if `assets/voice.mp3` is absent.
 - **Re-assemble after editing the spec, before QA or render.** `scene-qa` re-assembles for you, but `render:episode` reads whatever `index.html` is on disk.
 
 ## When NOT to use

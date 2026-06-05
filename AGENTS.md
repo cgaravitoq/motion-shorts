@@ -54,7 +54,7 @@ A short is a `scene-spec.json`. To author one (CWD `apps/hyperframe/`):
 1. **Pick scene-types.** `bun run scene:gallery` (or MCP `recommend_scene_types <intent>` / `list_scene_types`) to choose from the 17 types. Each type's exact slots: `get_scene_type <type>` or `templates/scenes/<type>/v1/manifest.json`. Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4). `outro` is the pinned brand sign-off, always last.
 2. **Scaffold + fill.** `bun run new:episode <slug> [--intent=...]` writes a starter spec; edit `src/episodes/<slug>/scene-spec.json` slots, then `bun run scene:check <slug-spec>` to validate.
 3. **Assemble.** `bun run assemble <slug>` regenerates `index.html` (run after every spec edit).
-4. **Per-scene QA (HITL).** `bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]` snapshots each scene + runs `hyperframes inspect` (overflow/overlap), no full render. Iterate only rejected scenes.
+4. **Per-scene QA (HITL).** `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]` snapshots each scene + runs `hyperframes inspect` (overflow/overlap), no full render. Iterate only rejected scenes.
 5. **Render.** `bun run render:episode <slug> --format=mp4` once all scenes pass.
 
 Add a **new scene-type** only when an existing one can't express the layout — see `docs/templates.md` for the 5-file contract.

@@ -42,10 +42,10 @@ The build engine is `apps/hyperframe/scripts/lib/`:
 
 | File | Responsibility |
 |------|----------------|
-| `scene-instantiator.mjs` | resolve a scene-type, fill `fragment.html` tokens from params, render repeat blocks, escape/sanitize text |
-| `assemble-episode.mjs` | compose all scenes into the shell: sequential windows, track allocation, crossfades, timeline, registry |
-| `scene-spec.mjs` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
-| `scene-router.mjs` | intent → recommended scene-type skeleton + typed summaries |
+| `scene-instantiator.ts` | resolve a scene-type, fill `fragment.html` tokens from params, render repeat blocks, escape/sanitize text |
+| `assemble-episode.ts` | compose all scenes into the shell: sequential windows, track allocation, crossfades, timeline, registry |
+| `scene-spec.ts` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
+| `scene-router.ts` | intent → recommended scene-type skeleton + typed summaries |
 
 ## The 17 scene-types
 
@@ -102,7 +102,7 @@ Per scene: `id` (kebab-case, unique), `type`, optional `version` (default 1), op
 
 ## How scenes compose (assembler)
 
-`assemble-episode.mjs`:
+`assemble-episode.ts`:
 
 1. Validates `slug` and scene `id`s, instantiates each scene-type with its params (errors out on out-of-range repeat counts or missing required slots).
 2. Lays out scenes in **sequential second windows** (`windowStart` accumulates `duration`); total duration is the sum.
@@ -183,7 +183,7 @@ bun run scene:check [<spec>...]
 bun run scene:gallery
 # generate the gallery episode exercising every scene-type
 
-bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]
+bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]
 # per-scene visual QA: snapshot key frames + hyperframes inspect (overflow/overlap).
 # Writes renders/<slug>-qa/<scene-id>/*.png + report.json. No full mp4.
 # --scenes re-checks only the listed (changed) scenes.
@@ -192,7 +192,7 @@ bun run render:episode <slug> --format=mp4 [--keep-local]
 # FINAL full render — only after per-scene QA approval
 ```
 
-The intent skeletons (`scene-router.mjs`) seed `new:episode`: e.g. `workflow` → `hook, flow, code, timeline, outro`; `data` → `hook, big-stat, metric, comparison, outro`. `hook` and `outro` are structural and always present.
+The intent skeletons (`scene-router.ts`) seed `new:episode`: e.g. `workflow` → `hook, flow, code, timeline, outro`; `data` → `hook, big-stat, metric, comparison, outro`. `hook` and `outro` are structural and always present.
 
 ## MCP equivalents (`apps/mcp`)
 

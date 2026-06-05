@@ -62,7 +62,7 @@ People retain what they see, and the narration + captions already deliver the wo
 4. Scaffold + author scene-spec.json          -- recommend_scene_types -> new:episode --intent
    |                                              -> fill slots (per get_scene_type) -> assemble
    |
-5. PER-SCENE visual QA (bun run scripts/scene-qa.mjs)  -- Gate 3 (looped): user approves/rejects
+5. PER-SCENE visual QA (bun run scripts/scene-qa.ts)  -- Gate 3 (looped): user approves/rejects
    |                                              EACH scene; iterate only rejected scenes
    |
 6. Final render (bun run render:episode)      -- Gate 4: user approves the mp4
@@ -171,13 +171,13 @@ For **Spanish labels baked into a generated asset**, verify accents and `ñ` in 
 ## Per-scene QA (Gate 3)
 
 ```bash
-bun run scripts/scene-qa.mjs <slug>                 # all scenes
-bun run scripts/scene-qa.mjs <slug> --scenes=hook,pieces   # only changed scenes
+bun run scripts/scene-qa.ts <slug>                 # all scenes
+bun run scripts/scene-qa.ts <slug> --scenes=hook,pieces   # only changed scenes
 ```
 
 This re-assembles, captures one settled "final" frame per scene (use `--frames=3` only to debug motion with entry/mid/late), runs `hyperframes inspect` for overflow/overlap, and writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json` + a single **`contact-sheet.jpg`** grid of every sampled scene. **No full mp4 render.**
 
-**Review happens in the chat, never in folders.** Send `contact-sheet.jpg` into the conversation (CLI session: deliver the file; MCP client: the `scene_qa` tool already returns it as an inline image) together with the inspect verdict. The user approves or rejects EACH scene from that one image. For rejected scenes: edit that scene's slots in `scene-spec.json` -> `bun run assemble <slug>` -> `bun run scripts/scene-qa.mjs <slug> --scenes=<id>` (other scenes' frames and report entries are preserved and merged). Loop until all scenes are approved (mark `status: "approved"` as you go).
+**Review happens in the chat, never in folders.** Send `contact-sheet.jpg` into the conversation (CLI session: deliver the file; MCP client: the `scene_qa` tool already returns it as an inline image) together with the inspect verdict. The user approves or rejects EACH scene from that one image. For rejected scenes: edit that scene's slots in `scene-spec.json` -> `bun run assemble <slug>` -> `bun run scripts/scene-qa.ts <slug> --scenes=<id>` (other scenes' frames and report entries are preserved and merged). Loop until all scenes are approved (mark `status: "approved"` as you go).
 
 ## Final render (Gate 4)
 
@@ -207,7 +207,7 @@ The assembler now owns the timeline, palette, captions, and typography, so these
 - [ ] Last scene is `type: "outro"`; palette set; total runtime 30-50s
 - [ ] `bun run scene:check` passes (spec valid)
 - [ ] `bun run assemble <slug>` ran after the last spec edit (index.html regenerated, not hand-edited)
-- [ ] `bun run scripts/scene-qa.mjs <slug>` per-scene snapshots clean; `inspect` reports 0 issues
+- [ ] `bun run scripts/scene-qa.ts <slug>` per-scene snapshots clean; `inspect` reports 0 issues
 - [ ] Every scene approved by the user (Gate 3); rejected scenes iterated via `--scenes=<id>`
 - [ ] Generated source assets, if used, are under `src/episodes/<slug>/assets/generated/` and referenced from a scene image slot
 - [ ] Generated asset provenance noted (`assets/generated/provenance.md` or `assets/research/research.md`)
