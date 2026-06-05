@@ -94,3 +94,7 @@ For diagrams, choose the frame based on density. Compact charts or small decisio
 ## Environment
 
 **No `process.env` in `.ts` source.** All env reads go through the package's `env.ts`. Enforced by `scripts/check-no-process-env.sh` (pre-commit + `bun run lint:env`).
+
+## Catalog tracking
+
+This project is tracked in the personal project catalog: private repo `cgaravitoq/projects`, file `projects/motion-shorts.md`. Before ending a work session here, update that entry — `status`/`next`/`updated` frontmatter + one `## Log` line — and push the catalog (or use the projects-catalog MCP `update_project` tool).
