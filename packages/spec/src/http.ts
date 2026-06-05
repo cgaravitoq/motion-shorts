@@ -1,0 +1,88 @@
+import { Cause, Data, Duration, Effect, Exit, Option, Schedule } from "effect";
+
+export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
+
+export class HttpRequestError extends Data.TaggedError("HttpRequestError")<{
+  readonly url: string;
+  readonly cause: unknown;
+}> {
+  override get message(): string {
+    const detail = this.cause instanceof Error ? this.cause.message : String(this.cause);
+    return `request to ${this.url} failed: ${detail}`;
+  }
+}
+
+export class HttpTimeoutError extends Data.TaggedError("HttpTimeoutError")<{
+  readonly url: string;
+  readonly timeoutMs: number;
+}> {
+  override get message(): string {
+    return `request to ${this.url} timed out after ${this.timeoutMs}ms`;
+  }
+}
+
+// Internal: a 429/5xx response modeled as a failure so Schedule drives the
+// retries; converted back to the plain Response once retries are exhausted.
+class RetryableStatus extends Data.TaggedError("RetryableStatus")<{
+  readonly response: Response;
+}> {}
+
+export const isRetryableStatus = (status: number): boolean => status === 429 || status >= 500;
+
+export interface FetchRetryOptions {
+  /** Per-attempt timeout. Default 60s. */
+  readonly timeoutMs?: number;
+  /** Extra attempts after the first one. Default 4. */
+  readonly retries?: number;
+  /** Seed for the exponential backoff (doubles each retry, jittered). Default 500ms. */
+  readonly baseDelayMs?: number;
+  readonly fetchImpl?: FetchLike;
+}
+
+/**
+ * fetch with per-attempt timeout and exponential backoff + jitter on
+ * transient failures (network errors, timeouts, 429/5xx). Resolves with the
+ * final Response — callers keep their own response.ok handling, so this is a
+ * drop-in replacement for a bare fetch/fetchWithTimeout.
+ */
+export const fetchWithRetry = (
+  url: string,
+  init?: RequestInit,
+  { timeoutMs = 60_000, retries = 4, baseDelayMs = 500, fetchImpl = fetch }: FetchRetryOptions = {},
+): Effect.Effect<Response, HttpRequestError | HttpTimeoutError> => {
+  const attempt = Effect.tryPromise({
+    try: (signal) => fetchImpl(url, { ...init, signal }),
+    catch: (cause) => new HttpRequestError({ url, cause }),
+  }).pipe(
+    Effect.timeoutFail({
+      duration: Duration.millis(timeoutMs),
+      onTimeout: () => new HttpTimeoutError({ url, timeoutMs }),
+    }),
+    Effect.filterOrFail(
+      (response) => !isRetryableStatus(response.status),
+      (response) => new RetryableStatus({ response }),
+    ),
+  );
+
+  const backoff = Schedule.exponential(Duration.millis(baseDelayMs)).pipe(
+    Schedule.jittered,
+    Schedule.intersect(Schedule.recurs(retries)),
+  );
+
+  return attempt.pipe(
+    Effect.retry(backoff),
+    Effect.catchTag("RetryableStatus", (error) => Effect.succeed(error.response)),
+  );
+};
+
+/** Promise bridge for the .mjs pipeline scripts; rethrows the original tagged error. */
+export const fetchWithRetryPromise = async (
+  url: string,
+  init?: RequestInit,
+  options?: FetchRetryOptions,
+): Promise<Response> => {
+  const exit = await Effect.runPromiseExit(fetchWithRetry(url, init, options));
+  if (Exit.isSuccess(exit)) return exit.value;
+  const failure = Cause.failureOption(exit.cause);
+  throw Option.isSome(failure) ? failure.value : new Error(Cause.pretty(exit.cause));
+};

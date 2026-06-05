@@ -1,5 +1,14 @@
 export { ManifestInvalid, SceneSpecInvalid, UnknownSceneType } from "./errors";
 export {
+  type FetchLike,
+  type FetchRetryOptions,
+  fetchWithRetry,
+  fetchWithRetryPromise,
+  HttpRequestError,
+  HttpTimeoutError,
+  isRetryableStatus,
+} from "./http";
+export {
   decodeSceneTypeManifest,
   ItemFieldDef,
   RepeatSlotDef,
