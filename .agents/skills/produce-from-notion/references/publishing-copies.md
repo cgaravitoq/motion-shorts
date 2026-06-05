@@ -21,15 +21,21 @@ Example emoji bullets: 🔌 🔧 📊 🏛️ 📦
 
 **EN Caption**: Direct translation.
 
+## TikTok
+
+**ES Caption**: Very short, 1-2 sentences (under ~150 chars before hashtags), hook-first, no bullets. Hashtags inline at the end (TikTok has a single caption field; max 2200 UTF-16 chars total).
+
+**EN Caption**: Direct translation.
+
 ## LinkedIn
 
-**ES Post**: Long-form, 250-400 words, professional voice. Structure: problem framing + solution structure + data table + closing metaphor + source + hashtags.
+**Personal voice, not channel style** — LinkedIn posts publish on the author's own profile, so the concrete voice rules (emoji use, punctuation, register, hedging) come from the author's compiled humanizer voice profile (`communication_style`, `anti_patterns`), not from this file. `bun run copy:gate <slug>` enforces them. Structural defaults the tool expects: running prose (no bullet lists, no data tables), 250-400 words, open with the problem, close on a concrete observation or open edge — no CTA, no engagement bait. Hashtags: at most 2-3, at the end.
 
-**EN Post**: Direct translation.
+**ES Post / EN Post**: Direct translation, same structure.
 
 ## Hashtags
 
-5-7 per copy. Mix of broad (#AIEngineering) + topic-specific (#PromptCaching). Same set across ES/EN within a platform.
+5-7 per copy on channel platforms (YouTube, Instagram, TikTok). LinkedIn: at most 2-3 (voice profile rule). Mix of broad (#AIEngineering) + topic-specific (#PromptCaching). Same set across ES/EN within a platform.
 
 ## Code-block language
 
