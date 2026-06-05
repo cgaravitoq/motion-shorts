@@ -1,11 +1,17 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { z } from "zod";
+import { Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 import { HUB_ROOT, resolveSceneType } from "./scene-hub-runtime";
 
-const inputSchema = z.object({ type: z.string().min(1), version: z.number().int().positive().default(1) });
+const inputSchema = Schema.Struct({
+  type: Schema.NonEmptyString,
+  version: Schema.optionalWith(Schema.Number.pipe(Schema.int(), Schema.positive()), {
+    default: () => 1,
+  }),
+});
+const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const getSceneTypeTool: ToolDefinition = {
   name: "get_scene_type",
@@ -18,7 +24,7 @@ export const getSceneTypeTool: ToolDefinition = {
   },
   async handler(input) {
     try {
-      const { type, version } = inputSchema.parse(input);
+      const { type, version } = decodeInput(input);
       const resolved = resolveSceneType(type, version, HUB_ROOT);
       const samplePath = join(HUB_ROOT, "templates/scenes", type, `v${version}`, "sample.json");
       const sample = existsSync(samplePath) ? JSON.parse(readFileSync(samplePath, "utf8")) : {};

@@ -1,11 +1,12 @@
-import { z } from "zod";
+import { Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 import { HUB_ROOT, listSceneTypeSummaries } from "./scene-hub-runtime";
 
 const INTENT_ENUM = ["informative", "data", "workflow", "social", "brand", "vfx"] as const;
 
-const inputSchema = z.object({ intent: z.enum(INTENT_ENUM).optional() });
+const inputSchema = Schema.Struct({ intent: Schema.optional(Schema.Literal(...INTENT_ENUM)) });
+const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const listSceneTypesTool: ToolDefinition = {
   name: "list_scene_types",
@@ -17,7 +18,7 @@ export const listSceneTypesTool: ToolDefinition = {
   },
   async handler(input) {
     try {
-      const { intent } = inputSchema.parse(input);
+      const { intent } = decodeInput(input);
       let all = listSceneTypeSummaries(HUB_ROOT);
       if (intent) all = all.filter((s) => s.intentTags.includes(intent));
       return success(all);

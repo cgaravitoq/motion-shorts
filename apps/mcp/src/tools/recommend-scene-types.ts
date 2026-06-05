@@ -1,11 +1,12 @@
-import { z } from "zod";
+import { Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 import { HUB_ROOT, routeIntent } from "./scene-hub-runtime";
 
 const INTENT_ENUM = ["informative", "data", "workflow", "social", "brand", "vfx"] as const;
 
-const inputSchema = z.object({ intent: z.enum(INTENT_ENUM) });
+const inputSchema = Schema.Struct({ intent: Schema.Literal(...INTENT_ENUM) });
+const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const recommendSceneTypesTool: ToolDefinition = {
   name: "recommend_scene_types",
@@ -18,7 +19,7 @@ export const recommendSceneTypesTool: ToolDefinition = {
   },
   async handler(input) {
     try {
-      const { intent } = inputSchema.parse(input);
+      const { intent } = decodeInput(input);
       return success(routeIntent(intent, { hubRoot: HUB_ROOT }));
     } catch (error) {
       return failure(error);

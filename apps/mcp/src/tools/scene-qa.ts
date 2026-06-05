@@ -1,16 +1,17 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { z } from "zod";
+import { Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 import { HUB_ROOT } from "./scene-hub-runtime";
 
-const inputSchema = z.object({
-  slug: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
-  scenes: z.array(z.string()).optional(),
-  frames: z.union([z.literal(1), z.literal(3)]).optional(),
+const inputSchema = Schema.Struct({
+  slug: Schema.String.pipe(Schema.pattern(/^[a-z0-9][a-z0-9-]*$/)),
+  scenes: Schema.optional(Schema.Array(Schema.String)),
+  frames: Schema.optional(Schema.Literal(1, 3)),
 });
+const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const sceneQaTool: ToolDefinition = {
   name: "scene_qa",
@@ -27,8 +28,8 @@ export const sceneQaTool: ToolDefinition = {
   },
   async handler(input) {
     try {
-      const { slug, scenes, frames } = inputSchema.parse(input);
-      const args = ["run", "scripts/scene-qa.mjs", slug, `--frames=${frames ?? 1}`];
+      const { slug, scenes, frames } = decodeInput(input);
+      const args = ["run", "scripts/scene-qa.ts", slug, `--frames=${frames ?? 1}`];
       if (scenes?.length) args.push(`--scenes=${scenes.join(",")}`);
       const proc = spawnSync("bun", args, { cwd: HUB_ROOT, encoding: "utf8" });
       if (proc.status !== 0) {

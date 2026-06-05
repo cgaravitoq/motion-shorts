@@ -1,9 +1,12 @@
-import { z } from "zod";
+import { Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 import { HUB_ROOT, validateSceneSpec } from "./scene-hub-runtime";
 
-const inputSchema = z.object({ spec: z.record(z.string(), z.unknown()) });
+const inputSchema = Schema.Struct({
+  spec: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+});
+const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const validateSceneSpecTool: ToolDefinition = {
   name: "validate_scene_spec",
@@ -16,7 +19,7 @@ export const validateSceneSpecTool: ToolDefinition = {
   },
   async handler(input) {
     try {
-      const { spec } = inputSchema.parse(input);
+      const { spec } = decodeInput(input);
       return success(validateSceneSpec(spec, { hubRoot: HUB_ROOT }));
     } catch (error) {
       return failure(error);

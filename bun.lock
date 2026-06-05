@@ -29,10 +29,11 @@
       "version": "0.1.0",
       "dependencies": {
         "@cgaravitoq/audio": "workspace:*",
+        "@cgaravitoq/spec": "workspace:*",
         "@hyperframes/core": "0.6.70",
         "@hyperframes/producer": "0.6.70",
         "@modelcontextprotocol/sdk": "1.29.0",
-        "zod": "4.4.3",
+        "effect": "3.21.3",
       },
       "devDependencies": {
         "@types/bun": "1.3.14",

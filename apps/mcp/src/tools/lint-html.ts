@@ -1,11 +1,12 @@
 import { lintHyperframeHtml } from "@hyperframes/core";
-import { z } from "zod";
+import { Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 
-const inputSchema = z.object({
-  html: z.string().min(1),
+const inputSchema = Schema.Struct({
+  html: Schema.NonEmptyString,
 });
+const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 const jsonSchema = {
   type: "object" as const,
@@ -38,7 +39,7 @@ export const lintHtmlTool: ToolDefinition = {
   inputSchema: jsonSchema,
   async handler(input) {
     try {
-      const { html } = inputSchema.parse(input);
+      const { html } = decodeInput(input);
       const result = await lintHyperframeHtml(html);
       return success({
         ok: result.errorCount === 0,

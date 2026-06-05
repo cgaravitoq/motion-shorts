@@ -1,9 +1,12 @@
-import { z } from "zod";
+import { Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 import { assembleEpisode, HUB_ROOT, validateSceneSpec } from "./scene-hub-runtime";
 
-const inputSchema = z.object({ spec: z.record(z.string(), z.unknown()) });
+const inputSchema = Schema.Struct({
+  spec: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+});
+const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const assembleEpisodeTool: ToolDefinition = {
   name: "assemble_episode",
@@ -16,7 +19,7 @@ export const assembleEpisodeTool: ToolDefinition = {
   },
   async handler(input) {
     try {
-      const { spec } = inputSchema.parse(input);
+      const { spec } = decodeInput(input);
       const validation = validateSceneSpec(spec, { hubRoot: HUB_ROOT });
       if (!validation.ok) {
         return failure(
