@@ -11,18 +11,25 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import {
+  decodeSceneSpec,
+  formatParseError,
+  type SceneSpec,
+  SceneSpecInvalid,
+  type SceneTypeManifest,
+} from "@cgaravitoq/spec";
+import { Either } from "effect";
 import { instantiateScene } from "./scene-instantiator";
 
-const shellDir = (hubRoot) => path.resolve(hubRoot ?? process.cwd(), "templates/_shell");
+const shellDir = (hubRoot?: string): string => path.resolve(hubRoot ?? process.cwd(), "templates/_shell");
 
 const FADE = 0.55;
 const DEFAULT_ACCENT = "#5b6cff";
 const DEFAULT_ACCENT2 = "#e9ff00";
 const GRAIN_DRIFT = [[-5, 4], [6, -3], [-8, 1], [2, 6], [-4, -4]];
-const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
-const round = (n, d = 3) => Number(n.toFixed(d));
-const indent = (text, n) => {
+const round = (n: number, d = 3): number => Number(n.toFixed(d));
+const indent = (text: string, n: number): string => {
   const pad = " ".repeat(n);
   return text
     .split("\n")
@@ -30,27 +37,45 @@ const indent = (text, n) => {
     .join("\n");
 };
 // Prevent a text/JSON value from breaking out of the inline <script>.
-const scriptSafe = (json) => json.replace(/<\//g, "<\\/");
+const scriptSafe = (json: string): string => json.replace(/<\//g, "<\\/");
 
 // Background scenes get 4,5,6,8,9,10,... (7 reserved for the brand outro).
-function allocateTracks(scenes) {
-  const pool = [];
+function allocateTracks(scenes: ReadonlyArray<{ manifest: SceneTypeManifest }>): number[] {
+  const pool: number[] = [];
   for (let i = 4; pool.length < scenes.length + 2 && i < 90; i++) {
     if (i !== 7) pool.push(i);
   }
   let p = 0;
-  return scenes.map((sc) =>
-    sc.manifest.fixedTrack != null ? sc.manifest.fixedTrack : pool[p++],
-  );
+  return scenes.map((sc) => sc.manifest.fixedTrack ?? (pool[p++] as number));
 }
 
-export function assembleEpisode(spec, { hubRoot } = {}) {
-  const warnings = [];
-  const slug = spec.slug;
-  if (!slug || !SLUG_RE.test(slug)) throw new Error(`spec.slug must be kebab-case, got "${slug}"`);
-  if (!Array.isArray(spec.scenes) || spec.scenes.length === 0) {
-    throw new Error("spec.scenes must be a non-empty array");
+export interface SceneMapEntry {
+  id: string;
+  type: string;
+  track: number;
+  start: number;
+  duration: number;
+  mid: number;
+}
+
+export interface AssembledEpisode {
+  html: string;
+  scenes: SceneMapEntry[];
+  totalDuration: number;
+  audioDuration: number;
+  warnings: string[];
+}
+
+export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string } = {}): AssembledEpisode {
+  const warnings: string[] = [];
+  const decoded = decodeSceneSpec(input);
+  if (Either.isLeft(decoded)) {
+    throw new SceneSpecInvalid({ issues: formatParseError(decoded.left) });
   }
+  // keep the raw object (the schema pass is validation-only) so JSON key order
+  // — and therefore emitted bytes — cannot drift
+  const spec = input as SceneSpec;
+  const slug = spec.slug;
 
   const width = spec.width ?? 1080;
   const height = spec.height ?? 1920;
@@ -58,34 +83,37 @@ export function assembleEpisode(spec, { hubRoot } = {}) {
   const accent = spec.palette?.accent ?? DEFAULT_ACCENT;
   const accent2 = spec.palette?.accent2 ?? DEFAULT_ACCENT2;
 
-  const ids = new Set();
+  const ids = new Set<string>();
   for (const s of spec.scenes) {
-    if (!s.id || !SLUG_RE.test(s.id)) throw new Error(`scene id must be kebab-case, got "${s.id}"`);
     if (ids.has(s.id)) throw new Error(`duplicate scene id "${s.id}"`);
     ids.add(s.id);
   }
 
-  const scenes = spec.scenes.map((s) => {
+  const instantiated = spec.scenes.map((s) => {
     const version = s.version ?? 1;
-    const inst = instantiateScene({ type: s.type, version, params: s.slots ?? {}, hubRoot });
-    const duration = s.duration ?? inst.manifest.defaultDuration ?? 6;
+    const inst = instantiateScene({
+      type: s.type,
+      version,
+      params: (s.slots ?? {}) as Record<string, unknown>,
+      hubRoot,
+    });
+    const duration = s.duration ?? inst.manifest.defaultDuration;
     return { ...s, version, duration, ...inst };
   });
 
   // sequential windows
   let cursor = 0;
-  for (const sc of scenes) {
-    sc.windowStart = round(cursor);
-    sc.windowDuration = round(sc.duration);
+  const windowed = instantiated.map((sc) => {
+    const windowStart = round(cursor);
+    const windowDuration = round(sc.duration);
     cursor = round(cursor + sc.duration);
-  }
+    return { ...sc, windowStart, windowDuration };
+  });
   const totalDuration = round(cursor, 2);
   const audioDuration = spec.audioDuration ?? totalDuration;
 
-  const tracks = allocateTracks(scenes);
-  scenes.forEach((sc, i) => {
-    sc.track = tracks[i];
-  });
+  const tracks = allocateTracks(windowed);
+  const scenes = windowed.map((sc, i) => ({ ...sc, track: tracks[i] as number }));
 
   // sections
   const sections = scenes
@@ -96,9 +124,9 @@ export function assembleEpisode(spec, { hubRoot } = {}) {
     .join("\n");
 
   // distinct scene-type css + builder fns (emitted once each)
-  const seen = new Set();
-  const cssBlocks = [];
-  const builderBlocks = [];
+  const seen = new Set<string>();
+  const cssBlocks: string[] = [];
+  const builderBlocks: string[] = [];
   for (const sc of scenes) {
     const key = `${sc.type}@${sc.version}`;
     if (seen.has(key)) continue;
@@ -130,14 +158,14 @@ export function assembleEpisode(spec, { hubRoot } = {}) {
     ``,
   ];
 
-  scenes.forEach((sc, i) => {
+  let prev: (typeof scenes)[number] | undefined;
+  for (const sc of scenes) {
     const start = sc.windowStart;
     const sel = `sceneSel("scene-${sc.id}")`;
     const paramsJson = scriptSafe(JSON.stringify(sc.slots ?? {}));
-    if (i === 0) {
+    if (!prev) {
       lines.push(`tl.set("#scene-${sc.id}", { autoAlpha: 1, scale: 1, filter: "blur(0px)" }, ${start});`);
     } else {
-      const prev = scenes[i - 1];
       lines.push(
         `tl.to("#scene-${prev.id}", { autoAlpha: 0, scale: 0.985, filter: "blur(8px)", duration: FADE, ease: "power2.in" }, ${round(start - FADE)});`,
       );
@@ -148,7 +176,8 @@ export function assembleEpisode(spec, { hubRoot } = {}) {
     }
     lines.push(`${sc.manifest.builder}(tl, ${start}, ${sel}, ${paramsJson});`);
     lines.push(``);
-  });
+    prev = sc;
+  }
 
   lines.push(
     `const captionsData = JSON.parse(document.getElementById("captions-data").textContent || "[]");`,

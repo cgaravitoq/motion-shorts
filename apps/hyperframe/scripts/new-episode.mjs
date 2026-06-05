@@ -13,7 +13,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { assembleEpisode } from "./lib/assemble-episode.mjs";
+import { assembleEpisode } from "./lib/assemble-episode";
 import { INTENTS, routeIntent } from "./lib/scene-router";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
