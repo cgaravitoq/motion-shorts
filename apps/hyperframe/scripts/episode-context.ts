@@ -2,7 +2,7 @@
 /**
  * Print the resolved distribution context for an episode as JSON.
  *
- *   bun run scripts/episode-context.mjs <slug>
+ *   bun run scripts/episode-context.ts <slug>
  *
  * Consumed by the generate-distribution-copy skill: narration, scene-spec
  * text, captions duration, and the rendered-mp4 pin in one place.
@@ -19,7 +19,7 @@ if (path.resolve(process.cwd()) !== expectedCwd) {
 
 const slug = process.argv[2];
 if (!slug) {
-  console.error("usage: bun run scripts/episode-context.mjs <slug>");
+  console.error("usage: bun run scripts/episode-context.ts <slug>");
   process.exit(1);
 }
 if (!fs.existsSync(path.join("src/episodes", slug))) {

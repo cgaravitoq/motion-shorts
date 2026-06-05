@@ -24,6 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import {
+  type PublishRecord,
   presignGetUrl,
   publishInstagramReel,
   readStoredToken,
@@ -35,7 +36,7 @@ import {
   upsertPublishRecord,
   writeStoredToken,
 } from "@cgaravitoq/publish";
-import { decodePublishLedger, formatParseError } from "@cgaravitoq/spec";
+import { decodePublishLedger, formatParseError, type PublishLedger } from "@cgaravitoq/spec";
 import { Either } from "effect";
 import { validateDistribution } from "./lib/distribution-spec";
 import { resolveEpisodeContext } from "./lib/episode-context";
@@ -64,23 +65,26 @@ const { values, positionals } = parseArgs({
 });
 
 const slug = positionals[0];
-const platform = values.platform;
-const fail = (message) => {
+const platformArg = values.platform;
+function fail(message: string): never {
   console.error(`publish-episode: ${message}`);
   process.exit(1);
-};
+}
 
-if (!slug || !platform)
+if (!slug || !platformArg)
   fail("usage: bun run publish:episode <slug> --platform=youtube|instagram|tiktok [--confirm]");
-if (platform === "linkedin") {
+if (platformArg === "linkedin") {
   fail(
     "linkedin is a manual platform — paste the approved copy from distribution.json (direct posting needs a 60-day OAuth re-consent cycle; see docs/research)",
   );
 }
-if (platform !== "youtube" && platform !== "instagram" && platform !== "tiktok")
-  fail(`unknown platform "${platform}"`);
+if (platformArg !== "youtube" && platformArg !== "instagram" && platformArg !== "tiktok")
+  fail(`unknown platform "${platformArg}"`);
 if (!["private", "unlisted", "public"].includes(values.privacy))
   fail(`invalid --privacy=${values.privacy}`);
+
+const platform: "youtube" | "instagram" | "tiktok" = platformArg;
+const privacy = values.privacy as "private" | "unlisted" | "public";
 
 loadWorkspaceEnv();
 const episodeDir = path.join("src/episodes", slug);
@@ -98,7 +102,8 @@ if (!context.renderRef)
   fail(
     "episode has no rendered mp4 in render.remote.json — publish the render first (--upload=r2)",
   );
-if (dist.renderRef?.sha256 !== context.renderRef.sha256) {
+const renderRef = context.renderRef;
+if (dist.renderRef?.sha256 !== renderRef.sha256) {
   fail(
     "renderRef.sha256 in distribution.json does not match the current render — re-review the copy against the new cut",
   );
@@ -106,28 +111,30 @@ if (dist.renderRef?.sha256 !== context.renderRef.sha256) {
 
 // Boundary check: an invalid distribution.json never half-publishes. The
 // canonical validator (the same one copy:check runs) gates Gate 2 too.
-const distValidation = validateDistribution(dist, { renderSha256: context.renderRef.sha256 });
+const distValidation = validateDistribution(dist, { renderSha256: renderRef.sha256 });
 if (!distValidation.ok) {
   fail(`distribution.json is invalid:\n  ${distValidation.errors.join("\n  ")}`);
 }
 
-const lang = values.lang ?? context.spec?.lang ?? "es";
-const copy = block[lang];
+const lang = values.lang ?? (context.spec?.lang as string | undefined) ?? "es";
+const copy = block[lang] as
+  | { title: string; description: string; caption: string }
+  | undefined;
 if (!copy) fail(`${platform} copy has no "${lang}" language block`);
 
 const SECRETS_DIR = path.join(expectedCwd, ".secrets");
 const token = readStoredToken(SECRETS_DIR, platform);
 if (!token) fail(`no ${platform} credentials — run: bun run publish:auth ${platform}`);
 
-const summary = {
+const summary: Record<string, string> = {
   slug,
   platform,
   lang,
-  renderSha256: context.renderRef.sha256,
-  r2Key: context.renderRef.key,
+  renderSha256: renderRef.sha256,
+  r2Key: renderRef.key,
   ...(platform === "youtube"
-    ? { privacy: values.privacy }
-    : { account: token.username ? `@${token.username}` : (token.igUserId ?? token.openId) }),
+    ? { privacy }
+    : { account: token.username ? `@${token.username}` : (token.igUserId ?? token.openId ?? "") }),
 };
 console.log("Publish plan:");
 for (const [key, value] of Object.entries(summary)) console.log(`  ${key}: ${value}`);
@@ -148,7 +155,7 @@ if (!values.confirm) {
 }
 
 const ledgerPath = path.join(episodeDir, "publish.remote.json");
-const readLedger = () => {
+const readLedger = (): PublishLedger | null => {
   if (!fs.existsSync(ledgerPath)) return null;
   const parsed = JSON.parse(fs.readFileSync(ledgerPath, "utf8"));
   const decoded = decodePublishLedger(parsed);
@@ -159,7 +166,7 @@ const readLedger = () => {
   }
   return parsed;
 };
-const writeLedger = (record) => {
+const writeLedger = (record: PublishRecord): PublishLedger => {
   const ledger = upsertPublishRecord({
     ledger: readLedger(),
     slug,
@@ -173,24 +180,29 @@ const writeLedger = (record) => {
 
 // The pin gate only compares manifests; the local file is regenerable cache
 // and may be a stale cut. Never upload bytes that don't match the pin.
-const verifiedLocalMp4 = async () => {
+const verifiedLocalMp4 = async (): Promise<string> => {
   const localMp4 = path.join("renders", `${slug}.mp4`);
   if (!fs.existsSync(localMp4)) {
     fail(`no local mp4 at ${localMp4} — hydrate it first: bun run hydrate:episode ${slug} --final`);
   }
   const localSha = await sha256Hex(localMp4);
-  if (localSha !== context.renderRef.sha256) {
+  if (localSha !== renderRef.sha256) {
     fail(
-      `${localMp4} sha256 (${localSha.slice(0, 12)}…) does not match the pinned render (${context.renderRef.sha256.slice(0, 12)}…) — re-hydrate: bun run hydrate:episode ${slug} --final`,
+      `${localMp4} sha256 (${localSha.slice(0, 12)}…) does not match the pinned render (${renderRef.sha256.slice(0, 12)}…) — re-hydrate: bun run hydrate:episode ${slug} --final`,
     );
   }
   return localMp4;
 };
 
-const publish = async () => {
+const publish = async (): Promise<{
+  id: string;
+  url?: string;
+  privacy?: string;
+  ledgerStatus?: "inbox";
+}> => {
   if (platform === "youtube") {
-    const clientId = process.env.YOUTUBE_CLIENT_ID;
-    const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
+    const clientId = Bun.env.YOUTUBE_CLIENT_ID;
+    const clientSecret = Bun.env.YOUTUBE_CLIENT_SECRET;
     if (!clientId || !clientSecret) fail("set YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET in .env");
     if (!token.refreshToken)
       fail("stored YouTube token has no refresh token — re-run publish:auth youtube");
@@ -206,14 +218,14 @@ const publish = async () => {
       video,
       title: copy.title,
       description: copy.description,
-      privacyStatus: values.privacy,
+      privacyStatus: privacy,
     });
     return { id: result.videoId, url: result.url, privacy: result.privacyStatus };
   }
 
   if (platform === "tiktok") {
-    const clientKey = process.env.TIKTOK_CLIENT_KEY;
-    const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+    const clientKey = Bun.env.TIKTOK_CLIENT_KEY;
+    const clientSecret = Bun.env.TIKTOK_CLIENT_SECRET;
     if (!clientKey || !clientSecret) fail("set TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET in .env");
     if (!token.refreshToken)
       fail("stored TikTok token has no refresh token — re-run publish:auth tiktok");
@@ -244,8 +256,10 @@ const publish = async () => {
     );
   }
   let accessToken = token.accessToken;
-  const remainingDays = token.expiresAt ? (new Date(token.expiresAt) - Date.now()) / 86_400_000 : 0;
-  const ageHours = (Date.now() - new Date(token.obtainedAt)) / 3_600_000;
+  const remainingDays = token.expiresAt
+    ? (new Date(token.expiresAt).getTime() - Date.now()) / 86_400_000
+    : 0;
+  const ageHours = (Date.now() - new Date(token.obtainedAt).getTime()) / 3_600_000;
   if (remainingDays < 10 && ageHours > 24) {
     const refreshed = await refreshInstagramToken({ accessToken });
     accessToken = refreshed.accessToken;
@@ -257,10 +271,19 @@ const publish = async () => {
     });
     console.log("  (refreshed the long-lived Instagram token)");
   }
-  const videoUrl = presignGetUrl({ config, key: context.renderRef.key, expiresSeconds: 7200 });
+  const videoUrl = presignGetUrl({
+    config: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+      endpoint: config.endpoint,
+      endpointPrefix: config.endpointPrefix,
+    },
+    key: renderRef.key,
+    expiresSeconds: 7200,
+  });
   const result = await publishInstagramReel({
     accessToken,
-    igUserId: token.igUserId,
+    igUserId: token.igUserId ?? "",
     videoUrl,
     caption: copy.caption,
   });
@@ -269,12 +292,12 @@ const publish = async () => {
 
 // Graph errors can echo the presigned video_url (credential + signature in
 // the query string) — redact every query string before persisting/printing.
-const redact = (err) =>
-  String(err.message ?? err)
+const redact = (err: unknown): string =>
+  String((err as { message?: unknown })?.message ?? err)
     .replace(/\?[^\s"')]+/g, "?<redacted-query>")
     .slice(0, 500);
 
-const uploadLedgerToR2 = async () => {
+const uploadLedgerToR2 = async (): Promise<void> => {
   const config = assertR2Config(Bun.env);
   await uploadAndVerifyObject({
     config,
@@ -287,7 +310,7 @@ const uploadLedgerToR2 = async () => {
 // re-sync the ledger to R2 (covers a previous run where the video published
 // but the ledger upload failed) instead of double-publishing.
 const existing = readLedger()?.platforms?.[platform];
-if (existing?.status === "published" && existing.renderSha256 === context.renderRef.sha256) {
+if (existing?.status === "published" && existing.renderSha256 === renderRef.sha256) {
   console.log(
     `\nalready published to ${platform} for this exact render${existing.url ? ` — ${existing.url}` : ""}; syncing the ledger to R2`,
   );
@@ -296,7 +319,7 @@ if (existing?.status === "published" && existing.renderSha256 === context.render
   process.exit(0);
 }
 
-let outcome;
+let outcome: { id: string; url?: string; privacy?: string; ledgerStatus?: "inbox" };
 try {
   outcome = await publish();
 } catch (err) {
@@ -304,7 +327,7 @@ try {
   writeLedger({
     status: "failed",
     error: redacted,
-    renderSha256: context.renderRef.sha256,
+    renderSha256: renderRef.sha256,
     lang,
   });
   fail(`publish failed (recorded in ${ledgerPath}): ${redacted}`);
@@ -317,7 +340,7 @@ writeLedger({
   status: ledgerStatus ?? "published",
   ...result,
   publishedAt: new Date().toISOString(),
-  renderSha256: context.renderRef.sha256,
+  renderSha256: renderRef.sha256,
   lang,
 });
 if (platform === "tiktok") {
@@ -341,6 +364,6 @@ try {
     "  Re-run the same command to sync it — the re-run is idempotent and will NOT re-publish this render.",
   );
 }
-if (platform === "youtube" && values.privacy !== "public") {
-  console.log(`  note: video is ${values.privacy} — flip to public in YouTube Studio when ready`);
+if (platform === "youtube" && privacy !== "public") {
+  console.log(`  note: video is ${privacy} — flip to public in YouTube Studio when ready`);
 }

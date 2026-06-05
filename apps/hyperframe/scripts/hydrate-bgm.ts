@@ -2,7 +2,7 @@
 import { parseArgs } from "node:util";
 import { resolveBgmPath } from "@cgaravitoq/audio";
 
-const HELP = `Usage: bun run scripts/hydrate-bgm.mjs <name> [<name>...]
+const HELP = `Usage: bun run scripts/hydrate-bgm.ts <name> [<name>...]
 
 Hydrate shared R2 BGM tracks from bgm/<name>.mp3 into the local cache.
 

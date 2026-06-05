@@ -50,8 +50,8 @@ const SECRETS_DIR = path.join(expectedCwd, ".secrets");
 loadWorkspaceEnv();
 
 if (platform === "youtube") {
-  const clientId = process.env.YOUTUBE_CLIENT_ID;
-  const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
+  const clientId = Bun.env.YOUTUBE_CLIENT_ID;
+  const clientSecret = Bun.env.YOUTUBE_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
     console.error(
       "publish-auth: set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET in .env (docs/publishing.md)",
@@ -59,7 +59,7 @@ if (platform === "youtube") {
     process.exit(1);
   }
   const state = crypto.randomBytes(16).toString("hex");
-  const { promise: codePromise, resolve, reject } = Promise.withResolvers();
+  const { promise: codePromise, resolve, reject } = Promise.withResolvers<string>();
 
   const server = Bun.serve({
     hostname: "127.0.0.1",
@@ -125,9 +125,9 @@ if (platform === "youtube") {
     `✓ Instagram token for @${me.username} (user ${me.igUserId}) stored at ${path.relative(expectedCwd, file)}`,
   );
 } else if (platform === "tiktok") {
-  const clientKey = process.env.TIKTOK_CLIENT_KEY;
-  const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
-  const redirectUri = process.env.TIKTOK_REDIRECT_URI;
+  const clientKey = Bun.env.TIKTOK_CLIENT_KEY;
+  const clientSecret = Bun.env.TIKTOK_CLIENT_SECRET;
+  const redirectUri = Bun.env.TIKTOK_REDIRECT_URI;
   if (!clientKey || !clientSecret || !redirectUri) {
     console.error(
       "publish-auth: set TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET and TIKTOK_REDIRECT_URI in .env (docs/publishing.md)",

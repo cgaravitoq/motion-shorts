@@ -8,7 +8,7 @@
  * point `bunx hyperframes render` at that copy. `src/episodes/<slug>/` stays
  * read-only — no more git-dirty surprises after a render.
  *
- *   bun run scripts/render-episode.mjs <slug> [--format=mp4|mov|webm]
+ *   bun run scripts/render-episode.ts <slug> [--format=mp4|mov|webm]
  *                                              [--variant=short|desktop-1080p|desktop-4k|square-1080]
  *                                              [--quality=draft|standard|high]
  *                                              [--output=<path>]
@@ -61,7 +61,7 @@ if (path.resolve(process.cwd()) !== expectedCwd) {
   process.exit(1);
 }
 
-const HELP = `Usage: bun run scripts/render-episode.mjs <slug> [options]
+const HELP = `Usage: bun run scripts/render-episode.ts <slug> [options]
 
 Options:
   --format=mp4|mov|webm    Output container format. Default mp4 (h264 yuv420p).
@@ -107,10 +107,17 @@ const VALID_FPS_VALUES = [24, 30, 60];
 const VALID_VARIANTS = ["short", "desktop-1080p", "desktop-4k", "square-1080"];
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
+interface VariantRender {
+  index: string;
+  outputSuffix: string;
+  resolution: string;
+  bitrate30: string;
+}
+
 // Variant resolves to the source HTML filename inside the episode dir. The
 // short default keeps the canonical "index.html" — existing render behavior is
 // byte-identical when --variant is omitted.
-const VARIANT_RENDER = {
+const VARIANT_RENDER: Record<string, VariantRender> = {
   short: { index: "index.html", outputSuffix: "", resolution: "portrait", bitrate30: "10M" },
   "desktop-1080p": {
     index: "index.desktop.html",
@@ -132,15 +139,16 @@ const VARIANT_RENDER = {
   },
 };
 
-const variantIndexFilename = (variant) => VARIANT_RENDER[variant].index;
+const variantIndexFilename = (variant: string): string =>
+  (VARIANT_RENDER[variant] as VariantRender).index;
 
-const bitrateForFps = (bitrate30, fps) => {
+const bitrateForFps = (bitrate30: string, fps: number): string => {
   if (fps !== 60) return bitrate30;
   const mbps = Number.parseFloat(bitrate30.replace(/m$/i, ""));
   return `${Number(mbps * 1.5).toString()}M`;
 };
 
-const stampStageFps = (html, fps) => {
+const stampStageFps = (html: string, fps: number): string => {
   const stageTagRe = /<div\b[^>]*\bdata-composition-id="[^"]+"[^>]*>/;
   const stageTag = html.match(stageTagRe)?.[0];
   if (!stageTag) return html;
@@ -150,7 +158,7 @@ const stampStageFps = (html, fps) => {
   return html.replace(stageTag, stampedStage);
 };
 
-const stampDuration = (html, totalSeconds, voiceSeconds) => {
+const stampDuration = (html: string, totalSeconds: number, voiceSeconds: number): string => {
   // Anchor on the canonical identifier (`data-composition-id`), then rewrite
   // `data-duration` regardless of attribute order. `[^>]*` matches across
   // newlines (it's a negated char class, not `.`), so multi-line stage tags
@@ -189,7 +197,7 @@ const stampDuration = (html, totalSeconds, voiceSeconds) => {
   return stamped;
 };
 
-const readStageDurationSeconds = (htmlPath) => {
+const readStageDurationSeconds = (htmlPath: string): number => {
   const html = fs.readFileSync(htmlPath, "utf8");
   const stageTag = html.match(/<div\b[^>]*\bdata-composition-id="[^"]+"[^>]*>/)?.[0];
   if (!stageTag) return Number.NaN;
@@ -197,10 +205,20 @@ const readStageDurationSeconds = (htmlPath) => {
   return raw === undefined ? Number.NaN : Number.parseFloat(raw);
 };
 
-const stripVoiceoverTag = (html) =>
+const stripVoiceoverTag = (html: string): string =>
   html.replace(/\s*<audio\b[^>]*\bid="voiceover"[^>]*>\s*<\/audio>\s*/g, "\n      ");
 
-const stampBrand = (html, brandSlug) => {
+interface BrandPack {
+  slug: string;
+  palette?: Record<string, string>;
+  publishable?: boolean;
+  notes?: string;
+}
+
+const stampBrand = (
+  html: string,
+  brandSlug: string | undefined,
+): { html: string; brand: BrandPack | null } => {
   if (!brandSlug) return { html, brand: null };
   const brandPath = path.resolve("brands", brandSlug, "brand.json");
   if (!fs.existsSync(brandPath)) {
@@ -208,11 +226,11 @@ const stampBrand = (html, brandSlug) => {
       `render-episode: meta.brand="${brandSlug}" but ${brandPath} does not exist. Create the brand pack or remove the field.`,
     );
   }
-  let brand;
+  let brand: BrandPack;
   try {
-    brand = JSON.parse(fs.readFileSync(brandPath, "utf8"));
+    brand = JSON.parse(fs.readFileSync(brandPath, "utf8")) as BrandPack;
   } catch (err) {
-    throw new Error(`render-episode: ${brandPath} is not valid JSON: ${err.message}`);
+    throw new Error(`render-episode: ${brandPath} is not valid JSON: ${(err as Error).message}`);
   }
   if (!brand.palette || typeof brand.palette !== "object") {
     throw new Error(`render-episode: ${brandPath} missing required "palette" object.`);
@@ -237,15 +255,15 @@ const stampBrand = (html, brandSlug) => {
   return { html: html.replace(headCloseRe, `${styleBlock}\n  </head>`), brand };
 };
 
-const inlineCaptions = (html, captionsPath) => {
+const inlineCaptions = (html: string, captionsPath: string): { html: string; count: number } => {
   if (!fs.existsSync(captionsPath)) return { html, count: 0 };
   const raw = fs.readFileSync(captionsPath, "utf8").trim();
   if (!raw) return { html, count: 0 };
-  let parsed;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch (err) {
-    throw new Error(`render-episode: ${captionsPath} is not valid JSON: ${err.message}`);
+    throw new Error(`render-episode: ${captionsPath} is not valid JSON: ${(err as Error).message}`);
   }
   if (!Array.isArray(parsed)) {
     throw new Error(`render-episode: ${captionsPath} must be a JSON array, got ${typeof parsed}`);
@@ -265,7 +283,7 @@ const inlineCaptions = (html, captionsPath) => {
   return { html: inlined, count: parsed.length };
 };
 
-const ensureSymlink = (linkPath, targetAbs) => {
+const ensureSymlink = (linkPath: string, targetAbs: string): void => {
   // Recreate every time so re-running with a moved repo doesn't keep a
   // stale symlink. lstatSync handles broken symlinks (existsSync wouldn't).
   // `recursive: true` covers the rare case where a real directory was
@@ -280,7 +298,15 @@ const ensureSymlink = (linkPath, targetAbs) => {
   fs.symlinkSync(target, linkPath, "dir");
 };
 
-const main = async () => {
+interface EpisodeMeta {
+  brand?: string;
+  tail?: number;
+  duration?: number;
+  voiceSeconds?: number;
+  [key: string]: unknown;
+}
+
+const main = async (): Promise<void> => {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
     options: {
@@ -312,7 +338,7 @@ const main = async () => {
   }
 
   const [slug] = positionals;
-  if (!SLUG_RE.test(slug)) {
+  if (slug === undefined || !SLUG_RE.test(slug)) {
     console.error(`render-episode: slug must be lowercase kebab-case, got "${slug}"`);
     process.exit(1);
   }
@@ -322,7 +348,7 @@ const main = async () => {
     process.exit(1);
   }
 
-  const variant = values.variant;
+  const variant = values.variant as string;
   if (!VALID_VARIANTS.includes(variant)) {
     console.error(`render-episode: --variant must be one of ${VALID_VARIANTS.join(", ")}`);
     process.exit(1);
@@ -357,7 +383,7 @@ const main = async () => {
   const hasVoice = fs.existsSync(audioPath);
 
   // ── Validate all flags BEFORE any work ────────────────────────────────
-  const fmt = values.format;
+  const fmt = values.format as string;
   if (!VALID_FORMATS.includes(fmt)) {
     console.error(`render-episode: --format must be one of ${VALID_FORMATS.join(", ")}`);
     process.exit(1);
@@ -367,7 +393,7 @@ const main = async () => {
     process.exit(1);
   }
 
-  const fpsParsed = Number.parseInt(values.fps, 10);
+  const fpsParsed = Number.parseInt(values.fps as string, 10);
   if (!Number.isFinite(fpsParsed) || fpsParsed <= 0) {
     console.error(`render-episode: invalid --fps=${values.fps}`);
     process.exit(1);
@@ -378,11 +404,11 @@ const main = async () => {
   }
 
   // ── Resolve tail: CLI flag > meta.json "tail" > 0.3 ───────────────────
-  const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
-  let tailSeconds;
-  let tailSource;
+  const meta = JSON.parse(fs.readFileSync(metaPath, "utf8")) as EpisodeMeta;
+  let tailSeconds: number;
+  let tailSource: string;
   if (values.tail !== undefined) {
-    tailSeconds = Number.parseFloat(values.tail);
+    tailSeconds = Number.parseFloat(values.tail as string);
     tailSource = "--tail flag";
   } else if (typeof meta.tail === "number") {
     tailSeconds = meta.tail;
@@ -397,8 +423,8 @@ const main = async () => {
   }
 
   // ── Measure voice duration (or fall back to silent render) ───────────
-  let voiceSeconds;
-  let totalSeconds;
+  let voiceSeconds: number;
+  let totalSeconds: number;
   if (hasVoice) {
     voiceSeconds = await getAudioDurationSeconds(audioPath);
     if (!Number.isFinite(voiceSeconds) || voiceSeconds <= 0) {
@@ -510,12 +536,12 @@ const main = async () => {
   timer.end("materialise");
 
   // ── Run hyperframes render ────────────────────────────────────────────
-  const defaultOut = `renders/${slug}${VARIANT_RENDER[variant].outputSuffix}.${fmt}`;
-  const outPath = values.output ?? defaultOut;
+  const defaultOut = `renders/${slug}${(VARIANT_RENDER[variant] as VariantRender).outputSuffix}.${fmt}`;
+  const outPath = (values.output as string | undefined) ?? defaultOut;
   fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
 
   console.log(
-    `[render-episode] rendering ${slug} → ${outPath} (${fmt}, ${values.quality}, ${values.fps}fps, ${VARIANT_RENDER[variant].resolution}, ${bitrateForFps(VARIANT_RENDER[variant].bitrate30, fpsParsed)})`,
+    `[render-episode] rendering ${slug} → ${outPath} (${fmt}, ${values.quality}, ${values.fps}fps, ${(VARIANT_RENDER[variant] as VariantRender).resolution}, ${bitrateForFps((VARIANT_RENDER[variant] as VariantRender).bitrate30, fpsParsed)})`,
   );
   const renderArgs = [
     "hyperframes",
@@ -524,21 +550,24 @@ const main = async () => {
     "--format",
     fmt,
     "--quality",
-    values.quality,
+    values.quality as string,
     "--fps",
-    values.fps,
+    values.fps as string,
     "--resolution",
-    VARIANT_RENDER[variant].resolution,
+    (VARIANT_RENDER[variant] as VariantRender).resolution,
     "--output",
     outPath,
   ];
   if (values.crf !== undefined) {
-    renderArgs.push("--crf", values.crf);
+    renderArgs.push("--crf", values.crf as string);
   } else {
-    renderArgs.push("--video-bitrate", bitrateForFps(VARIANT_RENDER[variant].bitrate30, fpsParsed));
+    renderArgs.push(
+      "--video-bitrate",
+      bitrateForFps((VARIANT_RENDER[variant] as VariantRender).bitrate30, fpsParsed),
+    );
   }
   if (values.workers !== undefined) {
-    renderArgs.push("--workers", values.workers);
+    renderArgs.push("--workers", values.workers as string);
   }
   if (values["browser-gpu"]) {
     renderArgs.push("--browser-gpu");
@@ -555,7 +584,7 @@ const main = async () => {
   }
 
   const publishOptions = resolveR2PublishOptions({
-    upload: values.upload,
+    upload: values.upload as string | undefined,
     localOnly: values["local-only"],
     keepLocal: values["keep-local"],
     deleteLocal: values["delete-local"],
@@ -573,7 +602,7 @@ const main = async () => {
       slug,
       episodeDir,
       renderPath: path.resolve(outPath),
-      runId: values["run-id"],
+      runId: values["run-id"] as string | undefined,
       deleteLocal: publishOptions.deleteLocal,
     });
     timer.end("upload");
@@ -607,16 +636,16 @@ const main = async () => {
         slug,
         format: fmt,
         variant,
-        quality: values.quality,
+        quality: values.quality as string,
         fps: fpsParsed,
         durations,
         totalMs,
         inventory,
         uploaded,
-      }),
+      }) as unknown as Record<string, unknown>,
     );
   } catch (err) {
-    console.warn(`[render-episode] telemetry ledger write failed: ${err.message}`);
+    console.warn(`[render-episode] telemetry ledger write failed: ${(err as Error).message}`);
   }
   console.log(
     formatSummaryLine({ slug, durations, totalMs, totalBytes: inventory.totalBytes }),

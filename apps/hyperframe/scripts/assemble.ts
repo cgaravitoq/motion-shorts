@@ -2,7 +2,7 @@
 /**
  * Assemble an episode's index.html from its scene-spec.json.
  *
- *   bun run scripts/assemble.mjs <slug> [--print]
+ *   bun run scripts/assemble.ts <slug> [--print]
  *
  * Reads  src/episodes/<slug>/scene-spec.json
  * Writes src/episodes/<slug>/index.html   (unless --print)
@@ -10,7 +10,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { assembleEpisode } from "./lib/assemble-episode";
+import { type AssembledEpisode, assembleEpisode } from "./lib/assemble-episode";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {
@@ -37,14 +37,14 @@ if (!fs.existsSync(specPath)) {
   process.exit(1);
 }
 
-const spec = JSON.parse(fs.readFileSync(specPath, "utf8"));
+const spec = JSON.parse(fs.readFileSync(specPath, "utf8")) as { slug?: string };
 if (!spec.slug) spec.slug = slug;
 
-let result;
+let result: AssembledEpisode;
 try {
   result = assembleEpisode(spec);
 } catch (err) {
-  console.error(`assemble: ${err.message}`);
+  console.error(`assemble: ${(err as Error).message}`);
   process.exit(1);
 }
 

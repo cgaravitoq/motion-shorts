@@ -5,7 +5,7 @@
  * Rationale: Hyperframes' upstream `bunx hyperframes lint` doesn't know about
  * the 16:9 desktop variant we ship alongside the canonical 9:16 short. Rather
  * than forking the upstream package, we add a local script — same pattern as
- * `lint-seek-safe.mjs`. Scope-tier-1 (this file): stage box dimension check,
+ * `lint-seek-safe.ts`. Scope-tier-1 (this file): stage box dimension check,
  * title-safe inset for `data-critical` elements, YouTube end-screen +
  * CTA dead-zone violations.
  *
@@ -45,15 +45,73 @@ const CTA_SIZE = 160;
 
 const DESKTOP_INDEX = "index.desktop.html";
 
+type Severity = "error" | "warning";
+type Attrs = Map<string, string>;
+type Style = Map<string, string>;
+
+interface Violation {
+  ruleId: string;
+  severity: Severity;
+  message: string;
+  line: number;
+  col: number;
+  suggestion?: string;
+}
+
+interface StageTag {
+  tag: string;
+  attrs: Attrs;
+  offset: number;
+}
+
+interface CriticalElement {
+  tag: string;
+  attrs: Attrs;
+  line: number;
+  offset: number;
+}
+
+interface TrackedElement {
+  tagName: string;
+  tag: string;
+  attrs: Attrs;
+  line: number;
+  offset: number;
+}
+
+interface StyleRule {
+  selector: string;
+  declarations: Style;
+}
+
+interface Box {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+}
+
+interface RuleMeta {
+  severity: Severity;
+  message: string;
+}
+
+interface Target {
+  slug: string;
+  path: string;
+}
+
 /**
  * Extract attributes from a single HTML opening tag string.
  * Returns a Map of lowercased name -> raw value (unquoted).
  */
-function parseAttrs(tag) {
-  const attrs = new Map();
+function parseAttrs(tag: string): Attrs {
+  const attrs: Attrs = new Map();
   const re = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/g;
   for (const m of tag.matchAll(re)) {
-    const name = m[1].toLowerCase();
+    const name = (m[1] ?? "").toLowerCase();
     const value = m[3] ?? m[4] ?? m[5] ?? "";
     attrs.set(name, value);
   }
@@ -64,14 +122,14 @@ function parseAttrs(tag) {
  * Find the stage <div data-composition-id=...> opening tag and parse its attrs.
  * Returns { tag, attrs, offset } or null when not found.
  */
-function findStageTag(html) {
+function findStageTag(html: string): StageTag | null {
   const re = /<div\b[^>]*\bdata-composition-id="[^"]+"[^>]*>/;
   const m = html.match(re);
   if (!m) return null;
-  return { tag: m[0], attrs: parseAttrs(m[0]), offset: m.index };
+  return { tag: m[0], attrs: parseAttrs(m[0]), offset: m.index ?? 0 };
 }
 
-function offsetToLine(html, offset) {
+function offsetToLine(html: string, offset: number): number {
   return html.slice(0, offset).split("\n").length;
 }
 
@@ -79,8 +137,8 @@ function offsetToLine(html, offset) {
  * Find every element opening tag that has data-critical="true".
  * Returns [{ tag, attrs, line, offset }].
  */
-function findCriticalElements(html) {
-  const out = [];
+function findCriticalElements(html: string): CriticalElement[] {
+  const out: CriticalElement[] = [];
   const re = /<[a-zA-Z][^>]*\bdata-critical=["']true["'][^>]*>/g;
   for (const m of html.matchAll(re)) {
     out.push({
@@ -93,12 +151,12 @@ function findCriticalElements(html) {
   return out;
 }
 
-function findTrackedElements(html) {
-  const out = [];
+function findTrackedElements(html: string): TrackedElement[] {
+  const out: TrackedElement[] = [];
   const re = /<([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*\bdata-track-index=["'][^"']+["'][^>]*>/g;
   for (const m of html.matchAll(re)) {
     out.push({
-      tagName: m[1].toLowerCase(),
+      tagName: (m[1] ?? "").toLowerCase(),
       tag: m[0],
       attrs: parseAttrs(m[0]),
       line: offsetToLine(html, m.index),
@@ -111,8 +169,8 @@ function findTrackedElements(html) {
 /**
  * Parse a CSS-ish inline-style attribute into a Map of lowercased prop -> value.
  */
-function parseInlineStyle(style) {
-  const out = new Map();
+function parseInlineStyle(style: string | undefined): Style {
+  const out: Style = new Map();
   if (!style) return out;
   for (const decl of style.split(";")) {
     const [rawProp, ...rest] = decl.split(":");
@@ -124,15 +182,15 @@ function parseInlineStyle(style) {
   return out;
 }
 
-function parseStyleRules(html) {
-  const rules = [];
+function parseStyleRules(html: string): StyleRule[] {
+  const rules: StyleRule[] = [];
   const styleRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
   for (const styleMatch of html.matchAll(styleRe)) {
-    const css = styleMatch[1].replace(/\/\*[\s\S]*?\*\//g, "");
+    const css = (styleMatch[1] ?? "").replace(/\/\*[\s\S]*?\*\//g, "");
     const ruleRe = /([^{}]+)\{([^{}]+)\}/g;
     for (const ruleMatch of css.matchAll(ruleRe)) {
       const declarations = parseInlineStyle(ruleMatch[2]);
-      for (const rawSelector of ruleMatch[1].split(",")) {
+      for (const rawSelector of (ruleMatch[1] ?? "").split(",")) {
         const selector = rawSelector.trim();
         if (selector) rules.push({ selector, declarations });
       }
@@ -141,7 +199,7 @@ function parseStyleRules(html) {
   return rules;
 }
 
-function selectorMatchesElement(selector, element) {
+function selectorMatchesElement(selector: string, element: TrackedElement): boolean {
   const id = element.attrs.get("id") || "";
   const classes = (element.attrs.get("class") || "").split(/\s+/).filter(Boolean);
   const simple = selector.trim().split(/\s+/).at(-1) || "";
@@ -158,8 +216,8 @@ function selectorMatchesElement(selector, element) {
   return tokens.length > 0;
 }
 
-function computedStyleFor(element, styleRules) {
-  const out = new Map();
+function computedStyleFor(element: TrackedElement, styleRules: StyleRule[]): Style {
+  const out: Style = new Map();
   for (const rule of styleRules) {
     if (!selectorMatchesElement(rule.selector, element)) continue;
     for (const [prop, value] of rule.declarations) out.set(prop, value);
@@ -172,7 +230,7 @@ function computedStyleFor(element, styleRules) {
  * Parse a CSS length value (px, %, calc(...)) into a pixel number relative to a
  * given axis size. Returns NaN for things we cannot evaluate statically.
  */
-function lengthToPx(value, axisSize) {
+function lengthToPx(value: string | undefined | null, axisSize: number): number {
   if (value === undefined || value === null) return Number.NaN;
   const v = String(value).trim().toLowerCase();
   if (v === "" || v === "auto") return Number.NaN;
@@ -187,7 +245,7 @@ function lengthToPx(value, axisSize) {
   return Number.isFinite(n) ? n : Number.NaN;
 }
 
-function fontSizeToPx(value) {
+function fontSizeToPx(value: string | undefined | null): number {
   if (value === undefined || value === null) return Number.NaN;
   const v = String(value).trim().toLowerCase();
   // TODO: Tier-2 intentionally evaluates px-only font sizes; rem/em/vw/vh need cascade + viewport semantics.
@@ -196,19 +254,19 @@ function fontSizeToPx(value) {
   return Number.isFinite(n) ? n : Number.NaN;
 }
 
-function expandInsetShorthand(style) {
+function expandInsetShorthand(style: Style): Style {
   if (!style.has("inset")) return style;
-  const out = new Map(style);
+  const out: Style = new Map(style);
   const tokens = String(style.get("inset")).trim().split(/\s+/).slice(0, 4);
   const [top, right = top, bottom = top, left = right] = tokens;
-  const sides = { top, right, bottom, left };
+  const sides: Record<string, string | undefined> = { top, right, bottom, left };
   for (const [side, value] of Object.entries(sides)) {
     if (!out.has(side) && value !== undefined && value.toLowerCase() !== "auto") out.set(side, value);
   }
   return out;
 }
 
-function cssBox(style) {
+function cssBox(style: Style): Box {
   const expandedStyle = expandInsetShorthand(style);
   const left = lengthToPx(expandedStyle.get("left"), DESKTOP_WIDTH);
   const right = lengthToPx(expandedStyle.get("right"), DESKTOP_WIDTH);
@@ -219,12 +277,12 @@ function cssBox(style) {
   return { left, top, right, bottom, width, height };
 }
 
-function translateToPx(transform) {
+function translateToPx(transform: string | undefined): { x: number; y: number } {
   const out = { x: 0, y: 0 };
   if (!transform) return out;
   const match = String(transform).match(/translate(?:3d|x|y)?\(([^)]*)\)/i);
   if (!match) return out;
-  const args = match[1].split(",").map((x) => x.trim());
+  const args = (match[1] ?? "").split(",").map((x) => x.trim());
   const fn = match[0].slice(0, match[0].indexOf("(")).toLowerCase();
   if (fn === "translatex") out.x = lengthToPx(args[0], DESKTOP_WIDTH);
   else if (fn === "translatey") out.y = lengthToPx(args[0], DESKTOP_HEIGHT);
@@ -235,20 +293,20 @@ function translateToPx(transform) {
   return out;
 }
 
-function classList(attrs) {
+function classList(attrs: Attrs): string[] {
   return (attrs.get("class") || "").split(/\s+/).filter(Boolean);
 }
 
-function hasClassMatch(attrs, re) {
+function hasClassMatch(attrs: Attrs, re: RegExp): boolean {
   return classList(attrs).some((name) => re.test(name));
 }
 
-function isExemptLowerThird(element) {
+function isExemptLowerThird(element: TrackedElement): boolean {
   const id = element.attrs.get("id") || "";
   return id === "captions" || id === "brand-corner" || classList(element.attrs).includes("caption") || classList(element.attrs).includes("lower-third-safe");
 }
 
-function isExemptActionSafe(element) {
+function isExemptActionSafe(element: TrackedElement): boolean {
   const id = element.attrs.get("id") || "";
   const classes = classList(element.attrs);
   return (
@@ -257,11 +315,11 @@ function isExemptActionSafe(element) {
   );
 }
 
-function isTrackedText(element) {
+function isTrackedText(element: TrackedElement): boolean {
   return ["h1", "h2", "h3"].includes(element.tagName) || hasClassMatch(element.attrs, /headline|title|caption|copy|text|subcopy|label/i);
 }
 
-function isHeadline(element) {
+function isHeadline(element: TrackedElement): boolean {
   return ["h1", "h2"].includes(element.tagName) || hasClassMatch(element.attrs, /headline|hero|title/i);
 }
 
@@ -271,7 +329,7 @@ function isHeadline(element) {
  * stage pixels OR NaN when undetermined. We deliberately keep this conservative:
  * if a coordinate is undetermined, the rule that depends on it is skipped.
  */
-function inlineBox(attrs) {
+function inlineBox(attrs: Attrs): Box {
   const style = parseInlineStyle(attrs.get("style") || "");
   const left = lengthToPx(style.get("left"), DESKTOP_WIDTH);
   const right = lengthToPx(style.get("right"), DESKTOP_WIDTH);
@@ -282,7 +340,16 @@ function inlineBox(attrs) {
   return { left, top, right, bottom, width, height };
 }
 
-const RULES = {
+type RuleId =
+  | "stage-dimensions"
+  | "title-safe-inset"
+  | "endscreen-dead-zone"
+  | "cta-dead-zone"
+  | "action-safe-inset"
+  | "lower-third-collision"
+  | "desktop-font-minimum";
+
+const RULES: Record<RuleId, RuleMeta> = {
   "stage-dimensions": {
     severity: "error",
     message:
@@ -314,9 +381,9 @@ const RULES = {
   },
 };
 
-function checkStage(attrs, line) {
-  const violations = [];
-  const need = {
+function checkStage(attrs: Attrs, line: number): Violation[] {
+  const violations: Violation[] = [];
+  const need: Record<string, string> = {
     "data-width": String(DESKTOP_WIDTH),
     "data-height": String(DESKTOP_HEIGHT),
     "data-format": "desktop-1080p",
@@ -345,10 +412,10 @@ function checkStage(attrs, line) {
   return violations;
 }
 
-function checkCriticalElement(element) {
+function checkCriticalElement(element: CriticalElement): Violation[] {
   const { attrs, line } = element;
   const box = inlineBox(attrs);
-  const violations = [];
+  const violations: Violation[] = [];
 
   // Title-safe inset: at least one explicit inset side per axis must satisfy
   // the band. If neither side is determinable we skip — author can mark
@@ -427,9 +494,9 @@ function checkCriticalElement(element) {
   return violations;
 }
 
-function checkTrackedElement(element, styleRules) {
+function checkTrackedElement(element: TrackedElement, styleRules: StyleRule[]): Violation[] {
   const style = computedStyleFor(element, styleRules);
-  const violations = [];
+  const violations: Violation[] = [];
   const id = element.attrs.get("id") || element.tagName;
 
   // Full-frame structural background/scene layers may intentionally touch the stage edge.
@@ -506,8 +573,8 @@ function checkTrackedElement(element, styleRules) {
 /**
  * Lint a single desktop-variant HTML file. Returns an array of violations.
  */
-export function lintDesktopHtml(html) {
-  const violations = [];
+export function lintDesktopHtml(html: string): Violation[] {
+  const violations: Violation[] = [];
   const stage = findStageTag(html);
   if (!stage) {
     violations.push({
@@ -537,8 +604,8 @@ export function lintDesktopHtml(html) {
   return violations;
 }
 
-function findDesktopEpisodes(episodesDir) {
-  const out = [];
+function findDesktopEpisodes(episodesDir: string): Target[] {
+  const out: Target[] = [];
   for (const name of readdirSync(episodesDir).sort()) {
     if (name.startsWith("_")) continue;
     const dir = path.join(episodesDir, name);
@@ -550,17 +617,17 @@ function findDesktopEpisodes(episodesDir) {
   return out;
 }
 
-function formatViolation(file, v) {
+function formatViolation(file: string, v: Violation): string {
   const tag = v.severity === "error" ? "error" : "warning";
   return `${file}:${v.line}:${v.col}  ${tag}  ${v.ruleId}  ${v.message}`;
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const target = args[0];
   const episodesDir = path.resolve("src/episodes");
 
-  const targets = [];
+  const targets: Target[] = [];
   if (!target) {
     if (!existsSync(episodesDir)) {
       console.error(

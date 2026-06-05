@@ -3,8 +3,8 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { hydrateEpisodeArtifacts, hydrateEpisodeFinal } from "./lib/r2-artifacts";
 
-const HELP = `Usage: bun run scripts/hydrate-episode.mjs <slug> --manifest=render|assets|<path> [--output=<dir>]
-       bun run scripts/hydrate-episode.mjs <slug> --final [--force]
+const HELP = `Usage: bun run scripts/hydrate-episode.ts <slug> --manifest=render|assets|<path> [--output=<dir>]
+       bun run scripts/hydrate-episode.ts <slug> --final [--force]
 
 Options:
   --manifest=render|assets|<path>  Manifest to hydrate. "render" resolves to
@@ -47,7 +47,7 @@ if (values.help || positionals.length === 0 || (!values.manifest && !values.fina
   process.exit(values.help ? 0 : 1);
 }
 
-const [slug] = positionals;
+const slug = positionals[0] as string;
 
 if (values.final) {
   const { runId, restored } = await hydrateEpisodeFinal({ slug, force: values.force === true });
@@ -63,7 +63,7 @@ const manifestPath =
     ? path.join(episodeDir, "render.remote.json")
     : values.manifest === "assets"
       ? path.join(episodeDir, "assets.remote.json")
-      : path.resolve(values.manifest);
+      : path.resolve(values.manifest as string);
 const destinationDir =
   values.output ??
   (values.manifest === "assets" ? path.join(episodeDir, "assets") : path.resolve("renders"));

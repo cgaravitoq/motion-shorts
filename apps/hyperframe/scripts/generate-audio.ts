@@ -2,7 +2,7 @@
 /**
  * End-to-end voice + captions generator.
  *
- *   bun run scripts/generate-audio.mjs <script.txt> [--lang=es|en] [--out=<dir>]
+ *   bun run scripts/generate-audio.ts <script.txt> [--lang=es|en] [--out=<dir>]
  *                                                   [--stt=elevenlabs|hyperframes-transcribe]
  *                                                   [--voice=<voice-id>]
  *                                                   [--model=<tts-provider-model-id>]
@@ -22,6 +22,7 @@ import {
   averageCaptionConfidence,
   BGM_DEFAULTS,
   cacheEntryPaths,
+  type CacheMode,
   computeTtsCacheKey,
   DEFAULT_PACING,
   getAudioDurationSeconds,
@@ -29,14 +30,21 @@ import {
   getSTTProvider,
   getTTSProvider,
   getTTSProviderName,
+  type HyperframesCaption,
   injectElevenV3Pauses,
   injectPauses,
   isElevenV3Model,
+  type Lang,
   MAX_BREAK_MS,
   MAX_TTS_CHARS,
+  type MergeArtifactsResult,
   mergeSegmentArtifacts,
+  type MergedSegmentArtifact,
   mixBgm,
+  type MixBgmResult,
+  type PacingResult,
   parseCaptionFormats,
+  type ParseScriptResult,
   parseScript,
   readCachedTtsWithSource,
   resolveCacheMode,
@@ -50,7 +58,7 @@ import {
   writeCachedTtsToR2,
 } from "@cgaravitoq/audio";
 
-const HELP = `Usage: bun run scripts/generate-audio.mjs <script.txt> [options]
+const HELP = `Usage: bun run scripts/generate-audio.ts <script.txt> [options]
 
 Options:
   --lang=es|en           Voice language. Defaults to "es".
@@ -160,13 +168,13 @@ const main = async () => {
     process.exit(values.help ? 0 : 1);
   }
 
-  const [scriptPath] = positionals;
+  const scriptPath = positionals[0] as string;
   if (!fs.existsSync(scriptPath)) {
     console.error(`generate-audio: script file not found at ${scriptPath}`);
     process.exit(1);
   }
 
-  const lang = values.lang;
+  const lang = values.lang as Lang;
   if (lang !== "es" && lang !== "en") {
     console.error(`generate-audio: unsupported lang "${lang}". Use "es" or "en".`);
     process.exit(1);
@@ -184,16 +192,21 @@ const main = async () => {
   const captionsPath = path.join(outDir, "captions.json");
 
   // Validate sidecar formats before any TTS spend so bad input fails fast.
-  let captionFormats;
+  let captionFormats: ReturnType<typeof parseCaptionFormats>;
   try {
     captionFormats = parseCaptionFormats(values["caption-format"]);
   } catch (err) {
-    console.error(`generate-audio: ${err.message}`);
+    console.error(`generate-audio: ${(err as Error).message}`);
     process.exit(1);
   }
 
   // Flag parsing helpers — both clamp to a range and surface a clear error.
-  const parseRange = (raw, label, min, max) => {
+  const parseRange = (
+    raw: string | undefined,
+    label: string,
+    min: number,
+    max: number,
+  ): number | undefined => {
     if (raw == null) return undefined;
     const n = Number.parseFloat(raw);
     if (!Number.isFinite(n) || n < min || n > max) {
@@ -211,9 +224,9 @@ const main = async () => {
   const pauseSentenceMs = parseRange(values["pause-sentence"], "pause-sentence", 0, MAX_BREAK_MS);
   const pauseClauseMs = parseRange(values["pause-clause"], "pause-clause", 0, MAX_BREAK_MS);
   const ttsProviderNameForDefaults = getTTSProviderName();
-  let resolvedVoiceId;
-  let modelId;
-  let deferredVoiceError = null;
+  let resolvedVoiceId: string | undefined;
+  let modelId: string | undefined;
+  let deferredVoiceError: unknown = null;
   try {
     const defaults = resolveTTSProviderDefaults({
       providerName: ttsProviderNameForDefaults,
@@ -254,7 +267,7 @@ const main = async () => {
     !values["no-pause-injection"] &&
     ttsProviderNameForDefaults === "elevenlabs" &&
     (!isV3 || hasExplicitPauseControls);
-  const injectPausesForText = (raw) =>
+  const injectPausesForText = (raw: string): PacingResult =>
     shouldInjectPauses
       ? (isV3 ? injectElevenV3Pauses : injectPauses)(raw, {
           sentenceMs: pauseSentenceMs ?? DEFAULT_PACING.sentenceMs,
@@ -267,11 +280,11 @@ const main = async () => {
   // exactly the input; the downstream code path stays byte-identical to the
   // pre-multi-speaker behavior. Multi-speaker runs synthesise each segment
   // individually and merge the results.
-  let parsedScript;
+  let parsedScript: ParseScriptResult;
   try {
     parsedScript = parseScript(text, { roster: resolveRoster() });
   } catch (err) {
-    console.error(`generate-audio: ${err.message}`);
+    console.error(`generate-audio: ${(err as Error).message}`);
     process.exit(1);
   }
   if (parsedScript.unresolved.length > 0) {
@@ -329,11 +342,11 @@ const main = async () => {
   // Resolve voiceId at the CLI layer so the cache key matches what the
   // provider will actually use (otherwise per-language env defaults would
   // sit outside the key).
-  let cacheMode;
+  let cacheMode: CacheMode;
   try {
     cacheMode = resolveCacheMode({ flag: values.cache });
   } catch (err) {
-    console.error(`generate-audio: ${err.message}`);
+    console.error(`generate-audio: ${(err as Error).message}`);
     process.exit(1);
   }
 
@@ -343,22 +356,22 @@ const main = async () => {
       : computeTtsCacheKey({
           text: finalText,
           voiceId: resolvedVoiceId,
-          modelId,
+          modelId: modelId as string,
           speed,
           stability,
           similarityBoost,
         });
 
-  let audioBuffer = null;
-  let captions = null;
+  let audioBuffer: Buffer | null = null;
+  let captions: HyperframesCaption[] | null = null;
   let cacheStatus = "disabled";
-  let ttsProviderName = null;
-  let sttProviderName = null;
+  let ttsProviderName: string | null = null;
+  let sttProviderName: string | null = null;
   let ttsMs = 0;
   let sttMs = 0;
   let segmentCacheHits = 0;
   let segmentCacheMisses = 0;
-  let segmentBoundaryWarnings = [];
+  let segmentBoundaryWarnings: MergeArtifactsResult["boundaryWarnings"] = [];
   let multiSpeakerTotalChars = 0;
 
   // ── Multi-speaker pipeline ─────────────────────────────────────────────
@@ -375,10 +388,10 @@ const main = async () => {
       `[generate-audio] multi-speaker: ${parsedScript.segments.length} segments, TTS="${ttsProvider.name}" STT="${sttProvider.name}" model=${modelId}`,
     );
 
-    const segmentArtifacts = [];
-    let segmentTmpDir = null;
+    const segmentArtifacts: MergedSegmentArtifact[] = [];
+    let segmentTmpDir: string | null = null;
     // finally does not run on Ctrl-C — mirror the tmpdir cleanup on signals.
-    const onSignal = (signal) => {
+    const onSignal = (signal: NodeJS.Signals) => {
       if (segmentTmpDir) fs.rmSync(segmentTmpDir, { recursive: true, force: true });
       process.exit(signal === "SIGTERM" ? 143 : 130);
     };
@@ -416,8 +429,8 @@ const main = async () => {
                 similarityBoost,
               });
 
-        let segAudio = null;
-        let segCaptions = null;
+        let segAudio: Buffer | null = null;
+        let segCaptions: HyperframesCaption[] | null = null;
         let segCacheStatus = "disabled";
         if ((cacheMode === "use" || cacheMode === "local-only") && segCacheHash) {
           const hit = await readCachedTtsWithSource(segCacheHash, { cacheMode });
@@ -569,12 +582,16 @@ const main = async () => {
 
   // Persist the freshly synthesised pair so subsequent runs hit the cache.
   if (cacheHash && (cacheStatus === "miss" || cacheStatus === "refresh")) {
-    const { dir } = writeCachedTts(cacheHash, { audio: audioBuffer, captions });
+    const { dir } = writeCachedTts(cacheHash, { audio: audioBuffer, captions }) as {
+      audioPath: string;
+      captionsPath: string;
+      dir?: string;
+    };
     await writeCachedTtsToR2(cacheHash, { audio: audioBuffer, captions }, { cacheMode });
     console.log(`[generate-audio] cached hash=${cacheHash.slice(0, 12)} -> ${dir}`);
   }
 
-  const sidecarPaths = [];
+  const sidecarPaths: string[] = [];
   for (const format of captionFormats) {
     const sidecarPath = path.join(outDir, `captions.${format}`);
     const body = format === "srt" ? toSrt(captions) : toVtt(captions);
@@ -587,9 +604,9 @@ const main = async () => {
   // Critical: when --bgm is absent we must not touch voice.mp3 in any way.
   // Mixing is a post-processing step on top of the cached/synthesised pair;
   // its parameters are NOT part of the TTS cache key (verified in cache.ts).
-  let bgmResult = null;
+  let bgmResult: MixBgmResult | null = null;
   if (values.bgm) {
-    let bgmPath;
+    let bgmPath: string;
     try {
       bgmPath = await resolveBgmPath(values.bgm);
     } catch (err) {

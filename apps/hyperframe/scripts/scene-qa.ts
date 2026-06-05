@@ -2,7 +2,7 @@
 /**
  * Per-scene visual QA for the scene-hub — the engine behind the HITL loop.
  *
- *   bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2] [--frames=1|3]
+ *   bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2] [--frames=1|3]
  *
  * Pipeline (NO full mp4 render):
  *   1. (re)assemble index.html from scene-spec.json
@@ -24,11 +24,41 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { assembleEpisode } from "./lib/assemble-episode";
+import { assembleEpisode, type SceneMapEntry } from "./lib/assemble-episode";
+
+interface Sample {
+  phase: string;
+  t: number;
+}
+
+type QaScene = SceneMapEntry & { samples: Sample[] };
+
+interface ReportScene {
+  id: string;
+  type: string;
+  track: number;
+  window: number[];
+  frames: string[];
+}
+
+interface InspectResult {
+  ok?: boolean;
+  issueCount?: number;
+  issues?: unknown;
+}
+
+interface Report {
+  slug: string;
+  total: number;
+  inspectOk: boolean | null;
+  inspectIssues: number | null;
+  scenes: ReportScene[];
+  contactSheets: string[];
+}
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {
-  console.error(`scene-qa: must run from ${expectedCwd}. Hint: cd apps/hyperframe && bun run scripts/scene-qa.mjs <slug>`);
+  console.error(`scene-qa: must run from ${expectedCwd}. Hint: cd apps/hyperframe && bun run scripts/scene-qa.ts <slug>`);
   process.exit(1);
 }
 
@@ -55,7 +85,7 @@ if (!fs.existsSync(specPath)) {
   process.exit(1);
 }
 
-const spec = JSON.parse(fs.readFileSync(specPath, "utf8"));
+const spec: { slug?: string } & Record<string, unknown> = JSON.parse(fs.readFileSync(specPath, "utf8"));
 if (!spec.slug) spec.slug = slug;
 const built = assembleEpisode(spec);
 fs.writeFileSync(path.join(episodeDir, "index.html"), built.html);
@@ -77,7 +107,7 @@ if (fs.existsSync(captionsPath)) {
 }
 fs.writeFileSync(path.join(workDir, "index.html"), html);
 
-const ensureSymlink = (linkPath, targetAbs) => {
+const ensureSymlink = (linkPath: string, targetAbs: string): void => {
   try {
     fs.lstatSync(linkPath);
     fs.rmSync(linkPath, { force: true, recursive: true });
@@ -93,13 +123,13 @@ fs.writeFileSync(
 
 // ── pick scenes + sample timestamps ───────────────────────────────────────
 const wanted = values.scenes ? new Set(values.scenes.split(",").map((s) => s.trim())) : null;
-const scenes = built.scenes.filter((s) => !wanted || wanted.has(s.id));
+const scenes = built.scenes.filter((s) => !wanted || wanted.has(s.id)) as QaScene[];
 if (scenes.length === 0) {
   console.error(`scene-qa: no matching scenes (have: ${built.scenes.map((s) => s.id).join(", ")})`);
   process.exit(1);
 }
 
-const round = (n) => Number(n.toFixed(2));
+const round = (n: number): number => Number(n.toFixed(2));
 const threeFrames = values.frames === "3";
 for (const sc of scenes) {
   const d = sc.duration;
@@ -115,21 +145,23 @@ for (const sc of scenes) {
 const allTimes = [...new Set(scenes.flatMap((s) => s.samples.map((x) => x.t)))].sort((a, b) => a - b);
 
 // ── snapshot + inspect (one Chromium launch each) ─────────────────────────
-const run = (args) => {
+const run = (args: string[]): { status: number | null; stdout: string; stderr: string } => {
   const r = spawnSync("bunx", args, { cwd: expectedCwd, encoding: "utf8" });
   return { status: r.status, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
 };
 
+const timeout = values.timeout ?? "10000";
+
 console.log(`[scene-qa] ${slug}: ${scenes.length} scene(s), ${allTimes.length} key frames at [${allTimes.join(", ")}]`);
 const snapDir = path.join(workDir, "snapshots");
 fs.rmSync(snapDir, { recursive: true, force: true });
-const snap = run(["hyperframes", "snapshot", workDir, "--at", allTimes.join(","), "--timeout", values.timeout]);
+const snap = run(["hyperframes", "snapshot", workDir, "--at", allTimes.join(","), "--timeout", timeout]);
 if (snap.status !== 0) {
   console.error(`[scene-qa] snapshot failed:\n${snap.stderr}`);
   process.exit(1);
 }
-const insp = run(["hyperframes", "inspect", workDir, "--json", "--at", allTimes.join(","), "--timeout", values.timeout]);
-let inspect = null;
+const insp = run(["hyperframes", "inspect", workDir, "--json", "--at", allTimes.join(","), "--timeout", timeout]);
+let inspect: InspectResult | null = null;
 try {
   inspect = JSON.parse(insp.stdout.slice(insp.stdout.indexOf("{")));
 } catch {
@@ -137,7 +169,7 @@ try {
 }
 
 // ── sort frames into per-scene folders ────────────────────────────────────
-const frameFor = (t) => {
+const frameFor = (t: number): string | null => {
   const files = fs.existsSync(snapDir) ? fs.readdirSync(snapDir) : [];
   // hyperframes names frames frame-NN-at-<t>s.png (t may be rounded to 1 dp)
   const exact = files.find((f) => f.includes(`at-${t}s`));
@@ -158,19 +190,26 @@ if (wanted) {
 fs.mkdirSync(qaRoot, { recursive: true });
 
 const reportPath = path.join(qaRoot, "report.json");
-let previousScenes = [];
+let previousScenes: ReportScene[] = [];
 if (wanted && fs.existsSync(reportPath)) {
   try {
     previousScenes = JSON.parse(fs.readFileSync(reportPath, "utf8")).scenes ?? [];
   } catch {}
 }
 
-const report = { slug, total: built.totalDuration, inspectOk: inspect?.ok ?? null, inspectIssues: inspect?.issueCount ?? null, scenes: [] };
-const fresh = new Map();
+const report: Report = {
+  slug,
+  total: built.totalDuration,
+  inspectOk: inspect?.ok ?? null,
+  inspectIssues: inspect?.issueCount ?? null,
+  scenes: [],
+  contactSheets: [],
+};
+const fresh = new Map<string, ReportScene>();
 for (const sc of scenes) {
   const dir = path.join(qaRoot, sc.id);
   fs.mkdirSync(dir, { recursive: true });
-  const frames = [];
+  const frames: string[] = [];
   for (const s of sc.samples) {
     const src = frameFor(s.t);
     if (src) {

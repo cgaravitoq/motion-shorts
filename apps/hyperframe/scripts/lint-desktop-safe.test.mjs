@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { lintDesktopHtml } from "./lint-desktop-safe.mjs";
+import { lintDesktopHtml } from "./lint-desktop-safe";
 
 const wrap = (stageAttrs, body) => `<!doctype html>
 <html><body>

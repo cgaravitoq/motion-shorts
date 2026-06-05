@@ -2,7 +2,7 @@
 /**
  * Scaffold a new scene-hub episode under `src/episodes/<slug>/`.
  *
- *   bun run scripts/new-episode.mjs <slug> [--intent=workflow] [--width=1080] [--height=1920]
+ *   bun run scripts/new-episode.ts <slug> [--intent=workflow] [--width=1080] [--height=1920]
  *
  * The episode is authored as a typed scene-spec.json (NOT hand-written HTML).
  * This scaffolds a starter spec from the intent skeleton (each scene seeded
@@ -38,7 +38,7 @@ const { values, positionals } = parseArgs({
 });
 
 if (values.help || (positionals.length === 0 && !values.slug)) {
-  console.log(`Usage: bun run scripts/new-episode.mjs <slug> [options]
+  console.log(`Usage: bun run scripts/new-episode.ts <slug> [options]
 
 Options:
   --intent=<intent>  Seed the scene-spec from an intent skeleton.
@@ -57,7 +57,7 @@ After scaffold:
   process.exit(values.help ? 0 : 1);
 }
 
-const slug = values.slug ?? positionals[0];
+const slug = (values.slug ?? positionals[0]) as string;
 if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
   console.error(`new-episode: slug must be lowercase kebab-case, got "${slug}"`);
   process.exit(1);
@@ -78,16 +78,20 @@ const width = Number.parseInt(values.width, 10);
 const height = Number.parseInt(values.height, 10);
 
 // Build the starter scene list from the intent skeleton (or a generic spine).
-const skeleton = values.intent ? routeIntent(values.intent).skeleton : ["hook", "title-cards", "outro"];
-const sampleFor = (type) => {
+const skeleton: ReadonlyArray<string> = values.intent
+  ? routeIntent(values.intent).skeleton
+  : ["hook", "title-cards", "outro"];
+const sampleFor = (type: string): Record<string, unknown> => {
   const samplePath = path.resolve("templates/scenes", type, "v1", "sample.json");
-  return fs.existsSync(samplePath) ? JSON.parse(fs.readFileSync(samplePath, "utf8")) : {};
+  return fs.existsSync(samplePath)
+    ? (JSON.parse(fs.readFileSync(samplePath, "utf8")) as Record<string, unknown>)
+    : {};
 };
 // Keep scene ids unique even if a type repeats in the skeleton.
-const counts = {};
+const counts: Record<string, number> = {};
 const scenes = skeleton.map((type) => {
   counts[type] = (counts[type] ?? 0) + 1;
-  const id = counts[type] > 1 ? `${type}-${counts[type]}` : type;
+  const id = (counts[type] as number) > 1 ? `${type}-${counts[type]}` : type;
   return { id, type, slots: sampleFor(type) };
 });
 

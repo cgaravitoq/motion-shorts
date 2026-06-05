@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { groupByEpisode, parseLedger, percentile, renderDashboard, sparklineSvg } from "./metrics-dashboard.mjs";
+import { groupByEpisode, parseLedger, percentile, renderDashboard, sparklineSvg } from "./metrics-dashboard";
 
 const record = (slug, totalMs, stages = {}, ts = "2026-01-01T00:00:00.000Z") =>
   JSON.stringify({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { extractInlineScripts, lintHtml, stripComments } from "./lint-seek-safe.mjs";
+import { extractInlineScripts, lintHtml, stripComments } from "./lint-seek-safe";
 
 const wrap = (script) => `<!doctype html>
 <html><body>

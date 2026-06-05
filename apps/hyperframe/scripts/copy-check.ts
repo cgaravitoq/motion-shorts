@@ -33,11 +33,15 @@ if (distPaths.length === 0) {
   process.exit(0);
 }
 
-const renderSha256For = (episodeDir) => {
+interface RenderManifest {
+  objects?: { category?: string; contentType?: string; sha256?: string }[];
+}
+
+const renderSha256For = (episodeDir: string): string | undefined => {
   const manifestPath = path.join(episodeDir, "render.remote.json");
   if (!fs.existsSync(manifestPath)) return undefined;
   try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as RenderManifest;
     return manifest.objects?.find((o) => o.category === "renders" && o.contentType === "video/mp4")
       ?.sha256;
   } catch {
@@ -48,11 +52,11 @@ const renderSha256For = (episodeDir) => {
 let failed = 0;
 for (const distPath of distPaths) {
   const rel = path.relative(expectedCwd, distPath);
-  let dist;
+  let dist: { slug?: string };
   try {
-    dist = JSON.parse(fs.readFileSync(distPath, "utf8"));
+    dist = JSON.parse(fs.readFileSync(distPath, "utf8")) as { slug?: string };
   } catch (err) {
-    console.error(`✗ ${rel}: ${err.message}`);
+    console.error(`✗ ${rel}: ${(err as Error).message}`);
     failed++;
     continue;
   }

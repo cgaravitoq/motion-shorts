@@ -30,7 +30,7 @@ if (trackedAssets.length === 0) {
   process.exit(0);
 }
 
-const categoryFor = (filename) => {
+const categoryFor = (filename: string): string => {
   const ext = path.extname(filename).toLowerCase();
   if (filename === "captions.json" || [".mp3", ".wav", ".m4a"].includes(ext)) return "audio";
   if ([".mp4", ".mov", ".webm"].includes(ext)) return "renders";
@@ -38,7 +38,7 @@ const categoryFor = (filename) => {
   return "images";
 };
 
-const contentTypeFor = (filename) => {
+const contentTypeFor = (filename: string): string | null => {
   const ext = path.extname(filename).toLowerCase();
   if (filename === "captions.json") return "application/json";
   if (ext === ".woff2") return "font/woff2";
@@ -58,26 +58,35 @@ const env = {
     : {}),
 };
 const config = assertR2Config(env);
-const byEpisode = new Map();
+const byEpisode = new Map<string, string[]>();
 
 for (const relativePath of trackedAssets) {
   const parts = relativePath.split(path.sep);
-  const slug = parts[2];
+  const slug = parts[2] as string;
   if (!byEpisode.has(slug)) byEpisode.set(slug, []);
-  byEpisode.get(slug).push(relativePath);
+  (byEpisode.get(slug) as string[]).push(relativePath);
 }
 
 const generatedAt = new Date().toISOString();
 
 for (const [slug, files] of [...byEpisode.entries()].sort(([a], [b]) => a.localeCompare(b))) {
   const episodeDir = path.join(EPISODES_ROOT, slug);
-  const uploaded = [];
+  const uploaded: Array<{
+    key: string;
+    category: string;
+    bytes: number;
+    sha256: string;
+    contentType: string;
+    urlStrategy: "signed-url" | "public-url";
+    url: string | null;
+    signedUrlTtlSeconds: number | null;
+  }> = [];
 
   for (const relativePath of files) {
     const filename = path.basename(relativePath);
     const localPath = path.resolve(relativePath);
     const category = categoryFor(filename);
-    const key = objectKeyFor({ slug, runId, category, filename });
+    const key = objectKeyFor({ slug, category, filename });
     const remote = await uploadAndVerifyObject({ config, filePath: localPath, key });
     uploaded.push({
       key: remote.key,

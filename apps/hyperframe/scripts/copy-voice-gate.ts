@@ -23,6 +23,46 @@ if (path.resolve(process.cwd()) !== expectedCwd) {
   process.exit(1);
 }
 
+interface CriticFailure {
+  signal: string;
+  detail: string;
+  suggested_fix?: string;
+}
+
+interface CriticResult {
+  failures: CriticFailure[];
+  passed: boolean;
+  scores: Record<string, number>;
+  mean_score: number;
+}
+
+interface CriticModule {
+  adaptCriticAgentSignals: (criticOutput: unknown, thresholds: unknown) => unknown;
+  runCritic: (args: {
+    draft: string;
+    voiceProfile: unknown;
+    platform: string;
+    locale: string;
+    iteration: number;
+    llmSignals: unknown;
+  }) => CriticResult;
+  scoreThresholdsFor: (voiceProfile: unknown, platform: string) => unknown;
+}
+
+interface VoiceProfileModule {
+  loadVoiceProfile: () => Promise<unknown>;
+}
+
+interface LinkedinDraft {
+  post?: string;
+}
+
+interface DistributionFile {
+  platforms?: {
+    linkedin?: Record<string, LinkedinDraft | undefined>;
+  };
+}
+
 const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
@@ -44,7 +84,7 @@ if (!fs.existsSync(distPath)) {
   );
   process.exit(1);
 }
-const dist = JSON.parse(fs.readFileSync(distPath, "utf8"));
+const dist = JSON.parse(fs.readFileSync(distPath, "utf8")) as DistributionFile;
 const linkedin = dist.platforms?.linkedin;
 if (!linkedin) {
   console.log("copy-voice-gate: episode has no linkedin copy — nothing to gate");
@@ -52,11 +92,12 @@ if (!linkedin) {
 }
 
 loadWorkspaceEnv();
-const expandHome = (p) => (p.startsWith("~/") ? path.join(os.homedir(), p.slice(2)) : p);
+const expandHome = (p: string): string =>
+  p.startsWith("~/") ? path.join(os.homedir(), p.slice(2)) : p;
 const humanizerRepo = path.resolve(
   expandHome(
     values.humanizer ??
-      process.env.HUMANIZER_REPO_PATH ??
+      Bun.env.HUMANIZER_REPO_PATH ??
       path.join(os.homedir(), "Developer/humanizer"),
   ),
 );
@@ -69,11 +110,13 @@ if (!fs.existsSync(criticEntry) || !fs.existsSync(profileEntry)) {
   process.exit(1);
 }
 
-const { adaptCriticAgentSignals, runCritic, scoreThresholdsFor } = await import(criticEntry);
-const { loadVoiceProfile } = await import(profileEntry);
+const { adaptCriticAgentSignals, runCritic, scoreThresholdsFor } = (await import(
+  criticEntry
+)) as CriticModule;
+const { loadVoiceProfile } = (await import(profileEntry)) as VoiceProfileModule;
 const voiceProfile = await loadVoiceProfile();
 
-let llmSignals;
+let llmSignals: unknown;
 if (values["llm-signals"]) {
   const criticOutput = JSON.parse(fs.readFileSync(path.resolve(values["llm-signals"]), "utf8"));
   llmSignals = adaptCriticAgentSignals(criticOutput, scoreThresholdsFor(voiceProfile, "linkedin"));
@@ -103,7 +146,7 @@ for (const lang of ["es", "en"]) {
 
   const failures = llmSignals
     ? result.failures
-    : result.failures.filter((f) => DETERMINISTIC.includes(f.signal));
+    : result.failures.filter((f: CriticFailure) => DETERMINISTIC.includes(f.signal));
   const passed = llmSignals ? result.passed : failures.length === 0;
   const mode = llmSignals ? "full 8-signal" : "partial (5 deterministic signals)";
 

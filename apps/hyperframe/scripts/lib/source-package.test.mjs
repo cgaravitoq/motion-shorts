@@ -12,7 +12,7 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { findCapturedFiles, runCaptureSource, toKebab } from "../capture-source.mjs";
+import { findCapturedFiles, runCaptureSource, toKebab } from "../capture-source";
 import {
   isQuarantineCandidate,
   validateCaptureUrl,
@@ -229,7 +229,7 @@ describe("source package contract", () => {
       "bun",
       [
         "run",
-        "scripts/capture-source.mjs",
+        "scripts/capture-source.ts",
         "https://example.com/case-study",
         `--slug=${slug}`,
         "--dry-run",

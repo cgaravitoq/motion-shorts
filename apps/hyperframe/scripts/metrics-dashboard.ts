@@ -6,7 +6,31 @@ import { fileURLToPath } from "node:url";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 export const defaultLedgerPath = path.resolve(scriptDir, "..", ".metrics", "runs.ndjson");
 
-const escapeHtml = (value) =>
+interface LedgerRecord {
+  episode?: string;
+  slug?: string;
+  ts?: string;
+  format?: string;
+  variant?: string;
+  totalMs?: number;
+  stages?: Record<string, unknown>;
+  assets?: { fileCount?: number; totalBytes?: number };
+}
+
+interface Stats {
+  p50: number | null;
+  p95: number | null;
+}
+
+interface EpisodeGroup {
+  episode: string;
+  runs: LedgerRecord[];
+  stageKeys: string[];
+  totalStats: Stats;
+  stageStats: Record<string, Stats>;
+}
+
+const escapeHtml = (value: unknown): string =>
   String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -14,7 +38,7 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-export const formatBytes = (bytes) => {
+export const formatBytes = (bytes: number): string => {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0B";
   const units = ["B", "KB", "MB", "GB"];
   let value = bytes;
@@ -27,59 +51,79 @@ export const formatBytes = (bytes) => {
   return `${rounded}${units[unit]}`;
 };
 
-export const formatMs = (ms) => {
+export const formatMs = (ms: number): string => {
   if (!Number.isFinite(ms)) return "—";
   return ms >= 1000 ? `${(ms / 1000).toFixed(2)}s` : `${Math.round(ms)}ms`;
 };
 
-export const parseLedger = (raw, { warn = () => {} } = {}) => {
-  const records = [];
+export const parseLedger = (
+  raw: string,
+  { warn = (): void => {} }: { warn?: (message: string) => void } = {},
+): LedgerRecord[] => {
+  const records: LedgerRecord[] = [];
   for (const [index, line] of raw.split(/\r?\n/).entries()) {
     if (line.trim() === "") continue;
     try {
-      const record = JSON.parse(line);
-      if (record && typeof record === "object") records.push(record);
+      const record = JSON.parse(line) as unknown;
+      if (record && typeof record === "object") records.push(record as LedgerRecord);
     } catch (error) {
-      warn(`Skipping malformed ledger line ${index + 1}: ${error.message}`);
+      warn(`Skipping malformed ledger line ${index + 1}: ${(error as Error).message}`);
     }
   }
   return records;
 };
 
-export const readLedger = async (ledgerPath = defaultLedgerPath, { warn = console.warn } = {}) => {
+export const readLedger = async (
+  ledgerPath = defaultLedgerPath,
+  { warn = console.warn }: { warn?: (message: string) => void } = {},
+): Promise<LedgerRecord[]> => {
   try {
     return parseLedger(await readFile(ledgerPath, "utf8"), { warn });
   } catch (error) {
-    if (error?.code === "ENOENT") return [];
+    if ((error as NodeJS.ErrnoException)?.code === "ENOENT") return [];
     throw error;
   }
 };
 
-export const percentile = (values, p) => {
+export const percentile = (values: number[], p: number): number | null => {
   const sorted = values.filter(Number.isFinite).toSorted((a, b) => a - b);
   if (sorted.length === 0) return null;
   const index = Math.ceil((p / 100) * sorted.length) - 1;
-  return sorted[Math.max(0, Math.min(index, sorted.length - 1))];
+  return sorted[Math.max(0, Math.min(index, sorted.length - 1))] ?? null;
 };
 
-const statsFor = (values) => ({ p50: percentile(values, 50), p95: percentile(values, 95) });
+const statsFor = (values: number[]): Stats => ({
+  p50: percentile(values, 50),
+  p95: percentile(values, 95),
+});
 
-export const groupByEpisode = (records, { limit = 30 } = {}) => {
-  const groups = new Map();
+export const groupByEpisode = (
+  records: LedgerRecord[],
+  { limit = 30 }: { limit?: number } = {},
+): EpisodeGroup[] => {
+  const groups = new Map<string, LedgerRecord[]>();
   for (const record of records) {
     const episode = record.episode ?? record.slug ?? "unknown";
-    if (!groups.has(episode)) groups.set(episode, []);
-    groups.get(episode).push({ ...record, episode });
+    const list = groups.get(episode) ?? [];
+    if (!groups.has(episode)) groups.set(episode, list);
+    list.push({ ...record, episode });
   }
 
   return [...groups.entries()]
-    .map(([episode, runs]) => {
+    .map(([episode, runs]): EpisodeGroup => {
       const window = runs
         .toSorted((a, b) => String(a.ts ?? "").localeCompare(String(b.ts ?? "")))
         .slice(-limit);
-      const stageKeys = [...new Set(window.flatMap((run) => Object.keys(run.stages ?? {})))].sort();
-      const stageStats = Object.fromEntries(
-        stageKeys.map((stage) => [stage, statsFor(window.map((run) => Number(run.stages?.[stage])))])
+      const stageKeys = [
+        ...new Set(window.flatMap((run) => Object.keys(run.stages ?? {}))),
+      ].sort();
+      const stageStats: Record<string, Stats> = Object.fromEntries(
+        stageKeys.map(
+          (stage): [string, Stats] => [
+            stage,
+            statsFor(window.map((run) => Number(run.stages?.[stage]))),
+          ],
+        ),
       );
       return {
         episode,
@@ -92,7 +136,10 @@ export const groupByEpisode = (records, { limit = 30 } = {}) => {
     .sort((a, b) => a.episode.localeCompare(b.episode));
 };
 
-export const sparklineSvg = (values, { width = 220, height = 48 } = {}) => {
+export const sparklineSvg = (
+  values: number[],
+  { width = 220, height = 48 }: { width?: number; height?: number } = {},
+): string => {
   const nums = values.filter(Number.isFinite);
   if (nums.length === 0) return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" aria-label="No data"></svg>`;
   const min = Math.min(...nums);
@@ -107,18 +154,18 @@ export const sparklineSvg = (values, { width = 220, height = 48 } = {}) => {
   return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Total milliseconds sparkline"><polyline points="${points.join(" ")}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 };
 
-const renderStats = (group) => {
+const renderStats = (group: EpisodeGroup): string => {
   const rows = [
-    `<tr><th>Total</th><td>${formatMs(group.totalStats.p50)}</td><td>${formatMs(group.totalStats.p95)}</td></tr>`,
+    `<tr><th>Total</th><td>${formatMs(group.totalStats.p50 as number)}</td><td>${formatMs(group.totalStats.p95 as number)}</td></tr>`,
     ...group.stageKeys.map(
       (stage) =>
-        `<tr><th>${escapeHtml(stage)}</th><td>${formatMs(group.stageStats[stage].p50)}</td><td>${formatMs(group.stageStats[stage].p95)}</td></tr>`,
+        `<tr><th>${escapeHtml(stage)}</th><td>${formatMs(group.stageStats[stage]?.p50 as number)}</td><td>${formatMs(group.stageStats[stage]?.p95 as number)}</td></tr>`,
     ),
   ];
   return `<table class="stats"><thead><tr><th>Metric</th><th>p50</th><th>p95</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
 };
 
-const renderRuns = (group) => {
+const renderRuns = (group: EpisodeGroup): string => {
   const rows = group.runs
     .toReversed()
     .map((run) => {
@@ -131,7 +178,7 @@ const renderRuns = (group) => {
   return `<table><thead><tr><th>Timestamp</th><th>Format</th><th>Variant</th><th>Total</th><th>Assets</th><th>Bytes</th><th>Stages</th></tr></thead><tbody>${rows}</tbody></table>`;
 };
 
-export const renderDashboard = (groups) => `<!doctype html>
+export const renderDashboard = (groups: EpisodeGroup[]): string => `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -168,7 +215,10 @@ export const renderDashboard = (groups) => `<!doctype html>
   }
 </main></body></html>`;
 
-export const createDashboardServer = ({ ledgerPath = defaultLedgerPath, warn = console.warn } = {}) =>
+export const createDashboardServer = ({
+  ledgerPath = defaultLedgerPath,
+  warn = console.warn,
+}: { ledgerPath?: string; warn?: (message: string) => void } = {}): http.Server =>
   http.createServer(async (_req, res) => {
     try {
       const records = await readLedger(ledgerPath, { warn });
@@ -176,15 +226,15 @@ export const createDashboardServer = ({ ledgerPath = defaultLedgerPath, warn = c
       res.end(renderDashboard(groupByEpisode(records)));
     } catch (error) {
       res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
-      res.end(`Failed to render dashboard: ${error.message}`);
+      res.end(`Failed to render dashboard: ${(error as Error).message}`);
     }
   });
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const port = Number(process.env.PORT) || 0;
+  const port = Number(Bun.env.PORT) || 0;
   const server = createDashboardServer({ warn: (message) => console.warn(message) });
   server.listen(port, "127.0.0.1", () => {
-    const address = server.address();
+    const address = server.address() as import("node:net").AddressInfo;
     console.log(`http://127.0.0.1:${address.port}`);
     console.log("[Ctrl+C to stop]");
   });

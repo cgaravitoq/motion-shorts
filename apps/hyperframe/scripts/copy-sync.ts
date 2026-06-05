@@ -50,8 +50,25 @@ const config = assertR2Config(Bun.env);
 const key = objectKeyFor({ slug, category: "source", filename: "distribution.json" });
 const remote = await uploadAndVerifyObject({ config, filePath: distPath, key });
 
-const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-const entry = {
+interface SourceManifestEntry {
+  key: string;
+  category: string;
+  path: string;
+  bytes: number;
+  sha256: string;
+  contentType: string;
+  urlStrategy: string;
+  url: string | null;
+  signedUrlTtlSeconds: number | null;
+}
+
+interface SourceManifest {
+  objects?: SourceManifestEntry[];
+  generatedAt?: string;
+}
+
+const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as SourceManifest;
+const entry: SourceManifestEntry = {
   key,
   category: "source",
   path: `src/episodes/${slug}/distribution.json`,

@@ -11,7 +11,25 @@ import path from "node:path";
 // This linter scans inline <script> blocks inside each episode's index.html
 // (rule 1: monolithic single-file) and flags violations before render time.
 
-const RULES = {
+type Severity = "error" | "warning";
+
+interface Rule {
+  severity: Severity;
+  message: string;
+  pattern: RegExp;
+  filter?: (match: RegExpMatchArray) => boolean;
+}
+
+interface Violation {
+  ruleId: string;
+  severity: Severity;
+  message: string;
+  line: number;
+  col: number;
+  snippet: string;
+}
+
+const RULES: Record<string, Rule> = {
   "seek-callback": {
     severity: "error",
     message:
@@ -39,7 +57,7 @@ const RULES = {
       "repeat: <n> with n > 0 is seek-safe but rarely intended for shorts; double-check this is deliberate.",
     pattern: /\brepeat\s*:\s*(\d+)\b/g,
     // Filter out repeat: 0 (no-op) — only flag positive integers.
-    filter: (match) => Number.parseInt(match[1], 10) > 0,
+    filter: (match) => Number.parseInt(match[1] ?? "", 10) > 0,
   },
   "async-callback": {
     severity: "error",
@@ -49,16 +67,22 @@ const RULES = {
   },
 };
 
+interface InlineScript {
+  content: string;
+  startOffset: number;
+  startLine: number;
+}
+
 /**
  * Extract inline <script> blocks from HTML text.
  * Skips scripts with `src=` (external) and `type="application/json"` (captions-data).
  * Returns { content, startOffset, startLine } per block.
  */
-export function extractInlineScripts(html) {
-  const blocks = [];
+export function extractInlineScripts(html: string): InlineScript[] {
+  const blocks: InlineScript[] = [];
   const openRe = /<script\b([^>]*)>/gi;
   for (const openMatch of html.matchAll(openRe)) {
-    const attrs = openMatch[1];
+    const attrs = openMatch[1] ?? "";
     if (/\bsrc\s*=/i.test(attrs)) continue;
     if (/\btype\s*=\s*["']application\/json["']/i.test(attrs)) continue;
     const contentStart = openMatch.index + openMatch[0].length;
@@ -75,13 +99,15 @@ export function extractInlineScripts(html) {
  * Replace comment characters with spaces so regex offsets remain stable but
  * comments cannot match patterns.
  */
-export function stripComments(source) {
-  const out = [];
+type StripState = "code" | "line-comment" | "block-comment" | "single" | "double" | "template";
+
+export function stripComments(source: string): string {
+  const out: string[] = [];
   let i = 0;
   const n = source.length;
-  let state = "code"; // code | line-comment | block-comment | single | double | template
+  let state: StripState = "code";
   while (i < n) {
-    const ch = source[i];
+    const ch = source[i] as string;
     const next = source[i + 1];
     if (state === "code") {
       if (ch === "/" && next === "/") {
@@ -142,7 +168,7 @@ export function stripComments(source) {
     if (state === "single" || state === "double" || state === "template") {
       const quote = state === "single" ? "'" : state === "double" ? '"' : "`";
       if (ch === "\\" && i + 1 < n) {
-        out.push(ch, source[i + 1]);
+        out.push(ch, source[i + 1] as string);
         i += 2;
         continue;
       }
@@ -159,7 +185,7 @@ export function stripComments(source) {
   return out.join("");
 }
 
-function offsetToLineCol(source, offset) {
+function offsetToLineCol(source: string, offset: number): { line: number; col: number } {
   const before = source.slice(0, offset);
   const line = before.split("\n").length;
   const lastNl = before.lastIndexOf("\n");
@@ -171,8 +197,8 @@ function offsetToLineCol(source, offset) {
  * Scan a single inline-script block (already comment-stripped) for rule violations.
  * Returns an array of { ruleId, severity, message, line, col } relative to the file.
  */
-function scanBlock(blockText, blockStartOffset, fullHtml) {
-  const violations = [];
+function scanBlock(blockText: string, blockStartOffset: number, fullHtml: string): Violation[] {
+  const violations: Violation[] = [];
   for (const [ruleId, rule] of Object.entries(RULES)) {
     const re = new RegExp(rule.pattern.source, rule.pattern.flags);
     for (const m of blockText.matchAll(re)) {
@@ -200,8 +226,17 @@ const REGISTRY_RE = /\bwindow\s*\.\s*__timelines\s*\[/;
  * These are episode-wide (one timeline per file) so we check on the joined
  * stripped source of all inline scripts.
  */
-function scanWholeFile(strippedScripts, lineMap) {
-  const violations = [];
+interface StrippedScript {
+  startOffset: number;
+  stripped: string;
+}
+
+interface LineMap {
+  fullHtml: string;
+}
+
+function scanWholeFile(strippedScripts: StrippedScript[], lineMap: LineMap): Violation[] {
+  const violations: Violation[] = [];
   const joined = strippedScripts.map((b) => b.stripped).join("\n");
 
   // Check every gsap.timeline(...) call has paused: true in its config object.
@@ -239,10 +274,14 @@ function scanWholeFile(strippedScripts, lineMap) {
   return violations;
 }
 
-function mapJoinedOffset(joinedOffset, strippedScripts, lineMap) {
+function mapJoinedOffset(
+  joinedOffset: number,
+  strippedScripts: StrippedScript[],
+  lineMap: LineMap,
+): { line: number; col: number } {
   let cursor = 0;
   for (let i = 0; i < strippedScripts.length; i++) {
-    const blk = strippedScripts[i];
+    const blk = strippedScripts[i] as StrippedScript;
     const length = blk.stripped.length;
     if (joinedOffset <= cursor + length) {
       const localOffset = joinedOffset - cursor;
@@ -257,14 +296,14 @@ function mapJoinedOffset(joinedOffset, strippedScripts, lineMap) {
 /**
  * Lint a single HTML file. Returns an array of violation records.
  */
-export function lintHtml(html) {
+export function lintHtml(html: string): Violation[] {
   const blocks = extractInlineScripts(html);
-  const strippedScripts = blocks.map((b) => ({
+  const strippedScripts: StrippedScript[] = blocks.map((b) => ({
     startOffset: b.startOffset,
     stripped: stripComments(b.content),
   }));
 
-  const violations = [];
+  const violations: Violation[] = [];
   for (const blk of strippedScripts) {
     violations.push(...scanBlock(blk.stripped, blk.startOffset, html));
   }
@@ -275,8 +314,13 @@ export function lintHtml(html) {
   return violations;
 }
 
-function findEpisodes(episodesDir) {
-  const out = [];
+interface Target {
+  slug: string;
+  path: string;
+}
+
+function findEpisodes(episodesDir: string): Target[] {
+  const out: Target[] = [];
   for (const name of readdirSync(episodesDir).sort()) {
     if (name.startsWith("_")) continue;
     const dir = path.join(episodesDir, name);
@@ -291,17 +335,17 @@ function findEpisodes(episodesDir) {
   return out;
 }
 
-function formatViolation(file, v) {
+function formatViolation(file: string, v: Violation): string {
   const tag = v.severity === "error" ? "error" : "warning";
   return `${file}:${v.line}:${v.col}  ${tag}  ${v.ruleId}  ${v.message}`;
 }
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const target = args[0];
   const episodesDir = path.resolve("src/episodes");
 
-  const targets = [];
+  const targets: Target[] = [];
   if (!target) {
     if (!existsSync(episodesDir)) {
       console.error(

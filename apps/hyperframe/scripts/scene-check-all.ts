@@ -2,8 +2,8 @@
 /**
  * Validate scene-spec.json files against the scene-type manifests.
  *
- *   bun run scripts/scene-check-all.mjs                 # all episodes
- *   bun run scripts/scene-check-all.mjs <spec> [<spec>] # specific spec files
+ *   bun run scripts/scene-check-all.ts                 # all episodes
+ *   bun run scripts/scene-check-all.ts <spec> [<spec>] # specific spec files
  *
  * Exits non-zero if any spec is invalid. Used by the pre-commit hook on staged
  * scene-spec.json files.
@@ -31,11 +31,11 @@ const specPaths =
 let failed = 0;
 for (const specPath of specPaths) {
   const rel = path.relative(expectedCwd, specPath);
-  let spec;
+  let spec: unknown;
   try {
     spec = JSON.parse(fs.readFileSync(specPath, "utf8"));
   } catch (err) {
-    console.error(`✗ ${rel}: ${err.message}`);
+    console.error(`✗ ${rel}: ${(err as Error).message}`);
     failed++;
     continue;
   }

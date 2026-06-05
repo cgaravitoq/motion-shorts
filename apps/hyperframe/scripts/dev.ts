@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-const arg = process.argv[2];
+const arg: string | undefined = process.argv[2];
 const dir = arg ? path.resolve(arg) : path.resolve("src/episodes/catalog-components-lab");
 
 if (!fs.existsSync(path.join(dir, "index.html"))) {
