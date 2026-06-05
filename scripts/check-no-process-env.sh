@@ -11,4 +11,16 @@ if [[ -n "${OFFENDERS}" ]]; then
   exit 1
 fi
 
+# zod is frozen at the t3-env boundary; domain validation is Effect Schema
+# (@cgaravitoq/spec). Catch new zod imports before they grow a second
+# validation system.
+ZOD_OFFENDERS="$(rg "from \"zod\"" apps/ packages/ --type ts | grep -v "/env\.ts:" || true)"
+
+if [[ -n "${ZOD_OFFENDERS}" ]]; then
+  echo "ERROR: zod imports are only allowed in env.ts files (t3-env boundary)." >&2
+  echo "${ZOD_OFFENDERS}" >&2
+  echo "Use Effect Schema from @cgaravitoq/spec for domain validation." >&2
+  exit 1
+fi
+
 echo "OK"

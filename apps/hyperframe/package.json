@@ -29,8 +29,7 @@
     "new:episode": "bun run scripts/new-episode.ts",
     "audio": "bun run scripts/generate-audio.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "typecheck:engine": "tsc --noEmit -p tsconfig.engine.json"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@cgaravitoq/audio": "workspace:*",

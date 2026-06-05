@@ -19,8 +19,7 @@
     "allowImportingTsExtensions": false,
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
-    "allowJs": true,
-    "checkJs": false,
+    "allowJs": false,
     "incremental": true,
     "noEmit": true
   },
