@@ -1,19 +1,6 @@
-export interface PublishRecord {
-  status: "published" | "inbox" | "failed";
-  id?: string;
-  url?: string;
-  publishedAt?: string;
-  renderSha256: string;
-  lang: string;
-  privacy?: string;
-  error?: string;
-}
+import type { PublishLedger, PublishRecord } from "@cgaravitoq/spec";
 
-export interface PublishLedger {
-  slug: string;
-  updatedAt: string;
-  platforms: Record<string, PublishRecord>;
-}
+export type { PublishLedger, PublishRecord };
 
 export const upsertPublishRecord = ({
   ledger,

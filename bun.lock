@@ -57,6 +57,7 @@
       "name": "@cgaravitoq/publish",
       "version": "0.1.0",
       "dependencies": {
+        "@cgaravitoq/spec": "workspace:*",
         "effect": "3.21.3",
       },
     },

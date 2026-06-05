@@ -18,6 +18,7 @@ export {
   SlotDef,
 } from "./manifest";
 export { formatParseError } from "./parse-error";
+export { decodePublishLedger, PublishLedger, PublishRecord } from "./publish-ledger";
 export {
   decodeRemoteManifest,
   RemoteManifest,

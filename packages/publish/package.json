@@ -12,6 +12,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@cgaravitoq/spec": "workspace:*",
     "effect": "3.21.3"
   }
 }
