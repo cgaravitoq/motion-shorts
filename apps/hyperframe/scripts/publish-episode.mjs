@@ -35,6 +35,9 @@ import {
   upsertPublishRecord,
   writeStoredToken,
 } from "@cgaravitoq/publish";
+import { decodePublishLedger, formatParseError } from "@cgaravitoq/spec";
+import { Either } from "effect";
+import { validateDistribution } from "./lib/distribution-spec.mjs";
 import { resolveEpisodeContext } from "./lib/episode-context.mjs";
 import {
   assertR2Config,
@@ -101,6 +104,13 @@ if (dist.renderRef?.sha256 !== context.renderRef.sha256) {
   );
 }
 
+// Boundary check: an invalid distribution.json never half-publishes. The
+// canonical validator (the same one copy:check runs) gates Gate 2 too.
+const distValidation = validateDistribution(dist, { renderSha256: context.renderRef.sha256 });
+if (!distValidation.ok) {
+  fail(`distribution.json is invalid:\n  ${distValidation.errors.join("\n  ")}`);
+}
+
 const lang = values.lang ?? context.spec?.lang ?? "es";
 const copy = block[lang];
 if (!copy) fail(`${platform} copy has no "${lang}" language block`);
@@ -138,8 +148,17 @@ if (!values.confirm) {
 }
 
 const ledgerPath = path.join(episodeDir, "publish.remote.json");
-const readLedger = () =>
-  fs.existsSync(ledgerPath) ? JSON.parse(fs.readFileSync(ledgerPath, "utf8")) : null;
+const readLedger = () => {
+  if (!fs.existsSync(ledgerPath)) return null;
+  const parsed = JSON.parse(fs.readFileSync(ledgerPath, "utf8"));
+  const decoded = decodePublishLedger(parsed);
+  if (Either.isLeft(decoded)) {
+    fail(
+      `malformed publish ledger at ${ledgerPath}:\n  ${formatParseError(decoded.left, "ledger").join("\n  ")}`,
+    );
+  }
+  return parsed;
+};
 const writeLedger = (record) => {
   const ledger = upsertPublishRecord({
     ledger: readLedger(),
@@ -248,40 +267,40 @@ const publish = async () => {
   return { id: result.mediaId, url: result.permalink ?? undefined };
 };
 
-try {
-  const { ledgerStatus, ...outcome } = await publish();
-  writeLedger({
-    status: ledgerStatus ?? "published",
-    ...outcome,
-    publishedAt: new Date().toISOString(),
-    renderSha256: context.renderRef.sha256,
-    lang,
-  });
+// Graph errors can echo the presigned video_url (credential + signature in
+// the query string) — redact every query string before persisting/printing.
+const redact = (err) =>
+  String(err.message ?? err)
+    .replace(/\?[^\s"')]+/g, "?<redacted-query>")
+    .slice(0, 500);
+
+const uploadLedgerToR2 = async () => {
   const config = assertR2Config(Bun.env);
   await uploadAndVerifyObject({
     config,
     filePath: ledgerPath,
     key: objectKeyFor({ slug, category: "manifests", filename: "publish.remote.json" }),
   });
-  if (platform === "tiktok") {
-    console.log(`\n✓ draft sent to your TikTok inbox (publish_id ${outcome.id})`);
-    console.log(
-      "  Open the TikTok app → inbox notification → edit the draft → PASTE this caption → publish:",
-    );
-    console.log(`\n${copy.caption}\n`);
-  } else {
-    console.log(`\n✓ published ${slug} to ${platform}${outcome.url ? ` — ${outcome.url}` : ""}`);
-  }
-  console.log(`✓ ledger updated: ${ledgerPath} (+R2)`);
-  if (platform === "youtube" && values.privacy !== "public") {
-    console.log(`  note: video is ${values.privacy} — flip to public in YouTube Studio when ready`);
-  }
+};
+
+// Idempotent re-run: this exact cut is already live on the platform — only
+// re-sync the ledger to R2 (covers a previous run where the video published
+// but the ledger upload failed) instead of double-publishing.
+const existing = readLedger()?.platforms?.[platform];
+if (existing?.status === "published" && existing.renderSha256 === context.renderRef.sha256) {
+  console.log(
+    `\nalready published to ${platform} for this exact render${existing.url ? ` — ${existing.url}` : ""}; syncing the ledger to R2`,
+  );
+  await uploadLedgerToR2();
+  console.log(`✓ ledger synced: ${ledgerPath} (+R2)`);
+  process.exit(0);
+}
+
+let outcome;
+try {
+  outcome = await publish();
 } catch (err) {
-  // Graph errors can echo the presigned video_url (credential + signature in
-  // the query string) — redact every query string before persisting/printing.
-  const redacted = String(err.message ?? err)
-    .replace(/\?[^\s"')]+/g, "?<redacted-query>")
-    .slice(0, 500);
+  const redacted = redact(err);
   writeLedger({
     status: "failed",
     error: redacted,
@@ -289,4 +308,39 @@ try {
     lang,
   });
   fail(`publish failed (recorded in ${ledgerPath}): ${redacted}`);
+}
+
+// The video is live from here on: the local ledger records it immediately and
+// is never reverted — only the R2 sync below may be pending.
+const { ledgerStatus, ...result } = outcome;
+writeLedger({
+  status: ledgerStatus ?? "published",
+  ...result,
+  publishedAt: new Date().toISOString(),
+  renderSha256: context.renderRef.sha256,
+  lang,
+});
+if (platform === "tiktok") {
+  console.log(`\n✓ draft sent to your TikTok inbox (publish_id ${result.id})`);
+  console.log(
+    "  Open the TikTok app → inbox notification → edit the draft → PASTE this caption → publish:",
+  );
+  console.log(`\n${copy.caption}\n`);
+} else {
+  console.log(`\n✓ published ${slug} to ${platform}${result.url ? ` — ${result.url}` : ""}`);
+}
+
+try {
+  await uploadLedgerToR2();
+  console.log(`✓ ledger updated: ${ledgerPath} (+R2)`);
+} catch (err) {
+  console.error(
+    `publish-episode: WARNING — the video is live and the local ledger is updated, but the R2 ledger upload failed: ${redact(err)}`,
+  );
+  console.error(
+    "  Re-run the same command to sync it — the re-run is idempotent and will NOT re-publish this render.",
+  );
+}
+if (platform === "youtube" && values.privacy !== "public") {
+  console.log(`  note: video is ${values.privacy} — flip to public in YouTube Studio when ready`);
 }
