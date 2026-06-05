@@ -13,6 +13,8 @@
     "copy:check": "bun run scripts/copy-check.mjs",
     "copy:gate": "bun run scripts/copy-voice-gate.mjs",
     "copy:sync": "bun run scripts/copy-sync.mjs",
+    "publish:auth": "bun run scripts/publish-auth.mjs",
+    "publish:episode": "bun run scripts/publish-episode.mjs",
     "scene:gallery": "bun run scripts/build-catalog-demo.mjs",
     "lint:seek-safe": "bun run scripts/lint-seek-safe.mjs",
     "lint:desktop-safe": "bun run scripts/lint-desktop-safe.mjs",
@@ -30,7 +32,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cgaravitoq/audio": "workspace:*"
+    "@cgaravitoq/audio": "workspace:*",
+    "@cgaravitoq/publish": "workspace:*"
   },
   "devDependencies": {
     "hyperframes": "0.6.70"

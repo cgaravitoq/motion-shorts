@@ -96,3 +96,6 @@ pnpm-debug.log*
 
 # Local research / design exploration artifacts (personal context; not part of the tool)
 /docs/research/
+
+# Publishing credentials (OAuth refresh tokens, long-lived platform tokens)
+/apps/hyperframe/.secrets/
