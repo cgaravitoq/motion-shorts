@@ -10,7 +10,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { validateSceneSpec } from "./lib/scene-spec.mjs";
+import { validateSceneSpec } from "./lib/scene-spec";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {

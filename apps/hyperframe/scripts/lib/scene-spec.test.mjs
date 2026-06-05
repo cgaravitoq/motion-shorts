@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
-import { validateSceneSpec } from "./scene-spec.mjs";
+import { validateSceneSpec } from "./scene-spec";
 
 const hubRoot = path.resolve(import.meta.dir, "../..");
 const realSpec = () =>

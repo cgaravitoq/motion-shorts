@@ -14,14 +14,21 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { decodeSceneTypeManifest, formatParseError, ManifestInvalid } from "@cgaravitoq/spec";
+import {
+  decodeSceneTypeManifest,
+  formatParseError,
+  ManifestInvalid,
+  type RepeatSlotDef,
+  type SceneTypeManifest,
+} from "@cgaravitoq/spec";
 import { Either } from "effect";
 
 // hubRoot is the apps/hyperframe dir. Defaults to cwd (CLI runs from there);
 // the MCP server passes an absolute path so it works from any cwd.
-const scenesRoot = (hubRoot) => path.resolve(hubRoot ?? process.cwd(), "templates/scenes");
+const scenesRoot = (hubRoot?: string): string =>
+  path.resolve(hubRoot ?? process.cwd(), "templates/scenes");
 
-export const escapeHtml = (value) =>
+export const escapeHtml = (value: unknown): string =>
   String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -31,7 +38,7 @@ export const escapeHtml = (value) =>
 const FORBIDDEN_TAG = /<(script|iframe|object|embed|link|style|meta|base)\b/i;
 const FORBIDDEN_ATTR = /\son[a-z]+\s*=/i;
 
-export function assertSafeHtml(value, field) {
+export function assertSafeHtml(value: unknown, field: string): string {
   const text = String(value);
   if (FORBIDDEN_TAG.test(text) || FORBIDDEN_ATTR.test(text)) {
     throw new Error(
@@ -41,29 +48,48 @@ export function assertSafeHtml(value, field) {
   return text;
 }
 
-const tokenize = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toUpperCase();
+const tokenize = (name: string): string =>
+  name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toUpperCase();
 
-export function resolveSceneType(type, version = 1, hubRoot) {
-  const dir = path.join(scenesRoot(hubRoot), type, `v${version}`);
-  if (!fs.existsSync(dir)) {
-    throw new Error(`unknown scene-type "${type}@${version}" (looked in ${path.relative(process.cwd(), dir)})`);
-  }
-  const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8"));
+export interface ResolvedSceneType {
+  dir: string;
+  manifest: SceneTypeManifest;
+  fragment: string;
+  styles: string;
+  timeline: string;
+}
+
+function readValidatedManifest(file: string, type: string, version: number): SceneTypeManifest {
+  const manifest: unknown = JSON.parse(fs.readFileSync(file, "utf8"));
   const decoded = decodeSceneTypeManifest(manifest);
   if (Either.isLeft(decoded)) {
     throw new ManifestInvalid({ type, version, issues: formatParseError(decoded.left, "manifest") });
   }
+  // keep the raw parse: the schema pass is validation-only, so instantiation bytes cannot change
+  return manifest as SceneTypeManifest;
+}
+
+export function resolveSceneType(type: string, version = 1, hubRoot?: string): ResolvedSceneType {
+  const dir = path.join(scenesRoot(hubRoot), type, `v${version}`);
+  if (!fs.existsSync(dir)) {
+    throw new Error(`unknown scene-type "${type}@${version}" (looked in ${path.relative(process.cwd(), dir)})`);
+  }
   return {
     dir,
-    // keep the raw parse: the schema pass is validation-only, so instantiation bytes cannot change
-    manifest,
+    manifest: readValidatedManifest(path.join(dir, "manifest.json"), type, version),
     fragment: fs.readFileSync(path.join(dir, "fragment.html"), "utf8"),
     styles: fs.readFileSync(path.join(dir, "styles.css"), "utf8"),
     timeline: fs.readFileSync(path.join(dir, "timeline.js"), "utf8"),
   };
 }
 
-export function listSceneTypes(hubRoot) {
+export interface SceneTypeListing {
+  type: string;
+  version: number;
+  manifest: SceneTypeManifest;
+}
+
+export function listSceneTypes(hubRoot?: string): SceneTypeListing[] {
   const root = scenesRoot(hubRoot);
   if (!fs.existsSync(root)) return [];
   return fs
@@ -75,13 +101,23 @@ export function listSceneTypes(hubRoot) {
         .readdirSync(typeDir, { withFileTypes: true })
         .filter((v) => v.isDirectory() && /^v\d+$/.test(v.name))
         .map((v) => {
-          const manifest = JSON.parse(fs.readFileSync(path.join(typeDir, v.name, "manifest.json"), "utf8"));
-          return { type: d.name, version: Number(v.name.slice(1)), manifest };
+          const version = Number(v.name.slice(1));
+          const manifest = readValidatedManifest(
+            path.join(typeDir, v.name, "manifest.json"),
+            d.name,
+            version,
+          );
+          return { type: d.name, version, manifest };
         });
     });
 }
 
-function renderRepeat(fragment, slotName, slotDef, items) {
+function renderRepeat(
+  fragment: string,
+  slotName: string,
+  slotDef: RepeatSlotDef,
+  items: ReadonlyArray<unknown>,
+): string {
   const re = new RegExp(`<!--\\s*repeat:${slotName}\\s*-->([\\s\\S]*?)<!--\\s*/repeat:${slotName}\\s*-->`);
   const match = fragment.match(re);
   if (!match) {
@@ -89,12 +125,13 @@ function renderRepeat(fragment, slotName, slotDef, items) {
       `scene fragment is missing a repeat block for slot "${slotName}" (expected <!-- repeat:${slotName} --> ... <!-- /repeat:${slotName} -->)`,
     );
   }
-  const rowTemplate = match[1];
+  const rowTemplate = match[1] ?? "";
   const itemDef = slotDef.item ?? {};
   const rows = items.map((item, idx) => {
     let row = rowTemplate;
+    const record = item as Record<string, unknown>;
     for (const [field, def] of Object.entries(itemDef)) {
-      let raw = item[field];
+      let raw = record[field];
       if (raw === undefined || raw === null) {
         if (def.required) throw new Error(`slot "${slotName}"[${idx}] missing required field "${field}"`);
         raw = def.default ?? "";
@@ -107,11 +144,24 @@ function renderRepeat(fragment, slotName, slotDef, items) {
   return fragment.replace(re, rows.join("\n      "));
 }
 
-export function instantiateScene({ type, version = 1, params = {}, hubRoot }) {
+export interface InstantiatedScene {
+  html: string;
+  css: string;
+  timeline: string;
+  manifest: SceneTypeManifest;
+}
+
+export function instantiateScene(args: {
+  type: string;
+  version?: number;
+  params?: Record<string, unknown>;
+  hubRoot?: string;
+}): InstantiatedScene {
+  const { type, version = 1, params = {}, hubRoot } = args;
   const resolved = resolveSceneType(type, version, hubRoot);
   const { manifest } = resolved;
   let html = resolved.fragment;
-  for (const [name, def] of Object.entries(manifest.slots ?? {})) {
+  for (const [name, def] of Object.entries(manifest.slots)) {
     if (def.kind === "repeat") {
       const items = params[name];
       if (!Array.isArray(items)) {

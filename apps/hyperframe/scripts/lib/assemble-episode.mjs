@@ -11,7 +11,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { instantiateScene } from "./scene-instantiator.mjs";
+import { instantiateScene } from "./scene-instantiator";
 
 const shellDir = (hubRoot) => path.resolve(hubRoot ?? process.cwd(), "templates/_shell");
 
