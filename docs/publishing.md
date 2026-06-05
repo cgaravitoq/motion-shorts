@@ -1,6 +1,6 @@
-# Publishing — direct YouTube + Instagram
+# Publishing — direct YouTube + Instagram, semi-auto TikTok
 
-Automated publishing for approved episodes. TikTok and LinkedIn stay manual in v1 (TikTok's Content Posting API audit prohibits personal-use apps; LinkedIn's self-serve tier issues no refresh token), so for those you paste the approved copy from `distribution.json`.
+Automated publishing for approved episodes. TikTok uses the **Upload-as-Draft inbox flow** (semi-auto: the video lands in your TikTok inbox; you paste the caption and publish in the app — TikTok's Direct Post audit prohibits personal-use apps, but the draft flow only needs the `video.upload` scope). LinkedIn stays manual (its self-serve tier issues no refresh token: OAuth re-consent every 60 days).
 
 ```
 distribution.json (approved, sha-pinned) ──publish:episode──▶ platform API
@@ -29,12 +29,22 @@ Scope is `youtube.upload` only (no CASA audit). **Uploads from unaudited API cli
 
 The video must be fetchable by URL: `publish:episode` presigns the rendered mp4 in R2 (2h TTL), which requires the direct S3 credentials (`R2_ACCESS_KEY_ID_WRITE` / `R2_SECRET_ACCESS_KEY_WRITE`) — the upload gateway alone cannot presign.
 
+### TikTok (developers.tiktok.com)
+
+1. Register at developers.tiktok.com → **Manage apps** → create an app.
+2. Add the **Login Kit** and **Content Posting API** products and request the **`video.upload`** scope only (draft-to-inbox; no audit needed — Direct Post's `video.publish` audit rejects personal upload tools).
+3. Register an **HTTPS redirect URI** (any page you control works; you only copy the `code` param from it). Put key/secret/URI in `.env` (`TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, `TIKTOK_REDIRECT_URI`).
+4. `bun run publish:auth tiktok` → open the printed URL, authorize, copy the `code` from the redirect → `bun run publish:auth tiktok --code=<code>`. Refresh tokens last ~1 year and rotate on use.
+
+Publishing sends the mp4 (chunked `FILE_UPLOAD`, ≤128MB) to your TikTok **inbox**: open the app notification, edit the draft, paste the caption the CLI prints (the inbox API takes no caption), and publish. Rate limit: 6 init requests/min.
+
 ## Publishing an episode
 
 ```bash
 bun run publish:episode <slug> --platform=youtube                    # prints the plan, publishes nothing
 bun run publish:episode <slug> --platform=youtube --confirm          # Gate 2: actually uploads (private by default)
 bun run publish:episode <slug> --platform=instagram --confirm
+bun run publish:episode <slug> --platform=tiktok --confirm           # draft to your TikTok inbox + caption to paste
 ```
 
 Options: `--lang=es|en` (default: scene-spec lang), `--privacy=private|unlisted|public` (YouTube; default private).

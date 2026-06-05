@@ -13,7 +13,7 @@ description: >
 
 > **CWD**: all bash commands assume `cd apps/hyperframe` first.
 
-Turn an episode into paste-ready, per-platform publishing copy persisted as a typed sidecar: `src/episodes/<slug>/distribution.json`. The text fields ARE the final paste-ready copy — hashtags inline, nothing to assemble later. `bun run publish:episode` consumes this file for YouTube/Instagram (docs/publishing.md); TikTok/LinkedIn publish by copy-paste.
+Turn an episode into paste-ready, per-platform publishing copy persisted as a typed sidecar: `src/episodes/<slug>/distribution.json`. The text fields ARE the final paste-ready copy — hashtags inline, nothing to assemble later. `bun run publish:episode` consumes this file for YouTube/Instagram (direct) and TikTok (draft-to-inbox; the CLI prints the caption to paste in-app) — see docs/publishing.md. LinkedIn publishes by copy-paste.
 
 ## 1. Resolve episode context
 
