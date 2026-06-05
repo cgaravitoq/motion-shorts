@@ -1,3 +1,4 @@
+import { Cause, Data, Duration, Effect, Exit, Option, Schedule } from "effect";
 import type { FetchLike } from "./fetch-like";
 
 const GRAPH_BASE = "https://graph.instagram.com";
@@ -68,7 +69,6 @@ export interface InstagramReelInput {
   pollIntervalMs?: number;
   timeoutMs?: number;
   fetchImpl?: FetchLike;
-  sleep?: (ms: number) => Promise<void>;
 }
 
 export interface InstagramReelResult {
@@ -76,8 +76,10 @@ export interface InstagramReelResult {
   permalink: string | null;
 }
 
-const defaultSleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+// Container not done yet — modeled as a failure so Schedule drives the poll.
+class ContainerPending extends Data.TaggedError("ContainerPending")<{
+  readonly status: ContainerStatus;
+}> {}
 
 export const publishInstagramReel = async ({
   accessToken,
@@ -88,7 +90,6 @@ export const publishInstagramReel = async ({
   pollIntervalMs = 5000,
   timeoutMs = 600_000,
   fetchImpl = fetch,
-  sleep = defaultSleep,
 }: InstagramReelInput): Promise<InstagramReelResult> => {
   const containerResponse = await fetchImpl(`${GRAPH}/${igUserId}/media`, {
     method: "POST",
@@ -106,26 +107,51 @@ export const publishInstagramReel = async ({
     "Instagram container create",
   );
 
-  const deadline = timeoutMs / pollIntervalMs;
-  let status: ContainerStatus = "IN_PROGRESS";
-  for (let attempt = 0; attempt < deadline; attempt++) {
-    const statusParams = new URLSearchParams({ fields: "status_code", access_token: accessToken });
-    const statusResponse = await fetchImpl(`${GRAPH}/${container.id}?${statusParams}`);
-    const statusJson = await graphJson<{ status_code: ContainerStatus }>(
-      statusResponse,
-      "Instagram container status",
-    );
-    status = statusJson.status_code;
-    if (status === "FINISHED") break;
-    if (status === "ERROR" || status === "EXPIRED") {
-      throw new Error(`Instagram container processing ended in ${status}`);
-    }
-    await sleep(pollIntervalMs);
-  }
-  if (status !== "FINISHED") {
-    throw new Error(
-      `Instagram container still ${status} after ${timeoutMs}ms — raise timeoutMs or check the video`,
-    );
+  const checkStatus = Effect.tryPromise({
+    try: async () => {
+      const statusParams = new URLSearchParams({ fields: "status_code", access_token: accessToken });
+      const statusResponse = await fetchImpl(`${GRAPH}/${container.id}?${statusParams}`);
+      const statusJson = await graphJson<{ status_code: ContainerStatus }>(
+        statusResponse,
+        "Instagram container status",
+      );
+      return statusJson.status_code;
+    },
+    catch: (cause) => (cause instanceof Error ? cause : new Error(String(cause))),
+  });
+
+  // Exponential backoff with jitter, individual delay capped at 6x the base,
+  // total polling time bounded by timeoutMs.
+  const pollSchedule = Schedule.exponential(Duration.millis(pollIntervalMs), 1.5).pipe(
+    Schedule.jittered,
+    Schedule.union(Schedule.spaced(Duration.millis(pollIntervalMs * 6))),
+    Schedule.upTo(Duration.millis(timeoutMs)),
+  );
+
+  const poll = checkStatus.pipe(
+    Effect.flatMap((status) => {
+      if (status === "FINISHED") return Effect.void;
+      if (status === "ERROR" || status === "EXPIRED") {
+        return Effect.fail(new Error(`Instagram container processing ended in ${status}`));
+      }
+      return Effect.fail(new ContainerPending({ status }));
+    }),
+    Effect.retry({ schedule: pollSchedule, while: (error) => error instanceof ContainerPending }),
+    Effect.catchIf(
+      (error): error is ContainerPending => error instanceof ContainerPending,
+      (error) =>
+        Effect.fail(
+          new Error(
+            `Instagram container still ${error.status} after ${timeoutMs}ms — raise timeoutMs or check the video`,
+          ),
+        ),
+    ),
+  );
+
+  const exit = await Effect.runPromiseExit(poll);
+  if (Exit.isFailure(exit)) {
+    const failure = Cause.failureOption(exit.cause);
+    throw Option.isSome(failure) ? failure.value : new Error(Cause.pretty(exit.cause));
   }
 
   const publishResponse = await fetchImpl(`${GRAPH}/${igUserId}/media_publish`, {

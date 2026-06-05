@@ -11,7 +11,6 @@ const scriptedFetch = (responses: Array<Record<string, unknown>>): FetchLike => 
   };
 };
 
-const noSleep = async (): Promise<void> => {};
 
 describe("publishInstagramReel", () => {
   it("creates the container, polls to FINISHED, publishes, and resolves the permalink", async () => {
@@ -29,7 +28,6 @@ describe("publishInstagramReel", () => {
       caption: "Caption #ai",
       pollIntervalMs: 1,
       fetchImpl,
-      sleep: noSleep,
     });
     expect(result).toEqual({
       mediaId: "media-9",
@@ -47,7 +45,6 @@ describe("publishInstagramReel", () => {
         caption: "c",
         pollIntervalMs: 1,
         fetchImpl,
-        sleep: noSleep,
       }),
     ).rejects.toThrow("ended in ERROR");
   });
@@ -62,7 +59,6 @@ describe("publishInstagramReel", () => {
         videoUrl: "https://x/v.mp4",
         caption: "c",
         fetchImpl,
-        sleep: noSleep,
       }),
     ).rejects.toThrow("429 Too Many Requests");
   });
@@ -76,7 +72,6 @@ describe("publishInstagramReel", () => {
         videoUrl: "https://x/v.mp4",
         caption: "c",
         fetchImpl,
-        sleep: noSleep,
       }),
     ).rejects.toThrow("Invalid token (code 190)");
   });
