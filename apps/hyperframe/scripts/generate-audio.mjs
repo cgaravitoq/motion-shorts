@@ -377,6 +377,13 @@ const main = async () => {
 
     const segmentArtifacts = [];
     let segmentTmpDir = null;
+    // finally does not run on Ctrl-C — mirror the tmpdir cleanup on signals.
+    const onSignal = (signal) => {
+      if (segmentTmpDir) fs.rmSync(segmentTmpDir, { recursive: true, force: true });
+      process.exit(signal === "SIGTERM" ? 143 : 130);
+    };
+    process.once("SIGINT", onSignal);
+    process.once("SIGTERM", onSignal);
     try {
       segmentTmpDir = fs.mkdtempSync(path.join(outDir, ".segments-"));
       for (const segment of parsedScript.segments) {
@@ -478,6 +485,8 @@ const main = async () => {
         });
       }
     } finally {
+      process.off("SIGINT", onSignal);
+      process.off("SIGTERM", onSignal);
       if (segmentTmpDir) fs.rmSync(segmentTmpDir, { recursive: true, force: true });
     }
 
