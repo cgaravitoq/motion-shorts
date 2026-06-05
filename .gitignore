@@ -93,3 +93,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Local research / design exploration artifacts (personal context; not part of the tool)
+/docs/research/
