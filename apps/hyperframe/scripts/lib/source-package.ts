@@ -44,21 +44,27 @@ export const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 const AUTH_REQUIRED_HOSTS = new Set(["accounts.google.com", "login.microsoftonline.com"]);
 const AUTH_REQUIRED_PATH_RE = /(^|\/)(login|signin|sign-in|auth|oauth|sso)(\/|$)/i;
 
-export const sourceAssetsDirForSlug = (slug) => path.join("src/episodes", slug, "assets");
+export interface SimpleValidation {
+  ok: boolean;
+  errors: string[];
+}
 
-export const sourcePackagePathForSlug = (slug) =>
+export const sourceAssetsDirForSlug = (slug: string): string =>
+  path.join("src/episodes", slug, "assets");
+
+export const sourcePackagePathForSlug = (slug: string): string =>
   path.join(sourceAssetsDirForSlug(slug), SOURCE_PACKAGE_FILENAME);
 
-export const validateEpisodeSlug = (slug) => ({
+export const validateEpisodeSlug = (slug: string): SimpleValidation => ({
   ok: SLUG_RE.test(slug),
   errors: SLUG_RE.test(slug)
     ? []
     : [`slug must be lowercase kebab-case ([a-z0-9-]+), got "${slug}"`],
 });
 
-export const validateCaptureUrl = (rawUrl) => {
-  const errors = [];
-  let parsed;
+export const validateCaptureUrl = (rawUrl: string): SimpleValidation => {
+  const errors: string[] = [];
+  let parsed: URL;
   try {
     parsed = new URL(rawUrl);
   } catch {
@@ -75,31 +81,37 @@ export const validateCaptureUrl = (rawUrl) => {
   return { ok: errors.length === 0, errors };
 };
 
-const normalizedQuarantineStem = (filename) =>
+const normalizedQuarantineStem = (filename: string): string =>
   filename
     .toLowerCase()
     .replace(/^\.+/, "")
     .replace(/\.(md|txt)$/i, "");
 
-export const isQuarantineCandidate = (filename) =>
+export const isQuarantineCandidate = (filename: string): boolean =>
   AGENT_INSTRUCTION_DENYLIST.has(normalizedQuarantineStem(filename));
 
-const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
 
-const requireString = (obj, field, errors) => {
+const requireString = (obj: Record<string, unknown>, field: string, errors: string[]): void => {
   if (typeof obj[field] !== "string" || obj[field].length === 0) {
     errors.push(`${field} must be a non-empty string`);
   }
 };
 
-const requireStringArray = (obj, field, errors) => {
-  if (!Array.isArray(obj[field]) || obj[field].some((item) => typeof item !== "string")) {
+const requireStringArray = (
+  obj: Record<string, unknown>,
+  field: string,
+  errors: string[],
+): void => {
+  const value = obj[field];
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
     errors.push(`${field} must be an array of strings`);
   }
 };
 
-export const validateSourcePackage = (obj) => {
-  const errors = [];
+export const validateSourcePackage = (obj: unknown): SimpleValidation => {
+  const errors: string[] = [];
   if (!isRecord(obj)) {
     return { ok: false, errors: ["source package must be an object"] };
   }
@@ -131,12 +143,12 @@ export const validateSourcePackage = (obj) => {
   if (!Array.isArray(obj.assets)) {
     errors.push("assets must be an array");
   } else {
-    obj.assets.forEach((asset, index) => {
+    obj.assets.forEach((asset: unknown, index) => {
       if (!isRecord(asset)) {
         errors.push(`assets[${index}] must be an object`);
         return;
       }
-      if (!SOURCE_ASSET_KINDS.includes(asset.kind)) {
+      if (typeof asset.kind !== "string" || !SOURCE_ASSET_KINDS.includes(asset.kind)) {
         errors.push(`assets[${index}].kind must be one of ${SOURCE_ASSET_KINDS.join(", ")}`);
       }
       for (const field of ["localPath", "sourceUrl"]) {
@@ -144,22 +156,22 @@ export const validateSourcePackage = (obj) => {
           errors.push(`assets[${index}].${field} must be a non-empty string`);
         }
       }
-      if (asset.bytes !== undefined && (!Number.isInteger(asset.bytes) || asset.bytes < 0)) {
+      if (asset.bytes !== undefined && (!Number.isInteger(asset.bytes) || (asset.bytes as number) < 0)) {
         errors.push(`assets[${index}].bytes must be a non-negative integer when present`);
       }
-      if (asset.role !== undefined && !SOURCE_ASSET_ROLES.includes(asset.role)) {
+      if (asset.role !== undefined && !SOURCE_ASSET_ROLES.includes(asset.role as string)) {
         errors.push(`assets[${index}].role must be one of ${SOURCE_ASSET_ROLES.join(", ")} when present`);
       }
-      if (asset.motion !== undefined && !SOURCE_ASSET_MOTION.includes(asset.motion)) {
+      if (asset.motion !== undefined && !SOURCE_ASSET_MOTION.includes(asset.motion as string)) {
         errors.push(`assets[${index}].motion must be one of ${SOURCE_ASSET_MOTION.join(", ")} when present`);
       }
       if (asset.altText !== undefined && typeof asset.altText !== "string") {
         errors.push(`assets[${index}].altText must be a string when present`);
       }
-      if (asset.licenseRisk !== undefined && !["low", "review", "blocked"].includes(asset.licenseRisk)) {
+      if (asset.licenseRisk !== undefined && !["low", "review", "blocked"].includes(asset.licenseRisk as string)) {
         errors.push(`assets[${index}].licenseRisk must be low, review, or blocked when present`);
       }
-      if (asset.brandRisk !== undefined && !["low", "review", "blocked"].includes(asset.brandRisk)) {
+      if (asset.brandRisk !== undefined && !["low", "review", "blocked"].includes(asset.brandRisk as string)) {
         errors.push(`assets[${index}].brandRisk must be low, review, or blocked when present`);
       }
       if (asset.transparent !== undefined && typeof asset.transparent !== "boolean") {
@@ -179,7 +191,7 @@ export const validateSourcePackage = (obj) => {
           }
         }
       }
-      if (asset.sha256 !== undefined && !/^[a-f0-9]{64}$/.test(asset.sha256)) {
+      if (asset.sha256 !== undefined && !/^[a-f0-9]{64}$/.test(asset.sha256 as string)) {
         errors.push(`assets[${index}].sha256 must be a lowercase sha256 hex digest when present`);
       }
       if (asset.quarantined !== undefined && typeof asset.quarantined !== "boolean") {
@@ -217,12 +229,15 @@ export const validateSourcePackage = (obj) => {
   if (!isRecord(obj.publishability)) {
     errors.push("publishability must be an object");
   } else {
-    if (!PUBLISHABILITY_STATUSES.includes(obj.publishability.status)) {
+    if (
+      typeof obj.publishability.status !== "string" ||
+      !PUBLISHABILITY_STATUSES.includes(obj.publishability.status)
+    ) {
       errors.push(`publishability.status must be one of ${PUBLISHABILITY_STATUSES.join(", ")}`);
     }
     if (
       !Array.isArray(obj.publishability.reasons) ||
-      obj.publishability.reasons.some((reason) => typeof reason !== "string")
+      obj.publishability.reasons.some((reason: unknown) => typeof reason !== "string")
     ) {
       errors.push("publishability.reasons must be an array of strings");
     }

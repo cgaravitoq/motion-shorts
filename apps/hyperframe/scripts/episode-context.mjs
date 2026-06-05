@@ -9,7 +9,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { resolveEpisodeContext } from "./lib/episode-context.mjs";
+import { resolveEpisodeContext } from "./lib/episode-context";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {

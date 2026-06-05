@@ -10,8 +10,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
-export const createTimer = () => {
-  const stages = new Map();
+export interface StageTimer {
+  start(stage: string): void;
+  end(stage: string): number | null;
+  durations(): Record<string, number>;
+  totalMs(): number;
+}
+
+export const createTimer = (): StageTimer => {
+  const stages = new Map<string, { startedAt: number; durationMs: number | null }>();
   const t0 = performance.now();
   return {
     start(stage) {
@@ -24,7 +31,7 @@ export const createTimer = () => {
       return entry.durationMs;
     },
     durations() {
-      const out = {};
+      const out: Record<string, number> = {};
       for (const [k, v] of stages) {
         if (v.durationMs !== null) out[k] = Number(v.durationMs.toFixed(1));
       }
@@ -36,17 +43,26 @@ export const createTimer = () => {
   };
 };
 
+export interface AssetInventory {
+  fileCount: number;
+  totalBytes: number;
+  topFiles: Array<{ path: string; bytes: number }>;
+}
+
 // Walks `dir` recursively and returns the file inventory. Symlinks are
 // followed for file content (assets/voice.mp3 lives behind a symlink in the
 // working copy), but the walker skips already-visited real paths so a
 // pathological loop can't hang the render. Errors on individual files are
 // swallowed; the inventory is best-effort observability, not a correctness
 // signal.
-export const collectAssetInventory = (dir, { topN = 5 } = {}) => {
-  const files = [];
-  const seen = new Set();
-  const walk = (current) => {
-    let entries;
+export const collectAssetInventory = (
+  dir: string,
+  { topN = 5 }: { topN?: number } = {},
+): AssetInventory => {
+  const files: Array<{ path: string; bytes: number }> = [];
+  const seen = new Set<string>();
+  const walk = (current: string): void => {
+    let entries: fs.Dirent[];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
     } catch {
@@ -54,7 +70,7 @@ export const collectAssetInventory = (dir, { topN = 5 } = {}) => {
     }
     for (const entry of entries) {
       const full = path.join(current, entry.name);
-      let stat;
+      let stat: fs.Stats;
       try {
         stat = fs.statSync(full);
       } catch {
@@ -85,7 +101,7 @@ export const collectAssetInventory = (dir, { topN = 5 } = {}) => {
   };
 };
 
-export const formatBytes = (bytes) => {
+export const formatBytes = (bytes: number): string => {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0B";
   const units = ["B", "KB", "MB", "GB"];
   let value = bytes;
@@ -102,13 +118,23 @@ export const formatBytes = (bytes) => {
   return `${rounded}${units[unit]}`;
 };
 
-const formatStageSeconds = (ms) => {
+const formatStageSeconds = (ms: number): string => {
   const s = ms / 1000;
   if (s >= 10) return `${s.toFixed(0)}s`;
   return `${s.toFixed(1)}s`;
 };
 
-export const formatSummaryLine = ({ slug, durations, totalMs, totalBytes }) => {
+export const formatSummaryLine = ({
+  slug,
+  durations,
+  totalMs,
+  totalBytes,
+}: {
+  slug: string;
+  durations: Record<string, number>;
+  totalMs: number;
+  totalBytes: number;
+}): string => {
   const stageOrder = ["materialise", "render", "upload"];
   const parts = [];
   for (const stage of stageOrder) {
@@ -121,10 +147,23 @@ export const formatSummaryLine = ({ slug, durations, totalMs, totalBytes }) => {
   return `✓ rendered ${slug} in ${total}${breakdown} · ${formatBytes(totalBytes)}`;
 };
 
-export const appendLedger = (ledgerPath, record) => {
+export const appendLedger = (ledgerPath: string, record: Record<string, unknown>): void => {
   fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
   fs.appendFileSync(ledgerPath, `${JSON.stringify(record)}\n`);
 };
+
+export interface RenderRecord {
+  ts: string;
+  slug: string;
+  format: string;
+  variant: string;
+  quality: string;
+  fps: number;
+  totalMs: number;
+  stages: Record<string, number>;
+  assets: AssetInventory;
+  uploaded: boolean;
+}
 
 export const buildRecord = ({
   slug,
@@ -136,7 +175,17 @@ export const buildRecord = ({
   totalMs,
   inventory,
   uploaded,
-}) => ({
+}: {
+  slug: string;
+  format: string;
+  variant?: string;
+  quality: string;
+  fps: number;
+  durations: Record<string, number>;
+  totalMs: number;
+  inventory: AssetInventory;
+  uploaded: boolean;
+}): RenderRecord => ({
   ts: new Date().toISOString(),
   slug,
   format,

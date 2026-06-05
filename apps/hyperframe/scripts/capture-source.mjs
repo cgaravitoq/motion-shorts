@@ -13,7 +13,7 @@ import {
   validateCaptureUrl,
   validateEpisodeSlug,
   validateSourcePackage,
-} from "./lib/source-package.mjs";
+} from "./lib/source-package";
 
 const appDir = path.resolve(import.meta.dirname, "..");
 

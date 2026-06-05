@@ -37,8 +37,8 @@ import {
 } from "@cgaravitoq/publish";
 import { decodePublishLedger, formatParseError } from "@cgaravitoq/spec";
 import { Either } from "effect";
-import { validateDistribution } from "./lib/distribution-spec.mjs";
-import { resolveEpisodeContext } from "./lib/episode-context.mjs";
+import { validateDistribution } from "./lib/distribution-spec";
+import { resolveEpisodeContext } from "./lib/episode-context";
 import {
   assertR2Config,
   loadWorkspaceEnv,

@@ -18,7 +18,7 @@ import {
   validateCaptureUrl,
   validateEpisodeSlug,
   validateSourcePackage,
-} from "./source-package.mjs";
+} from "./source-package";
 
 const appDir = path.resolve(import.meta.dirname, "../..");
 const episodesDir = path.join(appDir, "src/episodes");

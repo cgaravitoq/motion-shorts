@@ -25,9 +25,13 @@ const STATUSES = ["draft", "approved", "rejected"];
 const LANGS = ["es", "en"];
 const HASHTAG_RE = /#[^\s#]+/g;
 
-const utf8Bytes = (s) => new TextEncoder().encode(s).length;
-const countHashtags = (s) => (s.match(HASHTAG_RE) ?? []).length;
-const hashtagSet = (s) => new Set((s.match(HASHTAG_RE) ?? []).map((h) => h.toLowerCase()));
+type CopyBlock = Record<string, unknown>;
+type PlatformBlock = Record<string, unknown>;
+
+const utf8Bytes = (s: string): number => new TextEncoder().encode(s).length;
+const countHashtags = (s: string): number => (s.match(HASHTAG_RE) ?? []).length;
+const hashtagSet = (s: string): Set<string> =>
+  new Set((s.match(HASHTAG_RE) ?? []).map((h) => h.toLowerCase()));
 
 // Verified platform hard limits (docs/research/distribution-publishing.research.json).
 export const PLATFORM_LIMITS = {
@@ -46,7 +50,12 @@ const HASHTAG_STYLE = {
   linkedin: { min: 0, max: 3 },
 };
 
-const checkRequiredText = (block, field, label, errors) => {
+const checkRequiredText = (
+  block: CopyBlock,
+  field: string,
+  label: string,
+  errors: string[],
+): string | null => {
   const value = block[field];
   if (typeof value !== "string" || value.trim() === "") {
     errors.push(`${label}.${field} must be a non-empty string`);
@@ -55,7 +64,14 @@ const checkRequiredText = (block, field, label, errors) => {
   return value;
 };
 
-const checkHashtagStyle = (text, label, errors, warnings, hardMax, band) => {
+const checkHashtagStyle = (
+  text: string,
+  label: string,
+  errors: string[],
+  warnings: string[],
+  hardMax: number | null,
+  band: { min: number; max: number },
+): void => {
   const n = countHashtags(text);
   if (hardMax != null && n > hardMax)
     errors.push(`${label} has ${n} hashtags; platform max is ${hardMax}`);
@@ -64,7 +80,9 @@ const checkHashtagStyle = (text, label, errors, warnings, hardMax, band) => {
   }
 };
 
-const PLATFORM_CHECKS = {
+type PlatformCheck = (block: CopyBlock, label: string, errors: string[], warnings: string[]) => void;
+
+const PLATFORM_CHECKS: Record<string, PlatformCheck> = {
   youtube(block, label, errors, warnings) {
     const limits = PLATFORM_LIMITS.youtube;
     const title = checkRequiredText(block, "title", label, errors);
@@ -137,34 +155,48 @@ const PLATFORM_CHECKS = {
 
 export const PLATFORM_NAMES = Object.keys(PLATFORM_CHECKS);
 
-const platformText = (block) =>
+const platformText = (block: CopyBlock): string =>
   Object.values(block)
-    .filter((v) => typeof v === "string")
+    .filter((v): v is string => typeof v === "string")
     .join("\n");
 
-export function validateDistribution(dist, { renderSha256 } = {}) {
-  const errors = [];
-  const warnings = [];
+export interface DistributionValidation {
+  ok: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export function validateDistribution(
+  dist: unknown,
+  { renderSha256 }: { renderSha256?: string } = {},
+): DistributionValidation {
+  const errors: string[] = [];
+  const warnings: string[] = [];
 
   if (!dist || typeof dist !== "object")
     return { ok: false, errors: ["distribution is not an object"], warnings };
-  if (!dist.slug || !SLUG_RE.test(dist.slug))
-    errors.push(`slug must be kebab-case, got "${dist.slug}"`);
+  const record = dist as {
+    slug?: unknown;
+    renderRef?: { sha256?: unknown } | null;
+    platforms?: Record<string, PlatformBlock | null | undefined>;
+  };
+  if (typeof record.slug !== "string" || !SLUG_RE.test(record.slug))
+    errors.push(`slug must be kebab-case, got "${record.slug}"`);
 
-  if (dist.renderRef != null && typeof dist.renderRef.sha256 !== "string") {
+  if (record.renderRef != null && typeof record.renderRef.sha256 !== "string") {
     errors.push("renderRef.sha256 must be a string when renderRef is set");
   }
 
   if (
-    !dist.platforms ||
-    typeof dist.platforms !== "object" ||
-    Object.keys(dist.platforms).length === 0
+    !record.platforms ||
+    typeof record.platforms !== "object" ||
+    Object.keys(record.platforms).length === 0
   ) {
     errors.push("platforms must be a non-empty object");
     return { ok: errors.length === 0, errors, warnings };
   }
 
-  for (const [name, block] of Object.entries(dist.platforms)) {
+  for (const [name, block] of Object.entries(record.platforms)) {
     const check = PLATFORM_CHECKS[name];
     if (!check) {
       errors.push(`unknown platform "${name}" (allowed: ${PLATFORM_NAMES.join(", ")})`);
@@ -174,7 +206,7 @@ export function validateDistribution(dist, { renderSha256 } = {}) {
       errors.push(`platform "${name}" must be an object`);
       continue;
     }
-    if (!STATUSES.includes(block.status)) {
+    if (typeof block.status !== "string" || !STATUSES.includes(block.status)) {
       errors.push(
         `platform "${name}" status must be one of ${STATUSES.join("|")}, got "${block.status}"`,
       );
@@ -193,12 +225,13 @@ export function validateDistribution(dist, { renderSha256 } = {}) {
       warnings.push(`platform "${name}" is missing "${lang}" copy (house contract is ES+EN)`);
     }
     for (const lang of present) {
-      check(block[lang], `${name}.${lang}`, errors, warnings);
+      check(block[lang] as CopyBlock, `${name}.${lang}`, errors, warnings);
     }
 
     if (present.length === LANGS.length) {
-      const sets = present.map((l) => hashtagSet(platformText(block[l])));
-      const same = sets[0].size === sets[1].size && [...sets[0]].every((h) => sets[1].has(h));
+      const sets = present.map((l) => hashtagSet(platformText(block[l] as CopyBlock)));
+      const same =
+        sets[0] && sets[1] && sets[0].size === sets[1].size && [...sets[0]].every((h) => sets[1]?.has(h));
       if (!same)
         warnings.push(
           `platform "${name}" uses different hashtag sets in ES and EN (house style: same set)`,
@@ -206,7 +239,7 @@ export function validateDistribution(dist, { renderSha256 } = {}) {
     }
 
     if (block.status === "approved") {
-      if (!dist.renderRef?.sha256) {
+      if (!record.renderRef?.sha256) {
         errors.push(
           `platform "${name}" is approved but renderRef.sha256 is missing — approve against a rendered mp4`,
         );
@@ -214,19 +247,19 @@ export function validateDistribution(dist, { renderSha256 } = {}) {
         errors.push(
           `platform "${name}" is approved but the episode has no render.remote.json mp4 to pin against`,
         );
-      } else if (dist.renderRef.sha256 !== renderSha256) {
+      } else if (record.renderRef.sha256 !== renderSha256) {
         errors.push(
-          `platform "${name}" is approved against a stale render (pinned ${dist.renderRef.sha256.slice(0, 12)}…, current ${renderSha256.slice(0, 12)}…) — re-review and reset to draft`,
+          `platform "${name}" is approved against a stale render (pinned ${String(record.renderRef.sha256).slice(0, 12)}…, current ${renderSha256.slice(0, 12)}…) — re-review and reset to draft`,
         );
       }
     }
   }
 
   if (
-    dist.renderRef?.sha256 &&
+    typeof record.renderRef?.sha256 === "string" &&
     renderSha256 !== undefined &&
-    dist.renderRef.sha256 !== renderSha256 &&
-    !Object.values(dist.platforms).some((b) => b?.status === "approved")
+    record.renderRef.sha256 !== renderSha256 &&
+    !Object.values(record.platforms).some((b) => b?.status === "approved")
   ) {
     warnings.push(
       "renderRef.sha256 no longer matches render.remote.json — refresh the pin before approving",

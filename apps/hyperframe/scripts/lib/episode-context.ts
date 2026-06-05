@@ -9,17 +9,46 @@ import path from "node:path";
 
 const BREAK_TAG_RE = /<break\b[^>]*>/g;
 
-// MCP generate_audio writes { words: [...] }; the episode asset is a bare array.
-export function parseCaptionWords(json) {
-  const words = Array.isArray(json) ? json : json?.words;
-  return Array.isArray(words) ? words : null;
+export interface CaptionWord {
+  end: number;
+  [key: string]: unknown;
 }
 
-export function resolveEpisodeContext(slug, { appRoot = process.cwd() } = {}) {
-  const episodeDir = path.join(appRoot, "src/episodes", slug);
-  const warnings = [];
+// MCP generate_audio writes { words: [...] }; the episode asset is a bare array.
+export function parseCaptionWords(json: unknown): CaptionWord[] | null {
+  const words = Array.isArray(json) ? json : (json as { words?: unknown } | null)?.words;
+  return Array.isArray(words) ? (words as CaptionWord[]) : null;
+}
 
-  const readJson = (file, label) => {
+export interface EpisodeRenderRef {
+  key: string;
+  sha256: string;
+  bytes: number;
+  runId: string | null;
+}
+
+export interface EpisodeContext {
+  slug: string;
+  meta: Record<string, unknown> | null;
+  spec: Record<string, unknown> | null;
+  narration: string | null;
+  captions: {
+    wordCount: number;
+    endSeconds: number | null;
+    durationSeconds: number | null;
+  };
+  renderRef: EpisodeRenderRef | null;
+  warnings: string[];
+}
+
+export function resolveEpisodeContext(
+  slug: string,
+  { appRoot = process.cwd() }: { appRoot?: string } = {},
+): EpisodeContext {
+  const episodeDir = path.join(appRoot, "src/episodes", slug);
+  const warnings: string[] = [];
+
+  const readJson = (file: string, label: string): Record<string, unknown> | unknown[] | null => {
     if (!fs.existsSync(file)) {
       warnings.push(`${label} not found at ${path.relative(appRoot, file)}`);
       return null;
@@ -27,16 +56,23 @@ export function resolveEpisodeContext(slug, { appRoot = process.cwd() } = {}) {
     try {
       return JSON.parse(fs.readFileSync(file, "utf8"));
     } catch (err) {
-      warnings.push(`${label} is not valid JSON: ${err.message}`);
+      const detail = err instanceof Error ? err.message : String(err);
+      warnings.push(`${label} is not valid JSON: ${detail}`);
       return null;
     }
   };
 
-  const meta = readJson(path.join(episodeDir, "meta.json"), "meta.json");
-  const spec = readJson(path.join(episodeDir, "scene-spec.json"), "scene-spec.json");
+  const meta = readJson(path.join(episodeDir, "meta.json"), "meta.json") as Record<
+    string,
+    unknown
+  > | null;
+  const spec = readJson(path.join(episodeDir, "scene-spec.json"), "scene-spec.json") as Record<
+    string,
+    unknown
+  > | null;
 
   const narrationPath = path.join(appRoot, "examples", `${slug}.txt`);
-  let narration = null;
+  let narration: string | null = null;
   if (fs.existsSync(narrationPath)) {
     narration = fs.readFileSync(narrationPath, "utf8").replace(BREAK_TAG_RE, "").trim();
   } else {
@@ -47,7 +83,7 @@ export function resolveEpisodeContext(slug, { appRoot = process.cwd() } = {}) {
   const words = captionsJson ? parseCaptionWords(captionsJson) : null;
   if (captionsJson && !words)
     warnings.push("captions.json has neither a bare word array nor a words[] wrapper");
-  const endSeconds = words?.length ? words[words.length - 1].end : null;
+  const endSeconds = words?.length ? (words[words.length - 1]?.end ?? null) : null;
   const tail = typeof meta?.tail === "number" ? meta.tail : 0;
   const captions = {
     wordCount: words?.length ?? 0,
@@ -58,16 +94,16 @@ export function resolveEpisodeContext(slug, { appRoot = process.cwd() } = {}) {
   const renderManifest = readJson(
     path.join(episodeDir, "render.remote.json"),
     "render.remote.json",
-  );
+  ) as { objects?: Array<Record<string, unknown>>; runId?: string } | null;
   const renderObject = renderManifest?.objects?.find(
     (o) => o.category === "renders" && o.contentType === "video/mp4",
   );
-  const renderRef = renderObject
+  const renderRef: EpisodeRenderRef | null = renderObject
     ? {
-        key: renderObject.key,
-        sha256: renderObject.sha256,
-        bytes: renderObject.bytes,
-        runId: renderManifest.runId ?? null,
+        key: renderObject.key as string,
+        sha256: renderObject.sha256 as string,
+        bytes: renderObject.bytes as number,
+        runId: renderManifest?.runId ?? null,
       }
     : null;
   if (renderManifest && !renderObject)

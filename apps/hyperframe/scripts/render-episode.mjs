@@ -43,7 +43,7 @@ import {
   collectAssetInventory,
   createTimer,
   formatSummaryLine,
-} from "./lib/telemetry.mjs";
+} from "./lib/telemetry";
 
 const LEDGER_PATH = path.resolve(".metrics/runs.ndjson");
 

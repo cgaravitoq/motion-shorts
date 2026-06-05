@@ -10,7 +10,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { validateDistribution } from "./lib/distribution-spec.mjs";
+import { validateDistribution } from "./lib/distribution-spec";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {
