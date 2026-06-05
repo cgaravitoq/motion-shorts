@@ -571,7 +571,12 @@ const categoryForExt = (ext) => {
   return "images";
 };
 
-const SOURCE_EPISODE_FILES = ["scene-spec.json", "meta.json", "hyperframes.json"];
+const SOURCE_EPISODE_FILES = [
+  "scene-spec.json",
+  "meta.json",
+  "hyperframes.json",
+  "distribution.json",
+];
 
 const listFilesRecursive = async (dir) => {
   let entries;

@@ -12,6 +12,7 @@
     "scene:check": "bun run scripts/scene-check-all.mjs",
     "copy:check": "bun run scripts/copy-check.mjs",
     "copy:gate": "bun run scripts/copy-voice-gate.mjs",
+    "copy:sync": "bun run scripts/copy-sync.mjs",
     "scene:gallery": "bun run scripts/build-catalog-demo.mjs",
     "lint:seek-safe": "bun run scripts/lint-seek-safe.mjs",
     "lint:desktop-safe": "bun run scripts/lint-desktop-safe.mjs",
