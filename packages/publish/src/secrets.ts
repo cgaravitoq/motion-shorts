@@ -1,13 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export type PublishPlatform = "youtube" | "instagram";
+export type PublishPlatform = "youtube" | "instagram" | "tiktok";
 
 export interface StoredToken {
   platform: PublishPlatform;
   accessToken: string;
   refreshToken?: string;
   igUserId?: string;
+  openId?: string;
   username?: string;
   obtainedAt: string;
   expiresAt?: string;

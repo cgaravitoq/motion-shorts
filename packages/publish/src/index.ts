@@ -16,6 +16,19 @@ export {
   writeStoredToken,
 } from "./secrets";
 export {
+  exchangeTiktokCode,
+  type InboxUploadStatus,
+  refreshTiktokToken,
+  TIKTOK_UPLOAD_SCOPE,
+  type TiktokInboxUploadInput,
+  type TiktokInboxUploadResult,
+  type TiktokOAuthConfig,
+  type TiktokTokens,
+  tiktokAuthUrl,
+  tiktokChunkPlan,
+  uploadTiktokDraft,
+} from "./tiktok";
+export {
   exchangeYoutubeCode,
   refreshYoutubeAccessToken,
   uploadYoutubeVideo,

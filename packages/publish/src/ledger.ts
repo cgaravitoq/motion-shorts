@@ -1,5 +1,5 @@
 export interface PublishRecord {
-  status: "published" | "failed";
+  status: "published" | "inbox" | "failed";
   id?: string;
   url?: string;
   publishedAt?: string;
