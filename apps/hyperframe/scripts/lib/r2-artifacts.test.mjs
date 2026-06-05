@@ -7,6 +7,7 @@ import {
   assertR2Config,
   collectEpisodeArtifacts,
   hydrateEpisodeArtifacts,
+  hydrateEpisodeFinal,
   loadWorkspaceEnv,
   objectKeyFor,
   publishEpisodeArtifacts,
@@ -32,6 +33,23 @@ const gatewayEnv = {
 const keyFromUrl = (url) => {
   const parsed = new URL(url);
   return decodeURIComponent(parsed.pathname.replace(/^\/bucket-name\//, ""));
+};
+
+// Models real R2 semantics: PUT stores per key, GET on a missing key is a 404.
+const createS3Store = () => {
+  const store = new Map();
+  const fetchImpl = async (url, init = {}) => {
+    const key = keyFromUrl(url);
+    if (init.method === "PUT") {
+      store.set(key, Buffer.from(await new Response(init.body).arrayBuffer()));
+      return new Response(null, { status: 200 });
+    }
+    const body = store.get(key);
+    return body === undefined
+      ? new Response(null, { status: 404 })
+      : new Response(body, { status: 200 });
+  };
+  return { store, fetchImpl };
 };
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
@@ -125,15 +143,14 @@ describe("r2 artifact publishing", () => {
     await rm(root, { recursive: true, force: true });
   });
 
-  it("builds deterministic episode run keys", () => {
+  it("builds deterministic episode final keys", () => {
     expect(
       objectKeyFor({
         slug: "demo-short",
-        runId: "2026-05-10T120000Z",
         category: "renders",
         filename: "demo-short.mp4",
       }),
-    ).toBe("motion-shorts/episodes/demo-short/runs/2026-05-10T120000Z/renders/demo-short.mp4");
+    ).toBe("motion-shorts/episodes/demo-short/final/renders/demo-short.mp4");
   });
 
   it("fails fast when upload is requested without an R2 transport", () => {
@@ -247,16 +264,47 @@ describe("r2 artifact publishing", () => {
       episodeDir,
       renderPath: path.join(root, "demo-short.mp4"),
       slug: "demo-short",
-      runId: "run-1",
     });
 
     expect(artifacts.map((artifact) => artifact.key).sort()).toEqual([
-      "motion-shorts/episodes/demo-short/runs/run-1/audio/captions.json",
-      "motion-shorts/episodes/demo-short/runs/run-1/audio/voice.mp3",
-      "motion-shorts/episodes/demo-short/runs/run-1/fonts/font.woff2",
-      "motion-shorts/episodes/demo-short/runs/run-1/images/cover.png",
-      "motion-shorts/episodes/demo-short/runs/run-1/renders/demo-short.mp4",
+      "motion-shorts/episodes/demo-short/final/audio/captions.json",
+      "motion-shorts/episodes/demo-short/final/audio/voice.mp3",
+      "motion-shorts/episodes/demo-short/final/fonts/font.woff2",
+      "motion-shorts/episodes/demo-short/final/images/cover.png",
+      "motion-shorts/episodes/demo-short/final/renders/demo-short.mp4",
     ]);
+
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("collects episode source files with app-root-relative paths", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "r2-source-artifacts-"));
+    const episodeDir = path.join(root, "src/episodes/demo-short");
+    await mkdir(path.join(episodeDir, "assets/generated"), { recursive: true });
+    await mkdir(path.join(root, "examples"), { recursive: true });
+    await writeFile(path.join(root, "demo-short.mp4"), "video");
+    await writeFile(path.join(episodeDir, "scene-spec.json"), "{}");
+    await writeFile(path.join(episodeDir, "meta.json"), "{}");
+    await writeFile(path.join(root, "examples/demo-short.txt"), "script");
+    await writeFile(path.join(episodeDir, "assets/generated/hook.svg"), "<svg/>");
+
+    const artifacts = await collectEpisodeArtifacts({
+      episodeDir,
+      renderPath: path.join(root, "demo-short.mp4"),
+      slug: "demo-short",
+    });
+
+    const source = artifacts.filter((artifact) => artifact.manifest === "source");
+    expect(source.map((artifact) => artifact.key).sort()).toEqual([
+      "motion-shorts/episodes/demo-short/final/source/assets/generated/hook.svg",
+      "motion-shorts/episodes/demo-short/final/source/examples/demo-short.txt",
+      "motion-shorts/episodes/demo-short/final/source/meta.json",
+      "motion-shorts/episodes/demo-short/final/source/scene-spec.json",
+    ]);
+    const spec = source.find((artifact) => artifact.localPath.endsWith("scene-spec.json"));
+    expect(spec.relPath).toBe("src/episodes/demo-short/scene-spec.json");
+    const script = source.find((artifact) => artifact.localPath.endsWith("demo-short.txt"));
+    expect(script.relPath).toBe("examples/demo-short.txt");
 
     await rm(root, { recursive: true, force: true });
   });
@@ -271,15 +319,7 @@ describe("r2 artifact publishing", () => {
     await writeFile(path.join(assetsDir, "voice.mp3"), "audio-bytes");
     await writeFile(path.join(assetsDir, "captions.json"), "[]");
     await writeFile(path.join(assetsDir, "font.woff2"), "font-bytes");
-    const store = new Map();
-    const fetchImpl = async (url, init) => {
-      const key = keyFromUrl(url);
-      if (init.method === "PUT") {
-        store.set(key, Buffer.from(await new Response(init.body).arrayBuffer()));
-        return new Response(null, { status: 200 });
-      }
-      return new Response(store.get(key), { status: 200 });
-    };
+    const { store, fetchImpl } = createS3Store();
 
     const result = await publishEpisodeArtifacts({
       slug: "demo-short",
@@ -300,28 +340,62 @@ describe("r2 artifact publishing", () => {
     expect(renderManifest.provider).toBe("cloudflare-r2");
     expect(renderManifest.objects[0].sha256).toMatch(/^[a-f0-9]{64}$/);
     expect(assetsManifest.objects.map((object) => object.key).sort()).toEqual([
-      "motion-shorts/episodes/demo-short/runs/run-1/audio/captions.json",
-      "motion-shorts/episodes/demo-short/runs/run-1/audio/voice.mp3",
-      "motion-shorts/episodes/demo-short/runs/run-1/fonts/font.woff2",
+      "motion-shorts/episodes/demo-short/final/audio/captions.json",
+      "motion-shorts/episodes/demo-short/final/audio/voice.mp3",
+      "motion-shorts/episodes/demo-short/final/fonts/font.woff2",
     ]);
     const fontUpload = result.uploaded.find((item) => item.localPath.endsWith("font.woff2"));
     expect(fontUpload.category).toBe("fonts");
     expect(fontUpload.contentType).toBe("font/woff2");
     expect(await readFile(renderPath, "utf8")).toBe("video-bytes");
+    expect(store.has("motion-shorts/episodes/demo-short/final/manifests/render.remote.json")).toBe(
+      true,
+    );
+    expect(store.has("motion-shorts/episodes/demo-short/final/manifests/source.remote.json")).toBe(
+      true,
+    );
+    const index = JSON.parse(store.get("motion-shorts/index.json").toString("utf8"));
+    expect(index.episodes["demo-short"].finalRunId).toBe("run-1");
 
     await rm(root, { recursive: true, force: true });
   });
 
-  it("merges new asset uploads with an existing assets manifest", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "r2-merge-manifest-"));
+  it("keeps sibling episodes in the bucket index across publishes", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "r2-index-upsert-"));
+    const { store, fetchImpl } = createS3Store();
+    for (const slug of ["short-a", "short-b"]) {
+      const episodeDir = path.join(root, "src/episodes", slug);
+      await mkdir(path.join(episodeDir, "assets"), { recursive: true });
+      const renderPath = path.join(root, `${slug}.mp4`);
+      await writeFile(renderPath, `video-${slug}`);
+      await publishEpisodeArtifacts({
+        slug,
+        episodeDir,
+        renderPath,
+        runId: `run-${slug}`,
+        env,
+        fetchImpl,
+      });
+    }
+
+    const index = JSON.parse(store.get("motion-shorts/index.json").toString("utf8"));
+    expect(Object.keys(index.episodes).sort()).toEqual(["short-a", "short-b"]);
+    expect(index.episodes["short-a"].finalRunId).toBe("run-short-a");
+    expect(index.episodes["short-b"].finalRunId).toBe("run-short-b");
+
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it("replaces the assets manifest with the published final set", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "r2-replace-manifest-"));
     const episodeDir = path.join(root, "src/episodes/demo-short");
     const assetsDir = path.join(episodeDir, "assets");
     const renderPath = path.join(root, "demo-short.mp4");
     await mkdir(assetsDir, { recursive: true });
     await writeFile(renderPath, "video-bytes");
     await writeFile(path.join(assetsDir, "voice.mp3"), "audio-bytes");
-    const fontObject = {
-      key: "motion-shorts/episodes/demo-short/runs/migration/fonts/font.woff2",
+    const staleObject = {
+      key: "motion-shorts/episodes/demo-short/final/fonts/font.woff2",
       category: "fonts",
       bytes: 10,
       sha256: sha256("font-bytes"),
@@ -330,16 +404,8 @@ describe("r2 artifact publishing", () => {
       url: null,
       signedUrlTtlSeconds: 900,
     };
-    await writeAssetsManifest({ root, object: fontObject });
-    const store = new Map();
-    const fetchImpl = async (url, init) => {
-      const key = keyFromUrl(url);
-      if (init.method === "PUT") {
-        store.set(key, Buffer.from(await new Response(init.body).arrayBuffer()));
-        return new Response(null, { status: 200 });
-      }
-      return new Response(store.get(key), { status: 200 });
-    };
+    await writeAssetsManifest({ root, object: staleObject });
+    const { fetchImpl } = createS3Store();
 
     await publishEpisodeArtifacts({
       slug: "demo-short",
@@ -353,9 +419,8 @@ describe("r2 artifact publishing", () => {
     const assetsManifest = JSON.parse(
       await readFile(path.join(episodeDir, "assets.remote.json"), "utf8"),
     );
-    expect(assetsManifest.objects.map((object) => object.key).sort()).toEqual([
-      "motion-shorts/episodes/demo-short/runs/migration/fonts/font.woff2",
-      "motion-shorts/episodes/demo-short/runs/run-1/audio/voice.mp3",
+    expect(assetsManifest.objects.map((object) => object.key)).toEqual([
+      "motion-shorts/episodes/demo-short/final/audio/voice.mp3",
     ]);
 
     await rm(root, { recursive: true, force: true });
@@ -367,15 +432,7 @@ describe("r2 artifact publishing", () => {
     const renderPath = path.join(root, "demo-short.mp4");
     await mkdir(path.join(episodeDir, "assets"), { recursive: true });
     await writeFile(renderPath, "video-bytes");
-    const store = new Map();
-    const fetchImpl = async (url, init) => {
-      const key = keyFromUrl(url);
-      if (init.method === "PUT") {
-        store.set(key, Buffer.from(await new Response(init.body).arrayBuffer()));
-        return new Response(null, { status: 200 });
-      }
-      return new Response(store.get(key), { status: 200 });
-    };
+    const { fetchImpl } = createS3Store();
 
     await publishEpisodeArtifacts({
       slug: "demo-short",
@@ -396,13 +453,19 @@ describe("r2 artifact publishing", () => {
     const root = await mkdtemp(path.join(tmpdir(), "r2-gateway-"));
     const filePath = path.join(root, "clip.mp4");
     await writeFile(filePath, "gateway-video");
+    const store = new Map();
     const calls = [];
     const fetchImpl = async (url, init) => {
       calls.push({ url, method: init.method, token: init.headers["x-upload-token"] });
+      const key = decodeURIComponent(new URL(url).pathname.replace(/^\/objects\//, ""));
       if (init.method === "PUT") {
+        store.set(key, Buffer.from(await new Response(init.body).arrayBuffer()));
         return new Response(JSON.stringify({ ok: true }), { status: 200 });
       }
-      return new Response("gateway-video", { status: 200 });
+      const body = store.get(key);
+      return body === undefined
+        ? new Response(null, { status: 404 })
+        : new Response(body, { status: 200 });
     };
 
     const config = assertR2Config({
@@ -425,13 +488,96 @@ describe("r2 artifact publishing", () => {
 
     expect(config.uploadGatewayUrl).toBe("https://upload.example.com");
     expect(result.uploaded[0].bytes).toBe(13);
-    expect(calls).toHaveLength(2);
     expect(calls[0].url).toContain(
-      "/objects/motion-shorts/episodes/demo-short/runs/gateway-run/renders/clip.mp4",
+      "/objects/motion-shorts/episodes/demo-short/final/renders/clip.mp4",
     );
     expect(calls.every((call) => call.token === "secret-token")).toBe(true);
+    expect(store.has("motion-shorts/index.json")).toBe(true);
 
     await rm(root, { recursive: true, force: true });
+  });
+
+  it("hydrates the published final onto a clean tree", async () => {
+    const rootA = await mkdtemp(path.join(tmpdir(), "r2-final-publish-"));
+    const episodeDir = path.join(rootA, "src/episodes/demo-short");
+    await mkdir(path.join(episodeDir, "assets/generated"), { recursive: true });
+    await mkdir(path.join(rootA, "examples"), { recursive: true });
+    await mkdir(path.join(rootA, "renders"), { recursive: true });
+    const renderPath = path.join(rootA, "renders/demo-short.mp4");
+    await writeFile(renderPath, "video-bytes");
+    await writeFile(path.join(episodeDir, "scene-spec.json"), '{"slug":"demo-short"}');
+    await writeFile(path.join(episodeDir, "meta.json"), '{"tail":3}');
+    await writeFile(path.join(rootA, "examples/demo-short.txt"), "script-text");
+    await writeFile(path.join(episodeDir, "assets/generated/hook.svg"), "<svg/>");
+    await writeFile(path.join(episodeDir, "assets/voice.mp3"), "audio-bytes");
+    const { fetchImpl } = createS3Store();
+    await publishEpisodeArtifacts({
+      slug: "demo-short",
+      episodeDir,
+      renderPath,
+      runId: "run-1",
+      env,
+      fetchImpl,
+    });
+
+    const rootB = await mkdtemp(path.join(tmpdir(), "r2-final-hydrate-"));
+    const { runId, restored } = await hydrateEpisodeFinal({
+      slug: "demo-short",
+      appRoot: rootB,
+      env,
+      fetchImpl,
+    });
+
+    expect(runId).toBe("run-1");
+    expect(restored.length).toBeGreaterThan(0);
+    expect(
+      await readFile(path.join(rootB, "src/episodes/demo-short/scene-spec.json"), "utf8"),
+    ).toBe('{"slug":"demo-short"}');
+    expect(await readFile(path.join(rootB, "examples/demo-short.txt"), "utf8")).toBe("script-text");
+    expect(
+      await readFile(path.join(rootB, "src/episodes/demo-short/assets/generated/hook.svg"), "utf8"),
+    ).toBe("<svg/>");
+    expect(
+      await readFile(path.join(rootB, "src/episodes/demo-short/assets/voice.mp3"), "utf8"),
+    ).toBe("audio-bytes");
+    expect(await readFile(path.join(rootB, "renders/demo-short.mp4"), "utf8")).toBe("video-bytes");
+
+    await rm(rootA, { recursive: true, force: true });
+    await rm(rootB, { recursive: true, force: true });
+  });
+
+  it("refuses to overwrite differing local source files unless forced", async () => {
+    const rootA = await mkdtemp(path.join(tmpdir(), "r2-final-guard-pub-"));
+    const episodeDir = path.join(rootA, "src/episodes/demo-short");
+    await mkdir(path.join(episodeDir, "assets"), { recursive: true });
+    const renderPath = path.join(rootA, "demo-short.mp4");
+    await writeFile(renderPath, "video-bytes");
+    await writeFile(path.join(episodeDir, "scene-spec.json"), '{"v":"published"}');
+    const { fetchImpl } = createS3Store();
+    await publishEpisodeArtifacts({
+      slug: "demo-short",
+      episodeDir,
+      renderPath,
+      runId: "run-1",
+      env,
+      fetchImpl,
+    });
+
+    const rootB = await mkdtemp(path.join(tmpdir(), "r2-final-guard-hyd-"));
+    const localSpec = path.join(rootB, "src/episodes/demo-short/scene-spec.json");
+    await mkdir(path.dirname(localSpec), { recursive: true });
+    await writeFile(localSpec, '{"v":"local-newer"}');
+
+    await expect(
+      hydrateEpisodeFinal({ slug: "demo-short", appRoot: rootB, env, fetchImpl }),
+    ).rejects.toThrow("Re-run with --force");
+    expect(await readFile(localSpec, "utf8")).toBe('{"v":"local-newer"}');
+
+    await hydrateEpisodeFinal({ slug: "demo-short", appRoot: rootB, force: true, env, fetchImpl });
+    expect(await readFile(localSpec, "utf8")).toBe('{"v":"published"}');
+
+    await rm(rootA, { recursive: true, force: true });
+    await rm(rootB, { recursive: true, force: true });
   });
 
   it("hydrates remote assets into their expected episode asset paths", async () => {
