@@ -1,0 +1,14 @@
+{
+  "name": "@cgaravitoq/publish",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Direct publishing clients for rendered shorts: YouTube (resumable upload, loopback OAuth) and Instagram Reels (container flow), plus the publish ledger and R2 presign helpers.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  }
+}
