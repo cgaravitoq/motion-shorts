@@ -185,11 +185,10 @@ export const createRunId = (date = new Date()) =>
 
 export const objectKeyFor = ({
   slug,
-  runId,
   category,
   filename,
   projectPrefix = DEFAULT_PROJECT_PREFIX,
-}) => `${projectPrefix}/episodes/${slug}/runs/${runId}/${category}/${filename}`;
+}) => `${projectPrefix}/episodes/${slug}/final/${category}/${filename}`;
 
 export const sha256Hex = async (filePath) => {
   const bytes = await fs.readFile(filePath);
@@ -371,12 +370,18 @@ const contentTypeFor = (filePath) => {
   switch (path.extname(filePath).toLowerCase()) {
     case ".json":
       return "application/json";
+    case ".md":
+      return "text/markdown";
     case ".mov":
       return "video/quicktime";
     case ".mp3":
       return "audio/mpeg";
     case ".mp4":
       return "video/mp4";
+    case ".svg":
+      return "image/svg+xml";
+    case ".txt":
+      return "text/plain";
     case ".woff2":
       return "font/woff2";
     case ".png":
@@ -391,11 +396,19 @@ const contentTypeFor = (filePath) => {
 const gatewayObjectUrl = (config, key) =>
   `${config.uploadGatewayUrl}/objects/${key.split("/").map(encodeURIComponent).join("/")}`;
 
-const uploadAndVerifyObjectViaGateway = async ({ config, filePath, key, fetchImpl }) => {
+const uploadAndVerifyObjectViaGateway = async ({
+  config,
+  filePath,
+  key,
+  bytes: bodyBytes,
+  contentType,
+  fetchImpl,
+}) => {
   if (!config.uploadGatewayToken) {
     throw new Error("R2_UPLOAD_GATEWAY_URL is set but R2_UPLOAD_GATEWAY_TOKEN is missing.");
   }
-  const bytes = await fs.readFile(filePath);
+  const bytes = bodyBytes ?? (await fs.readFile(filePath));
+  const type = contentType ?? contentTypeFor(filePath);
   const hash = createHash("sha256").update(bytes).digest("hex");
   const url = gatewayObjectUrl(config, key);
   const putResponse = await fetchWithTimeout(
@@ -404,7 +417,7 @@ const uploadAndVerifyObjectViaGateway = async ({ config, filePath, key, fetchImp
     {
       method: "PUT",
       headers: {
-        "content-type": contentTypeFor(filePath),
+        "content-type": type,
         "x-content-sha256": hash,
         "x-upload-token": config.uploadGatewayToken,
       },
@@ -444,7 +457,7 @@ const uploadAndVerifyObjectViaGateway = async ({ config, filePath, key, fetchImp
     key,
     bytes: bytes.byteLength,
     sha256: hash,
-    contentType: contentTypeFor(filePath),
+    contentType: type,
     ...buildRemoteUrl({ config, key }),
   };
 };
@@ -477,15 +490,29 @@ const downloadAndVerifyObjectViaGateway = async ({ config, object, fetchImpl }) 
   return bytes;
 };
 
-export const uploadAndVerifyObject = async ({ config, filePath, key, fetchImpl = fetch }) => {
+export const uploadAndVerifyObject = async ({
+  config,
+  filePath,
+  key,
+  bytes: bodyBytes,
+  contentType,
+  fetchImpl = fetch,
+}) => {
   if (config.uploadGatewayUrl) {
-    return uploadAndVerifyObjectViaGateway({ config, filePath, key, fetchImpl });
+    return uploadAndVerifyObjectViaGateway({
+      config,
+      filePath,
+      key,
+      bytes: bodyBytes,
+      contentType,
+      fetchImpl,
+    });
   }
 
-  const bytes = await fs.readFile(filePath);
+  const bytes = bodyBytes ?? (await fs.readFile(filePath));
   const hash = createHash("sha256").update(bytes).digest("hex");
   const headers = {
-    "content-type": contentTypeFor(filePath),
+    "content-type": contentType ?? contentTypeFor(filePath),
     "x-amz-meta-sha256": hash,
   };
   const put = signR2Request({ config, method: "PUT", key, payloadHash: hash, headers });
@@ -544,13 +571,34 @@ const categoryForExt = (ext) => {
   return "images";
 };
 
-export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug, runId }) => {
+const SOURCE_EPISODE_FILES = ["scene-spec.json", "meta.json", "hyperframes.json"];
+
+const listFilesRecursive = async (dir) => {
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true, recursive: true });
+  } catch {
+    return [];
+  }
+  return entries
+    .filter((entry) => entry.isFile())
+    .map((entry) => path.relative(dir, path.join(entry.parentPath ?? dir, entry.name)))
+    .sort();
+};
+
+export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug }) => {
+  const appRoot = path.resolve(episodeDir, "..", "..", "..");
+  const relTo = (filePath) => {
+    const rel = path.relative(appRoot, path.resolve(filePath));
+    return rel.startsWith("..") ? undefined : rel.split(path.sep).join("/");
+  };
   const artifacts = [
     {
       category: "renders",
       localPath: path.resolve(renderPath),
       manifest: "render",
-      key: objectKeyFor({ slug, runId, category: "renders", filename: path.basename(renderPath) }),
+      relPath: relTo(renderPath),
+      key: objectKeyFor({ slug, category: "renders", filename: path.basename(renderPath) }),
     },
   ];
   const assetsDir = path.join(episodeDir, "assets");
@@ -558,7 +606,7 @@ export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug, ru
   try {
     assetEntries = await fs.readdir(assetsDir, { withFileTypes: true });
   } catch {
-    return artifacts;
+    assetEntries = [];
   }
   for (const entry of assetEntries) {
     if (!entry.isFile()) continue;
@@ -570,12 +618,38 @@ export const collectEpisodeArtifacts = async ({ episodeDir, renderPath, slug, ru
       category,
       localPath: assetPath,
       manifest: "assets",
+      relPath: relTo(assetPath),
       key: objectKeyFor({
         slug,
-        runId,
         category,
         filename: entry.name,
       }),
+    });
+  }
+
+  const sourceFiles = [];
+  for (const name of SOURCE_EPISODE_FILES) {
+    const filePath = path.join(episodeDir, name);
+    if (fsSync.existsSync(filePath)) sourceFiles.push({ localPath: filePath, filename: name });
+  }
+  const scriptPath = path.join(appRoot, "examples", `${slug}.txt`);
+  if (fsSync.existsSync(scriptPath)) {
+    sourceFiles.push({ localPath: scriptPath, filename: `examples/${slug}.txt` });
+  }
+  const generatedDir = path.join(assetsDir, "generated");
+  for (const rel of await listFilesRecursive(generatedDir)) {
+    sourceFiles.push({
+      localPath: path.join(generatedDir, rel),
+      filename: `assets/generated/${rel.split(path.sep).join("/")}`,
+    });
+  }
+  for (const file of sourceFiles) {
+    artifacts.push({
+      category: "source",
+      localPath: file.localPath,
+      manifest: "source",
+      relPath: relTo(file.localPath),
+      key: objectKeyFor({ slug, category: "source", filename: file.filename }),
     });
   }
   return artifacts;
@@ -601,6 +675,7 @@ export const writeRemoteManifests = async ({
   const toEntry = (item) => ({
     key: item.key,
     category: item.category,
+    path: item.relPath,
     bytes: item.bytes,
     sha256: item.sha256,
     contentType: item.contentType,
@@ -609,37 +684,61 @@ export const writeRemoteManifests = async ({
     signedUrlTtlSeconds: item.signedUrlTtlSeconds,
   });
 
+  // The published final is a full replacement: each manifest lists exactly
+  // what this publish uploaded, never merged leftovers from earlier versions.
   const renderManifest = {
     ...base,
     objects: uploaded.filter((item) => item.manifest === "render").map(toEntry),
   };
-  const assetsManifestPath = path.join(episodeDir, "assets.remote.json");
-  const newAssetEntries = uploaded.filter((item) => item.manifest === "assets").map(toEntry);
-  let existingAssetEntries = [];
-  try {
-    const existing = JSON.parse(await fs.readFile(assetsManifestPath, "utf8"));
-    if (Array.isArray(existing?.objects)) {
-      existingAssetEntries = existing.objects;
-    }
-  } catch {
-    existingAssetEntries = [];
-  }
-  const mergedAssetsByKey = new Map(existingAssetEntries.map((entry) => [entry.key, entry]));
-  for (const entry of newAssetEntries) {
-    mergedAssetsByKey.set(entry.key, entry);
-  }
   const assetsManifest = {
     ...base,
-    objects: [...mergedAssetsByKey.values()],
+    objects: uploaded.filter((item) => item.manifest === "assets").map(toEntry),
+  };
+  const sourceManifest = {
+    ...base,
+    objects: uploaded.filter((item) => item.manifest === "source").map(toEntry),
   };
 
   await fs.writeFile(
     path.join(episodeDir, "render.remote.json"),
     `${JSON.stringify(renderManifest, null, 2)}\n`,
   );
-  await fs.writeFile(assetsManifestPath, `${JSON.stringify(assetsManifest, null, 2)}\n`);
+  await fs.writeFile(
+    path.join(episodeDir, "assets.remote.json"),
+    `${JSON.stringify(assetsManifest, null, 2)}\n`,
+  );
+  await fs.writeFile(
+    path.join(episodeDir, "source.remote.json"),
+    `${JSON.stringify(sourceManifest, null, 2)}\n`,
+  );
 
-  return { renderManifest, assetsManifest };
+  return { renderManifest, assetsManifest, sourceManifest };
+};
+
+export const downloadObjectBytes = async ({ config, key, fetchImpl = fetch }) => {
+  const request = config.uploadGatewayUrl
+    ? {
+        url: gatewayObjectUrl(config, key),
+        headers: { "x-upload-token": config.uploadGatewayToken },
+      }
+    : signR2Request({
+        config,
+        method: "GET",
+        key,
+        payloadHash: "UNSIGNED-PAYLOAD",
+        expiresSeconds: config.signedUrlTtlSeconds,
+      });
+  const response = await fetchWithTimeout(
+    fetchImpl,
+    request.url,
+    { method: "GET", headers: request.headers },
+    config.requestTimeoutMs,
+  );
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`R2 GET failed for ${key}: ${response.status} ${response.statusText}`);
+  }
+  return Buffer.from(await response.arrayBuffer());
 };
 
 export const publishEpisodeArtifacts = async ({
@@ -671,6 +770,39 @@ export const publishEpisodeArtifacts = async ({
     config,
     deleteLocal,
   });
+  for (const name of ["render.remote.json", "assets.remote.json", "source.remote.json"]) {
+    await uploadAndVerifyObject({
+      config,
+      filePath: path.join(episodeDir, name),
+      key: objectKeyFor({ slug, category: "manifests", filename: name }),
+      fetchImpl,
+    });
+  }
+  const indexKey = `${DEFAULT_PROJECT_PREFIX}/index.json`;
+  const existingIndexBytes = await downloadObjectBytes({ config, key: indexKey, fetchImpl });
+  let index = { episodes: {} };
+  if (existingIndexBytes) {
+    let parsed;
+    try {
+      parsed = JSON.parse(existingIndexBytes.toString("utf8"));
+    } catch {
+      parsed = null;
+    }
+    if (!parsed || typeof parsed !== "object" || !parsed.episodes || typeof parsed.episodes !== "object") {
+      throw new Error(`Malformed R2 index at ${indexKey}; refusing to overwrite it.`);
+    }
+    index = parsed;
+  }
+  const updatedAt = new Date().toISOString();
+  index.episodes[slug] = { finalRunId: runId, publishedAt: updatedAt };
+  index.updatedAt = updatedAt;
+  await uploadAndVerifyObject({
+    config,
+    key: indexKey,
+    bytes: Buffer.from(`${JSON.stringify(index, null, 2)}\n`),
+    contentType: "application/json",
+    fetchImpl,
+  });
   if (deleteLocal) {
     for (const artifact of uploaded) {
       if (artifact.manifest === "render") {
@@ -678,20 +810,50 @@ export const publishEpisodeArtifacts = async ({
       }
     }
   }
-  return { runId, uploaded, manifests };
+  return { runId, uploaded, manifests, indexKey };
 };
 
 export const hydrateEpisodeArtifacts = async ({
   manifestPath,
   destinationDir,
+  appRoot,
+  protectExisting = false,
   env = Bun.env,
   fetchImpl = fetch,
 }) => {
   const config = assertR2Config(env);
   const manifest = await readRemoteManifest(manifestPath);
+  const outputPathFor = (object) => {
+    if (appRoot && typeof object.path === "string" && object.path) {
+      const resolvedRoot = path.resolve(appRoot);
+      const outputPath = path.resolve(resolvedRoot, object.path);
+      if (!outputPath.startsWith(resolvedRoot + path.sep)) {
+        throw new Error(`Refusing to hydrate ${object.key}: path escapes ${resolvedRoot}.`);
+      }
+      return outputPath;
+    }
+    return path.resolve(destinationDir, path.basename(object.key));
+  };
+
+  if (protectExisting) {
+    const conflicts = [];
+    for (const object of manifest.objects ?? []) {
+      const outputPath = outputPathFor(object);
+      if (fsSync.existsSync(outputPath) && !(await existingAssetMatches(outputPath, object))) {
+        conflicts.push(outputPath);
+      }
+    }
+    if (conflicts.length > 0) {
+      throw new Error(
+        `Local files differ from the published final:\n  ${conflicts.join("\n  ")}\n` +
+          "Re-run with --force to overwrite them.",
+      );
+    }
+  }
+
   const restored = [];
   for (const object of manifest.objects ?? []) {
-    const outputPath = path.resolve(destinationDir, path.basename(object.key));
+    const outputPath = outputPathFor(object);
     if (await existingAssetMatches(outputPath, object)) {
       continue;
     }
@@ -730,4 +892,53 @@ export const hydrateEpisodeArtifacts = async ({
     restored.push(outputPath);
   }
   return restored;
+};
+
+export const hydrateEpisodeFinal = async ({
+  slug,
+  appRoot = process.cwd(),
+  force = false,
+  env = Bun.env,
+  fetchImpl = fetch,
+}) => {
+  const config = assertR2Config(env);
+  const episodeDir = path.resolve(appRoot, "src", "episodes", slug);
+  await fs.mkdir(episodeDir, { recursive: true });
+  try {
+    await fs.symlink(path.join("..", "..", "lib"), path.join(episodeDir, "lib"));
+  } catch (error) {
+    if (error.code !== "EEXIST") throw error;
+  }
+  const restored = [];
+  let runId = null;
+  let manifestsFound = 0;
+  for (const name of ["source.remote.json", "assets.remote.json", "render.remote.json"]) {
+    const key = objectKeyFor({ slug, category: "manifests", filename: name });
+    const bytes = await downloadObjectBytes({ config, key, fetchImpl });
+    if (!bytes) continue;
+    manifestsFound += 1;
+    const manifestPath = path.join(episodeDir, name);
+    await fs.writeFile(manifestPath, bytes);
+    restored.push(manifestPath);
+    runId ??= JSON.parse(bytes.toString("utf8")).runId ?? null;
+    const destinationDir =
+      name === "render.remote.json" ? path.resolve(appRoot, "renders") : path.join(episodeDir, "assets");
+    restored.push(
+      ...(await hydrateEpisodeArtifacts({
+        manifestPath,
+        destinationDir,
+        appRoot,
+        protectExisting: name === "source.remote.json" && !force,
+        env,
+        fetchImpl,
+      })),
+    );
+  }
+  if (manifestsFound === 0) {
+    throw new Error(
+      `No published final found in R2 for episode "${slug}". ` +
+        "Publish it first with `bun run render:episode <slug> --upload=r2`.",
+    );
+  }
+  return { runId, restored };
 };

@@ -579,10 +579,12 @@ const main = async () => {
     timer.end("upload");
     uploaded = true;
     console.log(
-      `[render-episode] uploaded ${publishResult.uploaded.length} artifact(s) to R2 run ${publishResult.runId}`,
+      `[render-episode] published ${publishResult.uploaded.length} artifact(s) as the R2 final (run ${publishResult.runId})`,
     );
     console.log(`[render-episode] wrote ${path.join(episodeDir, "render.remote.json")}`);
     console.log(`[render-episode] wrote ${path.join(episodeDir, "assets.remote.json")}`);
+    console.log(`[render-episode] wrote ${path.join(episodeDir, "source.remote.json")}`);
+    console.log(`[render-episode] updated R2 index ${publishResult.indexKey}`);
     localDeleted = publishOptions.deleteLocal === true;
   }
 
