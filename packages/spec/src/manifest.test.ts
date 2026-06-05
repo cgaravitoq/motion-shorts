@@ -1,0 +1,63 @@
+import { describe, expect, it } from "bun:test";
+import fs from "node:fs";
+import path from "node:path";
+import { Either } from "effect";
+import { formatParseError } from "./parse-error";
+import { decodeSceneTypeManifest } from "./manifest";
+
+const scenesRoot = path.resolve(import.meta.dir, "../../../apps/hyperframe/templates/scenes");
+
+const realManifests = fs
+  .readdirSync(scenesRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .flatMap((entry) => {
+    const typeDir = path.join(scenesRoot, entry.name);
+    return fs
+      .readdirSync(typeDir, { withFileTypes: true })
+      .filter((version) => version.isDirectory() && /^v\d+$/.test(version.name))
+      .map((version) => ({
+        type: entry.name,
+        file: path.join(typeDir, version.name, "manifest.json"),
+      }));
+  });
+
+describe("SceneTypeManifest", () => {
+  it("finds the real scene-type manifests", () => {
+    expect(realManifests.length).toBeGreaterThanOrEqual(17);
+  });
+
+  for (const { type, file } of realManifests) {
+    it(`decodes the real "${type}" manifest`, () => {
+      const json = JSON.parse(fs.readFileSync(file, "utf8"));
+      const result = decodeSceneTypeManifest(json);
+      if (Either.isLeft(result)) {
+        throw new Error(formatParseError(result.left, "manifest").join("\n"));
+      }
+      expect(result.right.type).toBe(type);
+    });
+  }
+
+  it("rejects a manifest without builder", () => {
+    const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
+    delete json.builder;
+    const result = decodeSceneTypeManifest(json);
+    expect(Either.isLeft(result)).toBe(true);
+    if (Either.isLeft(result)) {
+      expect(formatParseError(result.left, "manifest").join("\n")).toContain("builder");
+    }
+  });
+
+  it("rejects an unknown slot kind", () => {
+    const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
+    json.slots = { broken: { kind: "markdown" } };
+    const result = decodeSceneTypeManifest(json);
+    expect(Either.isLeft(result)).toBe(true);
+  });
+
+  it("rejects a repeat slot without min/max", () => {
+    const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
+    json.slots = { items: { kind: "repeat", item: {} } };
+    const result = decodeSceneTypeManifest(json);
+    expect(Either.isLeft(result)).toBe(true);
+  });
+});

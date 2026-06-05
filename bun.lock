@@ -17,6 +17,7 @@
       "dependencies": {
         "@cgaravitoq/audio": "workspace:*",
         "@cgaravitoq/publish": "workspace:*",
+        "@cgaravitoq/spec": "workspace:*",
         "effect": "3.21.3",
       },
       "devDependencies": {
@@ -67,6 +68,13 @@
         "vitest": "4.1.8",
       },
     },
+    "packages/spec": {
+      "name": "@cgaravitoq/spec",
+      "version": "0.1.0",
+      "dependencies": {
+        "effect": "3.21.3",
+      },
+    },
   },
   "trustedDependencies": [
     "esbuild",
@@ -115,6 +123,8 @@
     "@cgaravitoq/publish": ["@cgaravitoq/publish@workspace:packages/publish"],
 
     "@cgaravitoq/r2-client": ["@cgaravitoq/r2-client@workspace:packages/r2-client"],
+
+    "@cgaravitoq/spec": ["@cgaravitoq/spec@workspace:packages/spec"],
 
     "@chenglou/pretext": ["@chenglou/pretext@0.0.5", "", {}, "sha512-A8GZN10REdFGsyuiUgLV8jjPDDFMg5GmgxGWV0I3igxBOnzj+jgz2VMmVD7g+SFyoctfeqHFxbNatKSzVRWtRg=="],
 
