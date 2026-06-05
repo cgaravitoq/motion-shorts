@@ -85,7 +85,7 @@ motion-shorts/                 (monorepo root)
 │       └── tsconfig.json            extends ../../tsconfig.json.
 ├── docs/                            Cross-cutting documentation (rules, layout, decisions).
 │   └── decisions/                   Historical design decisions (one file per decision).
-├── .agents/skills/                  Canonical skill source (audio-pipeline, canonical-short, new-episode, produce-from-notion).
+├── .agents/skills/                  Canonical skill source (audio-pipeline, canonical-short, new-episode, produce-from-source).
 ├── .claude/skills/                  Symlinks -> .agents/skills/<name>.
 ├── .codex/skills/                   Symlinks -> .agents/skills/<name>.
 ├── .opencode/skills/                Symlinks -> .agents/skills/<name>.

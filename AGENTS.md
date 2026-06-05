@@ -86,7 +86,8 @@ For diagrams, choose the frame based on density. Compact charts or small decisio
 | **Build a new short (e2e playbook)** | `.agents/skills/canonical-short/SKILL.md` |
 | Generate audio + captions | `.agents/skills/audio-pipeline/SKILL.md` |
 | Scaffold a new episode | `.agents/skills/new-episode/SKILL.md` |
-| Produce from Notion brief | `.agents/skills/produce-from-notion/SKILL.md` |
+| Produce a short from a source URL/idea (e2e + archive) | `.agents/skills/produce-from-source/SKILL.md` |
+| Per-platform copy + voice gate + Notion archive | `.agents/skills/generate-distribution-copy/SKILL.md` |
 | Composite a talking-head presenter cutout | `.agents/skills/short-talking-head/SKILL.md` |
 
 ## Environment

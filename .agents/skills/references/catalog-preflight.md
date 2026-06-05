@@ -12,4 +12,4 @@ Run this before entering a short-production skill:
 4. Learn each chosen scene-type's exact slots with `get_scene_type` (MCP) or by reading its `apps/hyperframe/templates/scenes/<type>/v1/manifest.json`. Respect repeatable-slot ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12).
 5. Write `apps/hyperframe/src/episodes/<slug>/scene-spec.json` filling only the slot parameters (the assembler owns background, brand-corner, timeline, crossfades, track allocation, captions/audio). `code` and `social-card` are already self-framed — do not wrap them in an extra glass/card frame.
 6. Validate the spec, then assemble: `bun run scene:check <slug>` then `bun run assemble <slug>` (or scaffold from scratch with `bun run new:episode <slug> --intent=<intent>`).
-7. Continue into `canonical-short`, `produce-from-notion`, or `audio-pipeline` only after the spec validates.
+7. Continue into `canonical-short`, `produce-from-source`, or `audio-pipeline` only after the spec validates.

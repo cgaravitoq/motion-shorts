@@ -250,7 +250,7 @@ apps/mcp/                Local stdio MCP server: list_scene_types,
                          lint_html, generate_audio, render_composition.
 
 .agents/skills/          Source skill files (audio-pipeline, canonical-short,
-                         new-episode, produce-from-notion, short-*)
+                         new-episode, produce-from-source, short-*)
 .{claude,codex,opencode}/skills/   Symlinks → .agents/skills/<name>
 
 turbo.json               typecheck / test / build / dev / render:episode

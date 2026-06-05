@@ -40,4 +40,4 @@ There is no catalog. A short is a typed `scene-spec.json` assembled deterministi
 
 ## Handoff
 
-Invoke the routed intent skill and require it to complete `.agents/skills/references/catalog-preflight.md` (the scene-type preflight) before `canonical-short`, `produce-from-notion`, or `audio-pipeline` begins.
+Invoke the routed intent skill and require it to complete `.agents/skills/references/catalog-preflight.md` (the scene-type preflight) before `canonical-short`, `produce-from-source`, or `audio-pipeline` begins.

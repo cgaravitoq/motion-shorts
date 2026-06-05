@@ -27,4 +27,4 @@ Read each chosen scene-type's slots via `get_scene_type` (or its `manifest.json`
 
 ## Handoff
 
-Continue to `canonical-short`; if the source is a Notion brief, continue to `produce-from-notion`.
+Continue to `canonical-short`; if producing end-to-end from a source URL or idea, continue inside `produce-from-source`.

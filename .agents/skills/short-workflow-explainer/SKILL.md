@@ -29,4 +29,4 @@ If the workflow needs product/workspace UI, a handoff bundle, or a connector-hea
 
 ## Handoff
 
-Continue to `canonical-short`; if the source is a Notion brief, continue to `produce-from-notion`.
+Continue to `canonical-short`; if producing end-to-end from a source URL or idea, continue inside `produce-from-source`.

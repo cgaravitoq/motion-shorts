@@ -20,7 +20,7 @@ The assembler owns everything universal: background layers, the brand-corner wat
 ## When to invoke
 
 - User says "make a short about X", "generate a reel", "produce a video on Y"
-- User invokes `/canonical-short` or pastes a Notion brief
+- User invokes `/canonical-short` or pastes a source/idea with an existing script
 - Topic fits a 30-50s vertical reel
 
 ## When NOT to invoke

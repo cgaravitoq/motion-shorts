@@ -27,4 +27,4 @@ Respect repeatable-slot ranges (`metric.stats` 1-4, `comparison.left/rightPoints
 
 ## Handoff
 
-Continue to `canonical-short`; if the source is a Notion brief, continue to `produce-from-notion`.
+Continue to `canonical-short`; if producing end-to-end from a source URL or idea, continue inside `produce-from-source`.

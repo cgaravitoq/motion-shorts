@@ -27,4 +27,4 @@ The `social-card` scene-type is already self-framed (it renders the post card) â
 
 ## Handoff
 
-Continue to `canonical-short`; if the source is a Notion brief, continue to `produce-from-notion`.
+Continue to `canonical-short`; if producing end-to-end from a source URL or idea, continue inside `produce-from-source`.
