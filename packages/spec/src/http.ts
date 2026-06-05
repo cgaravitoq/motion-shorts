@@ -1,4 +1,5 @@
-import { Cause, Data, Duration, Effect, Exit, Option, Schedule } from "effect";
+import { Data, Duration, Effect, Schedule } from "effect";
+import { runPromiseOrThrow } from "./run";
 
 export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
@@ -76,13 +77,8 @@ export const fetchWithRetry = (
 };
 
 /** Promise bridge for the .mjs pipeline scripts; rethrows the original tagged error. */
-export const fetchWithRetryPromise = async (
+export const fetchWithRetryPromise = (
   url: string,
   init?: RequestInit,
   options?: FetchRetryOptions,
-): Promise<Response> => {
-  const exit = await Effect.runPromiseExit(fetchWithRetry(url, init, options));
-  if (Exit.isSuccess(exit)) return exit.value;
-  const failure = Cause.failureOption(exit.cause);
-  throw Option.isSome(failure) ? failure.value : new Error(Cause.pretty(exit.cause));
-};
+): Promise<Response> => runPromiseOrThrow(fetchWithRetry(url, init, options));

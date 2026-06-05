@@ -19,6 +19,13 @@ export {
 } from "./manifest";
 export { formatParseError } from "./parse-error";
 export {
+  decodeRemoteManifest,
+  RemoteManifest,
+  RemoteObject,
+  Sha256Hex,
+} from "./remote-manifest";
+export { runPromiseOrThrow } from "./run";
+export {
   decodeSceneSpec,
   SceneSpec,
   SceneSpecScene,
