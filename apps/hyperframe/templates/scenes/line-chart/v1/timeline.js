@@ -144,7 +144,7 @@ function build_lineChart(tl, t, s, p) {
     tl.set(el, { strokeDasharray: len, strokeDashoffset: len }, 0);
   });
   dotEls.flat().forEach((el) => {
-    tl.set(el, { scale: 0, transformBox: "fill-box", transformOrigin: "50% 50%" }, 0);
+    tl.set(el, { autoAlpha: 0 }, 0);
   });
 
   tl.from(s(".lc-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
@@ -165,7 +165,7 @@ function build_lineChart(tl, t, s, p) {
     const start = t + 1.0 + si * SERIES_STAGGER;
     dots.forEach((c, pi) => {
       const at = start + dotFracs[si][pi] * DRAW;
-      tl.from(c, { scale: 0, duration: 0.34, ease: "back.out(2)", transformBox: "fill-box", transformOrigin: "50% 50%" }, at);
+      tl.to(c, { autoAlpha: 1, duration: 0.34, ease: "power2.out" }, at);
     });
   });
 
