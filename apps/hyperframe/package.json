@@ -33,7 +33,8 @@
   },
   "dependencies": {
     "@cgaravitoq/audio": "workspace:*",
-    "@cgaravitoq/publish": "workspace:*"
+    "@cgaravitoq/publish": "workspace:*",
+    "effect": "3.21.3"
   },
   "devDependencies": {
     "hyperframes": "0.6.70"
