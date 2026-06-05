@@ -80,6 +80,7 @@ For diagrams, choose the frame based on density. Compact charts or small decisio
 | Typography roles (informational design reference) | `.agents/skills/canonical-short/references/typography-system.md` |
 | Render profiles (9:16 short, safe zones, lint) | `docs/formats.md` |
 | Brand packs (white-label) | `docs/brand-packs.md` |
+| Publish to YouTube/Instagram (`publish:auth`, `publish:episode`) | `docs/publishing.md` |
 | MCP integrations (scene-hub tools + Notion) | `docs/mcp-integrations.md` |
 | Source URL capture | `docs/quickstart.md#source-url-capture` |
 | Past design decisions | `docs/decisions/` |
