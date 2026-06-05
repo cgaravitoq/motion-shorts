@@ -1,5 +1,5 @@
 ---
-description: Strategy and scripting subagent for motion-shorts. Turns a raw idea or Notion brief into three differentiated script, scene, hook, payoff, and palette options without writing files.
+description: Strategy and scripting subagent for motion-shorts. Turns a raw idea or captured source into three differentiated script, scene, hook, payoff, and palette options without writing files.
 mode: subagent
 model: anthropic/claude-sonnet-4-6
 temperature: 0.6
