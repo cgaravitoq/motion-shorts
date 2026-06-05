@@ -10,6 +10,7 @@
     "assemble": "bun run scripts/assemble.mjs",
     "scene-qa": "bun run scripts/scene-qa.mjs",
     "scene:check": "bun run scripts/scene-check-all.mjs",
+    "copy:check": "bun run scripts/copy-check.mjs",
     "scene:gallery": "bun run scripts/build-catalog-demo.mjs",
     "lint:seek-safe": "bun run scripts/lint-seek-safe.mjs",
     "lint:desktop-safe": "bun run scripts/lint-desktop-safe.mjs",
