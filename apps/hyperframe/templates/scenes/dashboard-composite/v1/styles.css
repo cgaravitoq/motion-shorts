@@ -1,0 +1,76 @@
+.dc-title { margin: 0; }
+.dc-title:empty { display: none; }
+.dc-eyebrow:empty { display: none; }
+
+/* Portrait (9:16): 4 tiles -> 2x2 grid, 3 tiles -> single column. */
+.dc-grid { margin-top: var(--title-block-gap); display: grid; gap: 24px; }
+.dc-grid[data-count="3"] { grid-template-columns: 1fr; }
+.dc-grid[data-count="4"] { grid-template-columns: 1fr 1fr; }
+
+.dc-tile {
+  box-sizing: border-box;
+  min-height: 200px;
+  padding: 36px 34px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--panel);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.28);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.dc-tile__value {
+  margin: 0;
+  font-size: 84px;
+  line-height: 0.96;
+  font-weight: 820;
+  letter-spacing: -0.02em;
+  color: var(--source-accent-2);
+  font-variant-numeric: tabular-nums;
+}
+.dc-grid[data-count="4"] .dc-tile__value { font-size: 76px; }
+
+.dc-tile__label {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.18;
+  font-weight: 620;
+  color: var(--paper);
+}
+.dc-grid[data-count="4"] .dc-tile__label { font-size: 27px; }
+
+.dc-tile__track {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.dc-tile__fill {
+  position: absolute;
+  inset: 0;
+  width: var(--pct, 0%);
+  border-radius: 999px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent) 78%, transparent), var(--source-accent-2));
+  box-shadow: 0 0 28px color-mix(in srgb, var(--source-accent-2) 26%, transparent);
+}
+
+.dc-tile__delta {
+  align-self: flex-start;
+  margin: 0;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--source-accent-2) 40%, var(--line));
+  background: color-mix(in srgb, var(--source-accent-2) 12%, transparent);
+  font-family: "Berkeley Mono", "JetBrains Mono", monospace;
+  font-size: 25px;
+  line-height: 1.1;
+  font-weight: 620;
+  color: var(--source-accent-2);
+  white-space: nowrap;
+}
+.dc-tile__delta:empty { display: none; }

@@ -1,6 +1,60 @@
-/* hook desktop-1080p (16:9): text|media 2-column split; collapses to centered text when no media */
-.scene-pad.hk { display: grid; grid-template-columns: minmax(0, max-content) max-content; grid-template-rows: auto auto auto; justify-content: center; align-content: center; align-items: center; }
-.hk-eyebrow { grid-column: 1; grid-row: 1; }
-.hk-title--xl { grid-column: 1; grid-row: 2; font-size: 96px; max-width: 820px; }
-.hk-subtitle { grid-column: 1; grid-row: 3; }
-.hk-image { grid-column: 2; grid-row: 1 / 4; align-self: center; margin-top: 0; margin-left: var(--title-block-gap); width: auto; max-width: 600px; max-height: 520px; height: auto; object-fit: contain; }
+/* hook desktop-1080p (16:9): asset-led 70/30. Text-only default anchors the
+   eyebrow/title/subtitle top-left, biased into the top third of the usable
+   band (no dead-center symmetric column, no black right half). With an image
+   the text confines to cols 1-7 and the visual owns cols 7-13. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk {
+  grid-template-rows: 132px auto auto auto 1fr;
+  align-content: start;
+  align-items: start;
+}
+
+#ep-stage[data-format="desktop-1080p"] .hk-eyebrow {
+  grid-column: 1 / 9;
+  grid-row: 2;
+  margin: 0 0 24px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .hk-title--xl {
+  grid-column: 1 / 9;
+  grid-row: 3;
+  font-size: 104px;
+  line-height: 0.98;
+  max-width: 880px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .hk-subtitle {
+  grid-column: 1 / 8;
+  grid-row: 4;
+  margin: 36px 0 0;
+  max-width: 680px;
+}
+
+/* Image present: narrow text to cols 1-7, hand cols 7-13 to the visual. */
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-eyebrow,
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-title--xl {
+  grid-column: 1 / 8;
+}
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-title--xl {
+  font-size: 92px;
+  max-width: 720px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-subtitle {
+  grid-column: 1 / 8;
+  max-width: 620px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .hk-image {
+  grid-column: 7 / 13;
+  grid-row: 2 / 5;
+  align-self: center;
+  justify-self: end;
+  margin: 0;
+  width: auto;
+  max-width: 100%;
+  max-height: 640px;
+  height: auto;
+  object-fit: contain;
+}

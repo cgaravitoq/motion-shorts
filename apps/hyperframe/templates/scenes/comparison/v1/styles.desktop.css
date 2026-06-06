@@ -1,6 +1,59 @@
-/* comparison desktop-1080p (16:9) overrides — appended after styles.css in desktop builds only. */
-.cmp-grid { gap: 40px; }
-.cmp-col__title { margin: 0 0 26px; font-size: 52px; }
-.cmp-list { gap: 18px; }
-.cmp-point__text { font-size: 33px; }
-.cmp-divider__vs { width: 104px; height: 104px; font-size: 36px; }
+/* comparison desktop-1080p (16:9) overrides — appended AFTER styles.css AND
+   shell.desktop.css in desktop builds only. Re-layout against the 12-col grid
+   on .scene-pad: the title block (eyebrow + title) pins TOP-LEFT (cols 1-7,
+   rows 1-2); the A|B comparison is the primary visual and owns the full usable
+   width (cols 1-12, row 3), vertically centred in its band so the columns read
+   as one deliberate row instead of a small symmetric cluster floating in void.
+   The reference A|B identity stays: the internal 1fr auto 1fr grid is kept, the
+   VS badge bumps to ~108px, and the columns get slightly more padding. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.cmp {
+  grid-template-rows: auto auto 1fr;
+  align-content: center;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-eyebrow {
+  grid-column: 1 / 8;
+  grid-row: 1;
+  align-self: end;
+  margin: 0;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-title {
+  grid-column: 1 / 8;
+  grid-row: 2;
+  margin: 0;
+}
+
+/* Comparison row: primary visual, full usable width, centred in its band.
+   The internal A | VS | B grid is preserved; column-gap leans on the desktop
+   --col-gap scale so the divider reads with broadcast breathing room. */
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-grid {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  align-self: center;
+  margin-top: var(--title-block-gap);
+  gap: 64px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-col {
+  padding: 52px 44px;
+  border-radius: 32px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-col__title {
+  margin: 0 0 32px;
+  font-size: 54px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-list { gap: 24px; }
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-point__text {
+  font-size: 34px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-divider__vs {
+  width: 108px;
+  height: 108px;
+  font-size: 38px;
+}

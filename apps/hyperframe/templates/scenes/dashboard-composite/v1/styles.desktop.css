@@ -1,0 +1,72 @@
+/* dashboard-composite desktop-1080p (16:9) overrides — appended AFTER styles.css
+   AND shell.desktop.css in desktop builds only. .scene-pad is the 12-col grid:
+   the title block (eyebrow + title) pins TOP-LEFT (cols 1-7, rows 1-2); the tile
+   row is the primary visual and owns the full usable width (cols 1-12, row 3),
+   vertically centred so the heterogeneous KPI tiles read as one deliberate
+   dashboard row instead of a small cluster floating in symmetric void.
+   Opacity layers (shell.desktop tokens): the track surface drops to the
+   structure layer, labels + delta chips to the context layer, the big value
+   stays at the primary layer so the numbers carry the frame. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.dc {
+  grid-template-rows: auto auto 1fr;
+  align-content: center;
+}
+
+#ep-stage[data-format="desktop-1080p"] .dc .dc-eyebrow {
+  grid-column: 1 / 8;
+  grid-row: 1;
+  align-self: end;
+  margin: 0;
+}
+
+#ep-stage[data-format="desktop-1080p"] .dc .dc-title {
+  grid-column: 1 / 8;
+  grid-row: 2;
+  margin: 0;
+}
+
+/* Tile row: primary visual, full usable width, centred in its band. 3-up and
+   4-up sit on one row; tiles get real vertical presence (~280px). */
+#ep-stage[data-format="desktop-1080p"] .dc .dc-grid {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  align-self: center;
+  margin-top: var(--title-block-gap);
+  gap: var(--grid-gutter);
+}
+#ep-stage[data-format="desktop-1080p"] .dc .dc-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .dc .dc-grid[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+
+#ep-stage[data-format="desktop-1080p"] .dc .dc-tile {
+  min-height: 280px;
+  padding: 44px 40px;
+  border-radius: 30px;
+  gap: 18px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .dc .dc-tile__value {
+  font-size: 104px;
+  line-height: 0.94;
+  opacity: var(--layer-primary);
+}
+#ep-stage[data-format="desktop-1080p"] .dc .dc-grid[data-count="4"] .dc-tile__value { font-size: 92px; }
+
+#ep-stage[data-format="desktop-1080p"] .dc .dc-tile__label {
+  font-size: 32px;
+  opacity: var(--layer-context);
+}
+#ep-stage[data-format="desktop-1080p"] .dc .dc-grid[data-count="4"] .dc-tile__label { font-size: 30px; }
+
+/* The track surface drops to the structure layer via alpha on its own
+   background/border so the fill span inside stays at full strength (an opacity
+   on .dc-tile__track would dim the fill too). */
+#ep-stage[data-format="desktop-1080p"] .dc .dc-tile__track {
+  height: 18px;
+  background: color-mix(in srgb, var(--paper) calc(var(--layer-structure) * 100%), transparent);
+}
+
+#ep-stage[data-format="desktop-1080p"] .dc .dc-tile__delta {
+  font-size: 26px;
+  opacity: var(--layer-context);
+}

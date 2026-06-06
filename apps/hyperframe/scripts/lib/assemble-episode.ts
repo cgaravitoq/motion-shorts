@@ -188,10 +188,11 @@ export function assembleEpisode(
     prev = sc;
   }
 
+  const karaokeOpts = desktop ? "{ maxChars: 40, maxTokens: 7 }" : "{ maxChars: 28, maxTokens: 5 }";
   lines.push(
     `const captionsData = JSON.parse(document.getElementById("captions-data").textContent || "[]");`,
     `if (captionsData.length > 0 && window.__hf && window.__hf.karaoke) {`,
-    `  window.__hf.karaoke(tl, "#captions", captionsData, { maxChars: 28, maxTokens: 5 });`,
+    `  window.__hf.karaoke(tl, "#captions", captionsData, ${karaokeOpts});`,
     `}`,
     `window.__timelines = window.__timelines || {};`,
     `window.__timelines["${slug}"] = tl;`,

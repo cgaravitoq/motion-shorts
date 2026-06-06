@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 import { exitToResult } from "./parse-error";
 
-export const ScalarSlotKind = Schema.Literals(["text", "richText"]);
+export const ScalarSlotKind = Schema.Literals(["text", "richText", "image"]);
 export type ScalarSlotKind = typeof ScalarSlotKind.Type;
 
 const NonNegativeInt = Schema.Number.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(0));

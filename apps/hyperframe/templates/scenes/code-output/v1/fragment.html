@@ -1,0 +1,30 @@
+<div class="scene-pad co">
+  <p class="co-eyebrow eyebrow">__EYEBROW__</p>
+  <h2 class="co-title headline">__TITLE__</h2>
+  <div class="co-grid">
+    <div class="co-window" data-lines="__LINES_COUNT__">
+      <div class="co-window__bar">
+        <span class="co-window__dot"></span>
+        <span class="co-window__dot"></span>
+        <span class="co-window__dot"></span>
+        <span class="co-window__file">__FILENAME__</span>
+      </div>
+      <div class="co-window__body">
+        <!-- repeat:lines -->
+        <div class="co-line"><code class="co-line__text">__ITEM_CODE__</code></div>
+        <!-- /repeat:lines -->
+      </div>
+    </div>
+    <div class="co-output" data-lines="__OUTPUT_LINES_COUNT__">
+      <div class="co-output__bar">
+        <span class="co-output__chip"></span>
+        <span class="co-output__label">__OUTPUT_LABEL__</span>
+      </div>
+      <div class="co-output__body">
+        <!-- repeat:outputLines -->
+        <div class="co-output__line"><span class="co-output__text">__ITEM_TEXT__</span></div>
+        <!-- /repeat:outputLines -->
+      </div>
+    </div>
+  </div>
+</div>

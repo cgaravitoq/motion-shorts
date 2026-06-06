@@ -1,5 +1,39 @@
-/* big-stat desktop-1080p (16:9) overrides — appended AFTER styles.css. */
-.bs { align-items: center; text-align: center; }
-.bs-value { font-size: 280px; }
-.bs-suffix { font-size: 126px; }
-.bs-context { max-width: 1100px; }
+/* big-stat desktop-1080p (16:9) overrides — appended AFTER styles.css AND
+   shell.desktop.css. Asset-led 70/30: the giant numeral IS the asset (right,
+   cols 6-12), eyebrow + context are left-anchored text (cols 1-5) pinned to the
+   upper third. The numeral spans all rows and centers in its own cell, so it
+   scales from its own centre (timeline transformOrigin 50% 50%). */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.bs {
+  grid-template-rows: 1fr auto auto 1fr;
+  align-content: center;
+  text-align: left;
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-label {
+  grid-column: 1 / 6;
+  grid-row: 2;
+  align-self: end;
+  margin: 0 0 28px;
+  max-width: var(--content-max);
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-context {
+  grid-column: 1 / 6;
+  grid-row: 3;
+  align-self: start;
+  margin: 0;
+  max-width: var(--content-max);
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-figure {
+  grid-column: 6 / 13;
+  grid-row: 1 / 5;
+  justify-self: center;
+  align-self: center;
+  margin-top: 0;
+  gap: 10px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-value { font-size: 320px; letter-spacing: -8px; }
+#ep-stage[data-format="desktop-1080p"] .bs-suffix { font-size: 144px; letter-spacing: -4px; }

@@ -27,6 +27,17 @@
      primary component (cards/graph/window/chart). Scene content centers as ONE
      cohesive group — never spread heading and component apart. */
   --title-block-gap: 72px;
+  /* Per-format base system. shell.desktop.css redeclares EVERY token below
+     under #ep-stage[data-format="desktop-1080p"] — formats never share values
+     (enforced by the token-superset contract test). */
+  --content-max: 920px;
+  --fs-eyebrow: 24px;
+  --fs-headline: 92px;
+  --fs-subcopy: 34px;
+  --fs-caption: 60px;
+  --wm-inset-top: 96px;
+  --wm-inset-right: 96px;
+  --wm-size: 96px;
 }
 
 html, body { width: __WIDTH__px; height: __HEIGHT__px; margin: 0; padding: 0; overflow: hidden; background: var(--ink); color: var(--paper); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
@@ -42,16 +53,16 @@ html, body { width: __WIDTH__px; height: __HEIGHT__px; margin: 0; padding: 0; ov
 /* ── Scene container + shared typography roles ────────────────────────── */
 .scene { opacity: 0; will-change: opacity, transform, filter; }
 .scene-pad { width: 100%; height: 100%; box-sizing: border-box; padding: var(--safe-top) var(--safe-x) var(--safe-bottom); display: flex; flex-direction: column; justify-content: center; gap: 0; }
-.eyebrow { margin: 0 0 30px; color: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 24px; font-weight: 590; letter-spacing: 0; text-transform: uppercase; }
-.headline { margin: 0; max-width: 920px; font-size: 92px; line-height: var(--title-line-height); letter-spacing: 0; font-weight: 760; text-wrap: balance; }
+.eyebrow { margin: 0 0 30px; color: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: var(--fs-eyebrow); font-weight: 590; letter-spacing: 0; text-transform: uppercase; }
+.headline { margin: 0; max-width: var(--content-max); font-size: var(--fs-headline); line-height: var(--title-line-height); letter-spacing: 0; font-weight: 760; text-wrap: balance; }
 .headline strong { color: var(--source-accent-2); font-weight: 820; }
-.subcopy { margin: 46px 0 0; max-width: 850px; color: var(--muted); font-size: 34px; line-height: 1.25; font-weight: 510; text-wrap: balance; }
+.subcopy { margin: 46px 0 0; max-width: 850px; color: var(--muted); font-size: var(--fs-subcopy); line-height: 1.25; font-weight: 510; text-wrap: balance; }
 
 /* ── Captions (track 99) ──────────────────────────────────────────────── */
-#captions { position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%; z-index: 80; pointer-events: none; display: flex; align-items: center; justify-content: center; font-family: "Inter", system-ui, sans-serif; font-size: 60px; font-weight: 900; line-height: 1.05; letter-spacing: 0; color: var(--paper); text-align: center; text-shadow: 0 10px 28px rgba(0,0,0,0.65); }
+#captions { position: absolute; left: 0; right: 0; bottom: 4.5%; height: 12%; z-index: 80; pointer-events: none; display: flex; align-items: center; justify-content: center; font-family: "Inter", system-ui, sans-serif; font-size: var(--fs-caption); font-weight: 900; line-height: 1.05; letter-spacing: 0; color: var(--paper); text-align: center; text-shadow: 0 10px 28px rgba(0,0,0,0.65); }
 #captions .hf-caption-token { opacity: 0.74; transition: color 0.06s linear, opacity 0.06s linear, transform 0.06s ease-out; }
 #captions .hf-caption-token.--active { color: var(--source-accent-2); opacity: 1; transform: scale(1.04); }
 
 /* ── Brand corner watermark (track 97) ────────────────────────────────── */
-#brand-corner { position: absolute; top: 96px; right: 96px; width: 96px; opacity: 0.42; z-index: 60; pointer-events: none; }
+#brand-corner { position: absolute; top: var(--wm-inset-top); right: var(--wm-inset-right); width: var(--wm-size); opacity: 0.42; z-index: 60; pointer-events: none; }
 #brand-corner svg { display: block; width: 100%; height: auto; fill: var(--paper); }

@@ -1,0 +1,23 @@
+/* statement-lower-third — portrait (9:16). The statement anchors to the LOWER
+   third of the safe band (above the caption strip), left-aligned. The optional
+   image is a full-bleed dimmed background behind a gradient scrim; the scrim and
+   image are the scene's own frame (the statement is the primary object). */
+
+.scene-pad.slt { position: relative; justify-content: flex-end; }
+
+.slt-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.34; z-index: 0; }
+.slt-image[src=""] { display: none; }
+
+.slt-scrim { position: absolute; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(8,9,10,0.42) 0%, rgba(8,9,10,0.16) 38%, rgba(8,9,10,0.78) 100%); }
+.scene-pad.slt:has(.slt-image[src=""]) .slt-scrim { display: none; }
+
+.slt-body { position: relative; z-index: 1; }
+
+.slt-clip { overflow: hidden; padding-bottom: 6px; }
+
+.slt-statement { margin: 0; max-width: none; font-size: 80px; line-height: 1.08; font-weight: 780; text-align: left; }
+.slt-statement strong { color: var(--source-accent-2); font-weight: 850; }
+.slt-statement em { font-style: italic; color: var(--paper); }
+
+.slt-attribution { margin: 34px 0 0; font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 28px; line-height: 1.2; font-weight: 540; letter-spacing: 0.5px; color: var(--muted); }
+.slt-attribution:empty { display: none; }

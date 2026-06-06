@@ -1,0 +1,27 @@
+{
+  "id": "annotated-asset@1",
+  "type": "annotated-asset",
+  "version": 1,
+  "label": "Annotated asset",
+  "description": "A screenshot or diagram with 2-5 numbered callout pins anchored at authored percent coordinates. Each pin is a numbered dot plus a label chip. The image is the primary object; pins pop in with a back.out stagger and the chips fade beside them. Optional eyebrow + title.",
+  "builder": "build_annotatedAsset",
+  "classPrefix": "ax",
+  "defaultDuration": 8,
+  "intentTags": ["informative", "workflow", "data", "social"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": false, "default": "" },
+    "image": { "kind": "image", "required": true },
+    "callouts": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 5,
+      "item": {
+        "label": { "kind": "text", "required": true },
+        "x": { "kind": "text", "required": true },
+        "y": { "kind": "text", "required": true }
+      }
+    }
+  },
+  "validation": []
+}

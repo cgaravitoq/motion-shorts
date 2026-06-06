@@ -1,0 +1,8 @@
+{
+  "eyebrow": "Antes / después",
+  "title": "El mismo layout, <strong>rehecho</strong>",
+  "imageBefore": "assets/generated/placeholder-asset.png",
+  "imageAfter": "assets/generated/placeholder-asset.png",
+  "labelBefore": "antes",
+  "labelAfter": "después"
+}

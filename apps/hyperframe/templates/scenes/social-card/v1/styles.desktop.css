@@ -1,10 +1,46 @@
-/* social-card desktop-1080p (16:9) overrides — appended AFTER styles.css */
-.soc-title { font-size: 56px; }
-.soc-card { max-width: 780px; margin: 0 auto; padding: 48px 48px 44px; }
-.soc-card__avatar { width: 88px; height: 88px; font-size: 38px; }
-.soc-card__name { font-size: 36px; }
-.soc-card__handle { font-size: 26px; }
-.soc-card__body { margin: 34px 0 0; font-size: 36px; }
-.soc-card__engagement { margin: 40px 0 0; gap: 56px; }
-.soc-card__stat { font-size: 28px; }
-.soc-card__stat-icon { font-size: 30px; }
+/* social-card desktop-1080p (16:9) overrides — appended AFTER styles.css AND
+   shell.desktop.css. Asset-led 70/30: the post card is the primary object and
+   owns the right span; the eyebrow+title pin top-left in cols 1/5. The v1
+   centered the card (780px + margin:auto) leaving ~570px void each side — this
+   replaces that with a two-zone grid placement on .scene-pad's 12-col grid. */
+
+/* Title block: eyebrow + headline stacked, top-left, cols 1/5. The grid is
+   align-content:center, so the two rows + card sit as one vertically-centred
+   block; the card spans both title rows on the right. */
+#ep-stage[data-format="desktop-1080p"] .soc .soc-eyebrow {
+  grid-column: 1 / 5;
+  grid-row: 1;
+  align-self: end;
+  margin: 0 0 12px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .soc .soc-title {
+  grid-column: 1 / 5;
+  grid-row: 2;
+  align-self: start;
+  margin: 0;
+  max-width: none;
+  font-size: 60px;
+}
+
+/* Card: primary object owns cols 5/13 (~1016px span), capped at 900px and
+   centred within that span, vertically aligned across the two title rows. */
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card {
+  grid-column: 5 / 13;
+  grid-row: 1 / 3;
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 900px;
+  margin: 0;
+  padding: 56px 56px 52px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__head { gap: 28px; }
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__avatar { width: 112px; height: 112px; font-size: 46px; }
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__name { font-size: 42px; }
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__handle { font-size: 28px; }
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__body { margin: 40px 0 0; font-size: 42px; }
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__engagement { margin: 48px 0 0; gap: 64px; }
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__stat { font-size: 30px; }
+#ep-stage[data-format="desktop-1080p"] .soc .soc-card__stat-icon { font-size: 32px; }

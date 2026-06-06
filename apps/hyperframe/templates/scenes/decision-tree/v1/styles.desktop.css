@@ -1,11 +1,27 @@
-/* decision-tree desktop-1080p (16:9) overrides — appended after styles.css */
-.dt-tree { width: 1500px; height: 640px; }
+/* decision-tree desktop-1080p (16:9): asset-led 70/30. Eyebrow+title pin
+   top-left in cols 1-7; the tree owns the full 12-col band on the next row so
+   the branching diagram is the primary visual, never a small centered block.
+   Box stays 1500x640 in EXACT sync with the builder W/H + the wires viewBox
+   (timeline.js isDesktop constants) — do not resize without updating all three.
+   Wires are primary connectors: full opacity, never the structure layer. */
+.scene-pad.dt { grid-template-rows: auto auto auto; }
 
-.dt-node--root { left: 750px; width: 720px; min-height: 170px; }
+.scene-pad.dt .dt-eyebrow { grid-column: 1 / 8; grid-row: 1; }
+.scene-pad.dt .dt-title { grid-column: 1 / 8; grid-row: 2; max-width: var(--content-max); }
 
-.dt-branch { top: 370px; width: 360px; }
-.dt-tree[data-count="2"] .dt-branch { width: 460px; }
+.scene-pad.dt .dt-tree { grid-column: 1 / 13; grid-row: 3; justify-self: center; width: 1500px; height: 640px; margin: var(--title-block-gap) 0 0; }
 
-.dt-branch__badge { top: -74px; }
+/* root question centered on builder ROOT_X (750); min-height meets TRUNK_TOP (170)
+   so wires emanate from its bottom edge. */
+.dt-tree .dt-node--root { top: 0; left: 750px; width: 720px; min-height: 170px; padding: 30px 56px; }
+.dt-tree .dt-node--root .dt-node__text { font-size: 46px; }
 
-.dt-node--result { min-height: 200px; }
+/* branches sit at builder CHILD_TOP (370); width spreads them across the box. */
+.dt-tree .dt-branch { top: 370px; width: 440px; }
+.dt-tree[data-count="2"] .dt-branch { width: 520px; }
+
+.dt-tree .dt-branch__badge { top: -70px; font-size: 26px; padding: 9px 22px; }
+
+.dt-tree .dt-node--result { width: 100%; min-height: 196px; padding: 28px 30px; }
+.dt-tree .dt-node--result .dt-node__text { font-size: 36px; }
+.dt-tree[data-count="2"] .dt-node--result .dt-node__text { font-size: 40px; }

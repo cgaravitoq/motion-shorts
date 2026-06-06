@@ -1,7 +1,65 @@
-/* metric desktop-1080p (16:9) overrides — appended AFTER styles.css in desktop builds. */
-.mt-grid[data-count="3"] { grid-template-columns: 1fr 1fr 1fr; }
-.mt-grid[data-count="4"] { grid-template-columns: 1fr 1fr 1fr 1fr; }
-.mt-card { min-height: 150px; }
-.mt-card__value { font-size: 72px; }
-.mt-grid[data-count="3"] .mt-card__value, .mt-grid[data-count="4"] .mt-card__value { font-size: 60px; }
-.mt-grid[data-count="1"] .mt-card__value { font-size: 120px; }
+/* metric desktop-1080p (16:9) overrides — appended AFTER styles.css AND
+   shell.desktop.css in desktop builds. Asset-led grid: the title block pins
+   top-left (cols 1-7), the stat row owns the full width (cols 1-12) and is given
+   real vertical presence so the band reads as one deliberate data row instead of
+   a small centered cluster floating in symmetric void. */
+
+/* Direct children of .scene-pad (the 12-col grid) get explicit placement. */
+#ep-stage[data-format="desktop-1080p"] .mt-eyebrow {
+  grid-column: 1 / 8;
+  grid-row: 1;
+  align-self: end;
+}
+#ep-stage[data-format="desktop-1080p"] .mt-title {
+  grid-column: 1 / 8;
+  grid-row: 2;
+}
+#ep-stage[data-format="desktop-1080p"] .mt-grid {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  margin-top: var(--title-block-gap);
+  gap: var(--grid-gutter);
+}
+
+/* Card row layouts: 4-up and 3-up sit on one row across the full band;
+   2-up is a centered pair with width caps so it never stretches edge to edge. */
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="2"] {
+  grid-template-columns: repeat(2, minmax(0, 420px));
+  justify-content: center;
+}
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="1"] {
+  grid-template-columns: minmax(0, 640px);
+  justify-content: center;
+}
+
+/* Cards own a tall band: the row anchors the lower third, so values come back up. */
+#ep-stage[data-format="desktop-1080p"] .mt-card {
+  min-height: 260px;
+  padding: 48px 42px;
+  gap: 16px;
+}
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="1"] .mt-card {
+  min-height: 300px;
+  padding: 60px 56px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .mt-card__value {
+  font-size: 112px;
+  line-height: 0.94;
+}
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="3"] .mt-card__value { font-size: 104px; }
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="4"] .mt-card__value { font-size: 96px; }
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="1"] .mt-card__value { font-size: 168px; }
+
+#ep-stage[data-format="desktop-1080p"] .mt-card__label {
+  font-size: 32px;
+}
+#ep-stage[data-format="desktop-1080p"] .mt-grid[data-count="1"] .mt-card__label { font-size: 42px; }
+
+/* Deltas drop to the context layer — present, never competing with the value. */
+#ep-stage[data-format="desktop-1080p"] .mt-card__delta {
+  font-size: 26px;
+  opacity: var(--layer-context);
+}

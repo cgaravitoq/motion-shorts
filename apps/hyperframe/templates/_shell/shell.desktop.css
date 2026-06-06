@@ -1,19 +1,51 @@
-/* scene-hub desktop-1080p (16:9) shell overrides — appended AFTER shell.css by
-   the assembler ONLY when assembling with --format=desktop. The portrait short
-   never includes this file, so its emitted bytes are untouched.
-   Geometry honors lint-desktop-safe: title-safe inset 192px L/R + 108px T/B,
-   YouTube end-screen band (bottom 120px) and CTA slot (bottom-right 160x160). */
+/* scene-hub desktop-1080p (16:9) base system — appended AFTER shell.css by the
+   assembler ONLY when assembling with --format=desktop; the portrait short
+   never includes this file. This block redeclares the COMPLETE per-format token
+   set (every token in shell.css :root MUST appear here — enforced by the
+   token-superset contract test) so desktop and mobile never share spacing.
 
-:root {
-  /* 16:9 safe band: watermark occupies ~96-149px from the top; the captions
-     strip (bottom 4.5%, height 12% of 1080) spans ~49-179px from the bottom. */
-  --safe-top: 180px;
-  --safe-bottom: 220px;
-  --safe-x: 192px;
-  --title-block-gap: 44px;
+   Desktop composition system (asset-led, 70/30):
+   - 12-col grid on .scene-pad: 12x106px cols + 24px gutters = 1536px usable.
+     Text anchors to cols 1-7 (--content-max), assets own cols 8-12.
+   - Headings pin top-left; never center heading+component as one group.
+   - Layout padding is --safe-x:120px; the 192px title-safe band remains a
+     lint-desktop-safe ceiling for data-critical text only.
+   - Watermark: broadcast bug norm ~5% of frame height -> 56px top inset
+     (5.2% of 1080, optical parity with mobile's 96/1920), 120px mark so it
+     anchors the corner instead of floating.
+   - Opacity layers for charts/diagrams: structure 0.15, context 0.4, data 1. */
+
+#ep-stage[data-format="desktop-1080p"] {
+  --safe-top: 108px;
+  /* caption band spans 60-190px from the bottom (see #captions below) */
+  --safe-bottom: 230px;
+  --safe-x: 120px;
+  --title-block-gap: 32px;
+  --content-max: 760px;
+  --fs-eyebrow: 24px;
+  --fs-headline: 92px;
+  --fs-subcopy: 32px;
+  --fs-caption: 48px;
+  --wm-inset-top: 56px;
+  --wm-inset-right: 64px;
+  --wm-size: 120px;
+  --grid-col: 106px;
+  --grid-gutter: 24px;
+  --col-gap: 96px;
+  --layer-primary: 1;
+  --layer-context: 0.4;
+  --layer-structure: 0.15;
 }
 
-.headline { max-width: 1400px; }
-.subcopy { margin-top: 36px; max-width: 1100px; }
+#ep-stage[data-format="desktop-1080p"] .scene-pad {
+  display: grid;
+  grid-template-columns: repeat(12, var(--grid-col));
+  column-gap: var(--grid-gutter);
+  align-content: center;
+  justify-content: center;
+}
 
-#captions { font-size: 48px; }
+#ep-stage[data-format="desktop-1080p"] .subcopy { margin-top: 28px; max-width: var(--content-max); }
+
+/* Caption band clears the ~90px YouTube player control bar. */
+#ep-stage[data-format="desktop-1080p"] #captions { bottom: 60px; height: 130px; }

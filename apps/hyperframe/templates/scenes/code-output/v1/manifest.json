@@ -1,0 +1,62 @@
+{
+  "id": "code-output@1",
+  "type": "code-output",
+  "version": 1,
+  "label": "Code + rendered output",
+  "description": "A terminal/editor window (the window is the primary self-framed object) with traffic-light dots, a filename bar and 2-10 mono code lines, paired with a second darker output panel that shows the rendered result with its own label bar and 1-6 output lines. Optional eyebrow + title above. The window pops first and its lines x-stagger; the output panel reveals AFTER the code (beat ~+1.2s). Desktop places the window wide on the left and the output panel on the right; portrait stacks the window over the output.",
+  "builder": "build_codeOutput",
+  "classPrefix": "co",
+  "defaultDuration": 8,
+  "intentTags": [
+    "informative",
+    "workflow",
+    "data",
+    "vfx"
+  ],
+  "slots": {
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
+    "filename": {
+      "kind": "text",
+      "required": true
+    },
+    "lines": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 10,
+      "item": {
+        "code": {
+          "kind": "text",
+          "required": false,
+          "default": ""
+        }
+      }
+    },
+    "outputLabel": {
+      "kind": "text",
+      "required": false,
+      "default": "output"
+    },
+    "outputLines": {
+      "kind": "repeat",
+      "min": 1,
+      "max": 6,
+      "item": {
+        "text": {
+          "kind": "text",
+          "required": false,
+          "default": ""
+        }
+      }
+    }
+  },
+  "validation": []
+}

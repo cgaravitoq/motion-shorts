@@ -1,9 +1,48 @@
-/* title-cards desktop-1080p (16:9) — appended AFTER styles.css in desktop builds only. */
-.tc-grid { gap: 32px; }
-.tc-grid[data-count="2"] { grid-template-columns: 1fr 1fr; }
-.tc-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
-.tc-grid[data-count="4"] { grid-template-columns: 1fr 1fr; }
-.tc-grid[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
-.tc-grid[data-count="6"] { grid-template-columns: repeat(3, 1fr); }
-.tc-card { min-height: 180px; }
-.tc-grid[data-count="5"] .tc-card, .tc-grid[data-count="6"] .tc-card { min-height: 0; padding: 30px 28px; }
+/* title-cards desktop-1080p (16:9) — appended AFTER styles.css AND shell.desktop.css
+   in desktop builds only. .scene-pad is the 12-col grid; eyebrow+title pin
+   top-left (cols 1/8, first rows), the card grid spans full width below. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.tc {
+  grid-template-rows: auto auto 1fr;
+  align-content: center;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tc .tc-eyebrow {
+  grid-column: 1 / 8;
+  grid-row: 1;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tc .tc-title {
+  grid-column: 1 / 8;
+  grid-row: 2;
+  margin: 0;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  margin-top: var(--title-block-gap);
+  gap: 32px;
+  align-content: center;
+  align-self: center;
+}
+
+/* Inverted count -> columns: 2->2, 3->3, 4->2x2, 5->3+2, 6->3x2. */
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="2"] { grid-template-columns: 1fr 1fr; }
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="4"] { grid-template-columns: 1fr 1fr; }
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="6"] { grid-template-columns: repeat(3, 1fr); }
+
+#ep-stage[data-format="desktop-1080p"] .tc .tc-card { min-height: 240px; padding: 44px 44px; }
+
+#ep-stage[data-format="desktop-1080p"] .tc .tc-card__title { font-size: 50px; }
+#ep-stage[data-format="desktop-1080p"] .tc .tc-card__body { font-size: 34px; }
+
+/* Denser packs keep cards taller than v1 but ease type to fit the band. */
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="5"] .tc-card,
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="6"] .tc-card { min-height: 220px; padding: 36px 34px; }
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="5"] .tc-card__title,
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="6"] .tc-card__title { font-size: 42px; }
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="5"] .tc-card__body,
+#ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="6"] .tc-card__body { font-size: 28px; }

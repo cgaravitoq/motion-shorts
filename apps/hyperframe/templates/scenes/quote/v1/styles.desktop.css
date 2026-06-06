@@ -1,6 +1,45 @@
-/* quote desktop-1080p (16:9) — appended AFTER styles.css in desktop builds only */
-.qt-mark { margin: 0 0 -42px -8px; font-size: 190px; }
-.qt-quote { max-width: 1150px; font-size: 88px; }
-.qt-attribution { margin-top: 48px; }
-.qt-attribution__name { font-size: 42px; }
-.qt-attribution__role { font-size: 28px; }
+/* quote desktop-1080p (16:9) — appended AFTER styles.css AND shell.desktop.css.
+   Asymmetric editorial layout: a huge quote-mark glyph anchored right as a
+   structural background layer (cols 8-12), with the quote text left-anchored in
+   cols 1-8 and the attribution stacked below. Kills the v1 centered column. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.qt {
+  grid-template-rows: auto auto;
+  row-gap: 0;
+}
+
+#ep-stage[data-format="desktop-1080p"] .qt-mark {
+  grid-column: 8 / 13;
+  grid-row: 1 / 3;
+  align-self: center;
+  justify-self: end;
+  z-index: 0;
+  margin: 0;
+  font-size: 520px;
+  line-height: 0.8;
+  color: var(--source-accent-2);
+  opacity: var(--layer-structure);
+  pointer-events: none;
+}
+
+#ep-stage[data-format="desktop-1080p"] .qt-quote {
+  grid-column: 1 / 9;
+  grid-row: 1 / 2;
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  max-width: none;
+  font-size: 88px;
+  line-height: 1.12;
+}
+
+#ep-stage[data-format="desktop-1080p"] .qt-attribution {
+  grid-column: 1 / 8;
+  grid-row: 2 / 3;
+  position: relative;
+  z-index: 1;
+  margin-top: 52px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .qt-attribution__name { font-size: 42px; }
+#ep-stage[data-format="desktop-1080p"] .qt-attribution__role { font-size: 28px; }

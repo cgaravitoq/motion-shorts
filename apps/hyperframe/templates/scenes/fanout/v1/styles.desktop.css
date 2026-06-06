@@ -1,17 +1,73 @@
-/* fanout desktop-1080p (16:9) overrides — graph rotates left-to-right */
-.fo-graph { margin: var(--title-block-gap) auto 0; width: 100%; max-width: 1500px; height: 480px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; }
+/* fanout desktop-1080p (16:9): asset-led side-by-side. Eyebrow+title pin to the
+   left third (cols 1-3, vertically centered as one block); the horizontal
+   source -> workers -> synth graph owns cols 4-12 (~75% width). Connectors are
+   horizontal rails that span the inter-column gaps and draw with scaleX (origin
+   set in timeline.js, isDesktop branch). */
 
-.fo-row { display: flex; justify-content: center; width: auto; }
-.fo-row--workers { gap: 0; flex-direction: column; flex-wrap: nowrap; align-items: center; justify-content: space-evenly; height: 100%; }
+.scene-pad.fo { align-items: center; grid-template-rows: max-content max-content; }
+
+.fo-eyebrow { grid-column: 1 / 4; grid-row: 1; align-self: end; margin: 0; }
+.fo-title { grid-column: 1 / 4; grid-row: 2; align-self: start; margin: 0; }
+
+.fo-graph {
+  grid-column: 4 / 13;
+  grid-row: 1 / 3;
+  align-self: center;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  height: 560px;
+  display: grid;
+  grid-template-columns: max-content minmax(96px, 1fr) max-content minmax(96px, 1fr) max-content;
+  align-items: center;
+  justify-items: center;
+}
+
+.fo-row { width: auto; }
+.fo-row--source { grid-column: 1; justify-self: start; }
+.fo-row--synth { grid-column: 5; justify-self: end; }
+.fo-row--workers {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 32px;
+  height: 100%;
+}
 .fo-graph[data-count="5"] .fo-row--workers,
-.fo-graph[data-count="6"] .fo-row--workers { gap: 0; }
+.fo-graph[data-count="6"] .fo-row--workers { gap: 22px; }
 
-.fo-node--worker { padding: 16px 28px; }
+/* nodes enlarged ~15-20% over base */
+.fo-node { padding: 30px 40px; gap: 20px; border-radius: 24px; }
+.fo-node__dot { width: 20px; height: 20px; box-shadow: 0 0 0 7px color-mix(in srgb, var(--source-accent) 22%, transparent); }
+.fo-node__label { font-size: 46px; }
 
-.fo-links { display: flex; align-items: center; justify-content: space-evenly; gap: 0; flex-direction: column; flex-wrap: nowrap; width: 150px; height: 100%; }
-.fo-graph[data-count="2"] .fo-links { gap: 0; }
+.fo-node--worker { padding: 24px 34px; }
+.fo-node--worker .fo-node__label { font-size: 40px; }
+.fo-node--worker .fo-node__dot { width: 16px; height: 16px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--source-accent-2) 22%, transparent); }
+.fo-node--synth { padding: 32px 46px; }
+.fo-node--synth .fo-node__dot { box-shadow: 0 0 0 8px color-mix(in srgb, var(--source-accent-2) 24%, transparent); }
+
+/* rails span the full gap between the columns and fan vertically to each worker */
+.fo-links {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-evenly;
+  gap: 32px;
+}
+.fo-links--out { grid-column: 2; }
+.fo-links--in { grid-column: 4; }
+/* override base portrait height/gap (higher base specificity via [data-count]) */
+.fo-graph[data-count="2"] .fo-links { gap: 32px; height: 100%; width: 100%; }
 .fo-graph[data-count="5"] .fo-links,
-.fo-graph[data-count="6"] .fo-links { gap: 0; width: 120px; height: 100%; }
-.fo-link { flex: none; width: 100%; height: 4px; border-radius: 999px; }
+.fo-graph[data-count="6"] .fo-links { gap: 22px; height: 100%; width: 100%; }
+
+.fo-link { flex: none; width: 100%; height: 5px; border-radius: 999px; }
 .fo-link--out { background: linear-gradient(90deg, var(--source-accent), color-mix(in srgb, var(--source-accent) 45%, transparent)); transform-origin: 0% 50%; }
 .fo-link--in { background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent-2) 45%, transparent), var(--source-accent-2)); transform-origin: 100% 50%; }

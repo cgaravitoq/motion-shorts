@@ -1,0 +1,68 @@
+.lg-title { margin: 0; }
+.lg-title:empty { display: none; }
+.lg-eyebrow:empty { display: none; }
+
+.lg-band {
+  list-style: none;
+  margin: var(--title-block-gap) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+  align-content: center;
+}
+/* Odd counts: let the trailing chip span the row so the band stays balanced. */
+.lg-band[data-count="3"] .lg-chip:nth-child(3),
+.lg-band[data-count="5"] .lg-chip:nth-child(5),
+.lg-band[data-count="7"] .lg-chip:nth-child(7) { grid-column: 1 / -1; }
+
+.lg-chip {
+  box-sizing: border-box;
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 30px 34px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--panel);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.lg-chip__disc {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--source-accent-2) 46%, var(--line));
+  background: color-mix(in srgb, var(--source-accent-2) 14%, var(--panel));
+  color: var(--source-accent-2);
+  font-family: "Berkeley Mono", "JetBrains Mono", monospace;
+  font-size: 42px;
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.lg-chip__label {
+  font-size: 38px;
+  line-height: 1.1;
+  font-weight: 680;
+  letter-spacing: 0;
+  color: var(--paper);
+  text-wrap: balance;
+}
+
+/* Denser packs ease type + chip height so 7-8 names clear the safe band. */
+.lg-band[data-count="6"] .lg-chip,
+.lg-band[data-count="7"] .lg-chip,
+.lg-band[data-count="8"] .lg-chip { min-height: 108px; padding: 22px 26px; gap: 22px; }
+.lg-band[data-count="6"] .lg-chip__disc,
+.lg-band[data-count="7"] .lg-chip__disc,
+.lg-band[data-count="8"] .lg-chip__disc { width: 72px; height: 72px; font-size: 36px; }
+.lg-band[data-count="6"] .lg-chip__label,
+.lg-band[data-count="7"] .lg-chip__label,
+.lg-band[data-count="8"] .lg-chip__label { font-size: 32px; }

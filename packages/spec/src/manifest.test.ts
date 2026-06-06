@@ -54,6 +54,13 @@ describe("SceneTypeManifest", () => {
     expect(Result.isFailure(result)).toBe(true);
   });
 
+  it("accepts an image slot kind", () => {
+    const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
+    json.slots = { screenshot: { kind: "image" }, caption: { kind: "text" } };
+    const result = decodeSceneTypeManifest(json);
+    expect(Result.isSuccess(result)).toBe(true);
+  });
+
   it("rejects a repeat slot without min/max", () => {
     const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
     json.slots = { items: { kind: "repeat", item: {} } };

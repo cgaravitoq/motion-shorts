@@ -1,0 +1,40 @@
+/* statement-lower-third desktop-1080p (16:9) — appended AFTER styles.css AND
+   shell.desktop.css in desktop builds only. The image (when present) absolute-
+   fills the scene section behind a gradient scrim (the scene's own frame). The
+   statement block anchors LOWER-LEFT: .scene-pad is a 1fr/auto grid so the body
+   pins to row 2, cols 1-9, with margin above the safe-bottom so the statement
+   stays clear of the YouTube end-screen dead zone (bottom 120px) and the
+   bottom-right CTA slot. Statement ~80px; attribution drops to layer-context. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.slt {
+  grid-template-rows: 1fr auto;
+  align-content: stretch;
+}
+
+#ep-stage[data-format="desktop-1080p"] .slt-image {
+  opacity: 0.3;
+}
+
+#ep-stage[data-format="desktop-1080p"] .slt-scrim {
+  background: linear-gradient(90deg, rgba(8,9,10,0.82) 0%, rgba(8,9,10,0.5) 42%, rgba(8,9,10,0.12) 100%),
+              linear-gradient(0deg, rgba(8,9,10,0.7) 0%, rgba(8,9,10,0) 46%);
+}
+
+#ep-stage[data-format="desktop-1080p"] .slt-body {
+  grid-column: 1 / 9;
+  grid-row: 2;
+  align-self: end;
+  margin-bottom: 40px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .slt-statement {
+  font-size: 80px;
+  line-height: 1.06;
+  max-width: none;
+}
+
+#ep-stage[data-format="desktop-1080p"] .slt-attribution {
+  margin-top: 32px;
+  font-size: 30px;
+  opacity: var(--layer-context);
+}

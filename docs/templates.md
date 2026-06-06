@@ -9,7 +9,7 @@ scene-spec.json  ──(assembler)──>  index.html  ──(render)──>  mp
 
 `index.html` is **generated**. Never edit it by hand; edit the spec and re-run `bun run assemble <slug>`.
 
-This doc is the **scene-type authoring reference**: the shell, the 17 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
+This doc is the **scene-type authoring reference**: the shell, the 24 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
 
 ## Layout
 
@@ -51,9 +51,9 @@ The build engine is `apps/hyperframe/scripts/lib/`:
 | `scene-spec.ts` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
 | `scene-router.ts` | intent → recommended scene-type skeleton + typed summaries |
 
-## The 17 scene-types
+## The 24 scene-types
 
-These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count.
+These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count. The last seven (`media-split` through `before-after`) are the desktop-first component library — asset-led layouts born for 16:9 that also carry a portrait layout.
 
 | Type | Purpose | Default dur (s) | Repeatable slot (range) | Other slots |
 |------|---------|:---------------:|-------------------------|-------------|
@@ -73,6 +73,13 @@ These are the only building blocks. `hook` opens; `outro` is the pinned brand si
 | `line-chart` | Time-series line chart, 1-3 series | 8 | `series` **1-3** (`label*`, `values*`) | `title?` (rich), `eyebrow?`, `unit?`, `xLabels?` |
 | `contrib-heatmap` | GitHub-style contribution heatmap | 8 | — | `data*`, `caption?`, `highlight?`, `title?` (rich), `eyebrow?` |
 | `decision-tree` | Conditional decision tree (IF/THEN branching) | 8 | `branches` **2-3** (`label*`, `result*`, `tone?`) | `question*`, `title?` (rich), `eyebrow?` |
+| `media-split` | Copy + screenshot/image split (the desktop workhorse) | 7.5 | `points` **2-4** (`text*`) | `title*` (rich), `eyebrow?`, `image*`, `mediaSide?` (left\|right) |
+| `annotated-asset` | Screenshot/diagram with numbered callout pins | 8 | `callouts` **2-5** (`label*`, `x*`, `y*` — percent coords) | `title?` (rich), `eyebrow?`, `image*` |
+| `code-output` | Code window + its rendered result, side by side | 8 | `lines` **2-10** (`code?`) + `outputLines` **1-6** (`text?`) | `filename*`, `outputLabel?`, `title?` (rich), `eyebrow?` |
+| `dashboard-composite` | Multi-panel KPI dashboard with mini progress bars | 8 | `tiles` **3-4** (`label*`, `value*`, `pct*`, `delta?`) | `title*` (rich), `eyebrow?` |
+| `statement-lower-third` | Large statement anchored to the lower third | 7 | — | `statement*` (rich), `attribution?`, `image?` (full-bleed bg) |
+| `logo-grid` | Social-proof band of name chips/wordmarks | 7 | `items` **3-8** (`label*`) | `title?` (rich), `eyebrow?` |
+| `before-after` | Two images with a vertical wipe reveal | 7 | — | `imageBefore*`, `imageAfter*`, `labelBefore?`, `labelAfter?`, `title?` (rich), `eyebrow?` |
 | `outro` | Pinned brand sign-off (track 7, last) | 5.5 | — | `source?` |
 
 `*` = required, `?` = optional. "(rich)" slots accept inline HTML (`<strong>`, `<em>`, `<br>`); everything else is escaped as plain text. The same `*`/`?`/`[min-max]` summary is what `recommend_scene_types` and `scene:check` print.
@@ -159,7 +166,7 @@ A repeat block is delimited by HTML comments and rendered once per item:
 <!-- /repeat:cards -->
 ```
 
-`richText` slots are sanitized (no `<script>`/`<style>`/`<iframe>`/… tags, no `on*=` handlers) but otherwise pass through; all other slots are HTML-escaped.
+`richText` slots are sanitized (no `<script>`/`<style>`/`<iframe>`/… tags, no `on*=` handlers) but otherwise pass through; all other slots are HTML-escaped. `image` slots bind a path **relative to the episode dir** (typically `assets/generated/<name>.png`, see the generated-raster-assets skill) — absolute paths, `..` and URLs are rejected at instantiation.
 
 ## Adding a new scene-type
 

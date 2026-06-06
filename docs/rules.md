@@ -15,7 +15,7 @@ A short is a typed `scene-spec.json` at `apps/hyperframe/src/episodes/<slug>/sce
 
 ## 2. Scene-types — the only building blocks
 
-There are 17 scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `outro`.
+There are 24 scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`.
 
 Repeatable slots have ranges:
 

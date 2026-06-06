@@ -1,11 +1,68 @@
-/* timeline desktop-1080p (16:9) overrides — appended AFTER styles.css. Axis flip: vertical rail -> horizontal rail, events stack left-to-right as equal columns (dot on top, body below). */
-.tln-list { flex-direction: row; align-items: start; gap: 40px; padding-top: 14px; }
-.tln-list[data-count="5"] { gap: 32px; }
-.tln-list[data-count="6"] { gap: 26px; }
-.tln-rail { left: 14px; right: 14px; top: 35px; bottom: auto; width: auto; height: 4px; background: linear-gradient(90deg, var(--source-accent), var(--source-accent-2)); transform-origin: 0% 50%; }
-.tln-event { flex: 1 1 0; min-width: 0; grid-template-columns: none; grid-template-rows: 46px 1fr; justify-items: center; align-items: start; column-gap: 0; row-gap: 24px; }
-.tln-event__body { width: 100%; padding: 22px 26px; }
-.tln-event__marker { font-size: 24px; }
-.tln-event__text { margin: 10px 0 0; font-size: 25px; }
-.tln-list[data-count="5"] .tln-event__text,
-.tln-list[data-count="6"] .tln-event__text { font-size: 24px; }
+/* timeline desktop-1080p (16:9) overrides — appended AFTER styles.css AND shell.desktop.css.
+   Asset-led re-layout against the 12-col grid on .scene-pad:
+   - eyebrow + title pin top-left (cols 1-7, content-max band), rows 1-2.
+   - .tln-list spans the full 12 cols (row 3) and the rail runs the whole band; events
+     spread left-to-right as equal columns scaled up to own the lower band (no centered void).
+   - Axis flip stays consistent with timeline.js isDesktop branch (rail scaleX, body y-enter). */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.tln {
+  align-content: start;
+  grid-template-rows: auto auto 1fr;
+  row-gap: 0;
+  padding-top: 132px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tln-eyebrow { grid-column: 1 / 8; grid-row: 1; align-self: start; }
+#ep-stage[data-format="desktop-1080p"] .tln-title { grid-column: 1 / 8; grid-row: 2; margin: 0; align-self: start; }
+
+#ep-stage[data-format="desktop-1080p"] .tln-list {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  align-self: center;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 40px;
+  padding-top: 30px;
+}
+#ep-stage[data-format="desktop-1080p"] .tln-list[data-count="5"] { gap: 32px; }
+#ep-stage[data-format="desktop-1080p"] .tln-list[data-count="6"] { gap: 26px; }
+
+/* Rail runs the full width, centred on the 52px dots (dot-top + 26px). */
+#ep-stage[data-format="desktop-1080p"] .tln-rail {
+  left: 26px;
+  right: 26px;
+  top: 56px;
+  bottom: auto;
+  width: auto;
+  height: 5px;
+  background: linear-gradient(90deg, var(--source-accent), var(--source-accent-2));
+  transform-origin: 0% 50%;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tln-event {
+  flex: 1 1 0;
+  min-width: 0;
+  grid-template-columns: none;
+  grid-template-rows: 52px 1fr;
+  justify-items: start;
+  align-items: start;
+  column-gap: 0;
+  row-gap: 28px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tln-event__dot {
+  width: 52px;
+  height: 52px;
+  border-width: 5px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tln-event__body {
+  width: 100%;
+  min-height: 230px;
+  padding: 28px 30px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .tln-event__marker { font-size: 26px; }
+#ep-stage[data-format="desktop-1080p"] .tln-event__text { margin: 14px 0 0; font-size: 31px; line-height: 1.26; }
+#ep-stage[data-format="desktop-1080p"] .tln-list[data-count="5"] .tln-event__text,
+#ep-stage[data-format="desktop-1080p"] .tln-list[data-count="6"] .tln-event__text { font-size: 29px; }

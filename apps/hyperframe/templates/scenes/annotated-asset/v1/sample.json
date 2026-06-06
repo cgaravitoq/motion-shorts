@@ -1,0 +1,12 @@
+{
+  "eyebrow": "Anatomía",
+  "title": "Cada zona, <strong>anotada</strong>",
+  "image": "assets/generated/placeholder-asset.png",
+  "callouts": [
+    { "label": "Barra de estado", "x": "22", "y": "16" },
+    { "label": "Editor principal", "x": "62", "y": "34" },
+    { "label": "Panel lateral", "x": "30", "y": "58" },
+    { "label": "Terminal integrada", "x": "70", "y": "74" },
+    { "label": "Controles", "x": "48", "y": "90" }
+  ]
+}

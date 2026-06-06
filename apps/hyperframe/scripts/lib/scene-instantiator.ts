@@ -49,6 +49,18 @@ export function assertSafeHtml(value: unknown, field: string): string {
   return text;
 }
 
+// Image slots bind a path relative to the episode dir (e.g. assets/generated/x.png).
+export function assertSafeImagePath(value: unknown, field: string): string {
+  const text = String(value);
+  if (text === "") return text;
+  if (text.startsWith("/") || text.includes("..") || text.includes("://")) {
+    throw new Error(
+      `slot "${field}": image must be a relative path inside the episode dir (got "${text}")`,
+    );
+  }
+  return text;
+}
+
 const tokenize = (name: string): string =>
   name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toUpperCase();
 
@@ -185,7 +197,12 @@ export function instantiateScene(args: {
         if (def.required) throw new Error(`scene-type "${type}" missing required slot "${name}"`);
         raw = def.default ?? "";
       }
-      const value = def.kind === "richText" ? assertSafeHtml(raw, name) : escapeHtml(raw);
+      const value =
+        def.kind === "richText"
+          ? assertSafeHtml(raw, name)
+          : def.kind === "image"
+            ? escapeHtml(assertSafeImagePath(raw, name))
+            : escapeHtml(raw);
       html = html.replaceAll(`__${tokenize(name)}__`, value);
     }
   }
