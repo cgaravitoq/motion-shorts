@@ -1,14 +1,29 @@
 import { describe, expect, it } from "bun:test";
-import fs from "node:fs";
 import path from "node:path";
 import { validateSceneSpec } from "./scene-spec";
 
 const hubRoot = path.resolve(import.meta.dir, "../..");
-const realSpec = () =>
-  JSON.parse(fs.readFileSync(path.join(hubRoot, "src/episodes/qa-progress-ring/scene-spec.json"), "utf8"));
+// Inline fixture against the TRACKED scene-type manifests (templates/scenes):
+// episodes under src/episodes are local working copies, never in git/CI.
+const realSpec = () => ({
+  slug: "contract-fixture",
+  lang: "es",
+  width: 1080,
+  height: 1920,
+  scenes: [
+    { id: "hook", type: "hook", duration: 6, slots: { title: "Hola <strong>mundo</strong>" } },
+    {
+      id: "kpis",
+      type: "metric",
+      duration: 7,
+      slots: { stats: [{ value: "42", label: "shorts" }] },
+    },
+    { id: "outro", type: "outro", duration: 5, slots: {} },
+  ],
+});
 
 describe("validateSceneSpec", () => {
-  it("accepts a real episode spec", () => {
+  it("accepts a valid spec built against the real scene-type manifests", () => {
     const { ok, errors, warnings } = validateSceneSpec(realSpec(), { hubRoot });
     expect(errors).toEqual([]);
     expect(ok).toBe(true);
