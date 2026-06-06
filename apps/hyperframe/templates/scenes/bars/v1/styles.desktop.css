@@ -1,10 +1,11 @@
-/* bars desktop-1080p (16:9): ALL-LEFT content scene. Eyebrow + 1-line title pin
-   top-left (col 1, --content-max). The bar chart sits below, left-aligned at col
-   1 (justify-content: flex-start), >= --title-block-gap clear air under the title.
-   Tracks are budgeted for the 710px usable band: ~320px base, ~360 at count2,
-   down to ~280 at count6; value/label sizes preserved.
-   Fill is a single-hue accent-2 column (subtle same-hue vertical gradient +
-   soft glow); tracks stay the dark panel. Grows scaleY 0->1 (timeline.js axis). */
+/* bars desktop-1080p (16:9): v4 FRAME-FILL. layout="centered" (manifest) — the
+   shell master switch centers the .scene-pad children (eyebrow chip + 1-2 line
+   title + subcopy) as one landing-hero header block. The chart below owns the
+   FULL band: it spans cols 1/13 at width 1536px and lays its rows on a
+   repeat(N,1fr) grid, so the tracks are distributed left/center/right across the
+   whole surface instead of clustering on the left. Track width scales UP at low
+   count to consume each 1fr slot; value 76px + label 34px stay centered over
+   each column. Whitespace stays symmetric — no asymmetric void. */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.br {
   grid-template-rows: auto auto auto;
@@ -12,43 +13,49 @@
   row-gap: 0;
 }
 
-.br-eyebrow { grid-column: 1 / 13; grid-row: 1; }
-.br-title { grid-column: 1 / 13; grid-row: 2; max-width: var(--content-max); }
+#ep-stage[data-format="desktop-1080p"] .br-eyebrow {
+  grid-column: 1 / 13;
+  grid-row: 1;
+}
+#ep-stage[data-format="desktop-1080p"] .br-title {
+  grid-column: 1 / 13;
+  grid-row: 2;
+  max-width: var(--header-max);
+  font-size: 64px;
+  line-height: 1.05;
+}
 
-.br-chart {
+#ep-stage[data-format="desktop-1080p"] .br-chart {
   grid-column: 1 / 13;
   grid-row: 3;
+  width: 100%;
   margin: var(--title-block-gap) 0 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: flex-start;
-  align-self: start;
-  justify-self: start;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  column-gap: 0;
 }
-.br-chart[data-count="2"] { gap: 72px; }
-.br-chart[data-count="3"] { gap: 64px; }
-.br-chart[data-count="4"] { gap: 56px; }
-.br-chart[data-count="5"] { gap: 44px; }
-.br-chart[data-count="6"] { gap: 36px; }
 
-.br-row {
+/* repeat(N,1fr): every column GROWS to an equal share of the 1536px surface, so
+   the tracks land at the band's left / center / right thirds (3-up) or quarters
+   (4-up), never bunched. >=5 keeps equal 1fr slots — caps live on the track. */
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="5"] { grid-template-columns: repeat(5, 1fr); }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="6"] { grid-template-columns: repeat(6, 1fr); }
+
+#ep-stage[data-format="desktop-1080p"] .br-row {
   display: grid;
   grid-template-areas: "value" "track" "label";
   grid-template-rows: auto auto auto;
   justify-items: center;
   row-gap: 20px;
-  width: 220px;
 }
-.br-chart[data-count="2"] .br-row { width: 280px; }
-.br-chart[data-count="3"] .br-row { width: 240px; }
-.br-chart[data-count="4"] .br-row { width: 196px; }
-.br-chart[data-count="5"] .br-row { width: 162px; }
-.br-chart[data-count="6"] .br-row { width: 136px; }
 
-.br-value {
+#ep-stage[data-format="desktop-1080p"] .br-value {
   grid-area: value;
   margin: 0;
   font-size: 76px;
@@ -61,28 +68,28 @@
   text-align: center;
   opacity: var(--layer-primary);
 }
-.br-chart[data-count="4"] .br-value { font-size: 64px; }
-.br-chart[data-count="5"] .br-value { font-size: 56px; }
-.br-chart[data-count="6"] .br-value { font-size: 50px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="5"] .br-value { font-size: 64px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="6"] .br-value { font-size: 56px; }
 
-.br-track {
+#ep-stage[data-format="desktop-1080p"] .br-track {
   grid-area: track;
   position: relative;
-  width: 160px;
-  height: 320px;
+  height: 340px;
   justify-self: center;
   border-radius: 28px;
   background: var(--panel);
   border: 1px solid var(--line);
   overflow: hidden;
 }
-.br-chart[data-count="2"] .br-track { width: 200px; height: 360px; }
-.br-chart[data-count="3"] .br-track { width: 176px; height: 340px; }
-.br-chart[data-count="4"] .br-track { width: 140px; height: 320px; }
-.br-chart[data-count="5"] .br-track { width: 116px; height: 300px; }
-.br-chart[data-count="6"] .br-track { width: 100px; height: 280px; }
+/* Track widths grow as count drops so each track fills its 1fr column slot
+   (~768/512/384px wide at 2/3/4-up) instead of leaving the column half-empty. */
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="2"] .br-track { width: 300px; height: 360px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="3"] .br-track { width: 270px; height: 350px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="4"] .br-track { width: 205px; height: 340px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="5"] .br-track { width: 160px; height: 330px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="6"] .br-track { width: 130px; height: 320px; }
 
-.br-fill {
+#ep-stage[data-format="desktop-1080p"] .br-fill {
   position: absolute;
   inset: auto 0 0 0;
   width: 100%;
@@ -97,7 +104,7 @@
   box-shadow: 0 0 44px color-mix(in srgb, var(--source-accent-2) 32%, transparent);
 }
 
-.br-label {
+#ep-stage[data-format="desktop-1080p"] .br-label {
   grid-area: label;
   margin: 0;
   font-size: 34px;
@@ -108,5 +115,5 @@
   text-align: center;
   opacity: var(--layer-context);
 }
-.br-chart[data-count="5"] .br-label { font-size: 30px; }
-.br-chart[data-count="6"] .br-label { font-size: 28px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="5"] .br-label { font-size: 30px; }
+#ep-stage[data-format="desktop-1080p"] .br-chart[data-count="6"] .br-label { font-size: 28px; }

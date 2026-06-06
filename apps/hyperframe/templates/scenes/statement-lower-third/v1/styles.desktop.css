@@ -1,23 +1,45 @@
 /* statement-lower-third desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. The image (when present) absolute-
-   fills the scene section behind a gradient scrim (the scene's own frame). The
-   statement block anchors LOWER-LEFT: .scene-pad is a 1fr/auto grid so the body
-   pins to row 2, cols 1-9, with margin above the safe-bottom so the statement
-   stays clear of the YouTube end-screen dead zone (bottom 120px) and the
-   bottom-right CTA slot. Statement ~80px; attribution drops to layer-context. */
+   shell.desktop.css in desktop builds only. v4 FRAME-FILL: this type KEEPS its
+   intrinsic lower-left layout (NO data-layout="centered"), but the frame itself
+   must be a filled object so no band is bare. The image absolute-FILLS the whole
+   1536x710 section at opacity 0.3 behind a directional scrim; the statement
+   block anchors LOWER-LEFT (cols 1-8, row 2). The negative space upper/right is
+   intentional and legal because the full-bleed visual + scrim occupy it. When no
+   image is supplied the .slt-image[src=""] is hidden (base rule) and a radial
+   gradient anchored at the statement's lower-left makes the frame the filled
+   object. Statement 80px; attribution drops to layer-context. */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.slt {
+  justify-content: center;
   grid-template-rows: 1fr auto;
   align-content: stretch;
 }
 
+/* Full-bleed coverage: the visual fills the entire section so the upper/right
+   band is never bare. inset:0 fill is mandatory; only its opacity is tuned. */
 #ep-stage[data-format="desktop-1080p"] .slt-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   opacity: 0.3;
 }
 
 #ep-stage[data-format="desktop-1080p"] .slt-scrim {
+  position: absolute;
+  inset: 0;
   background: linear-gradient(90deg, rgba(8,9,10,0.82) 0%, rgba(8,9,10,0.5) 42%, rgba(8,9,10,0.12) 100%),
               linear-gradient(0deg, rgba(8,9,10,0.7) 0%, rgba(8,9,10,0) 46%);
+}
+
+/* No-image fallback: the frame itself is the filled object. The radial bloom is
+   anchored at the statement's lower-left (18% 78%) so the visual weight sits with
+   the text instead of leaving an asymmetric void. */
+#ep-stage[data-format="desktop-1080p"] .scene-pad.slt:has(.slt-image[src=""]) {
+  background: radial-gradient(120% 90% at 18% 78%,
+    color-mix(in srgb, var(--source-accent-2) 14%, var(--ink)) 0%,
+    var(--ink) 60%);
 }
 
 #ep-stage[data-format="desktop-1080p"] .slt-body {

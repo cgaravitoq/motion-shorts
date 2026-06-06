@@ -6,20 +6,48 @@
   "description": "A minimal NYT-style time-series line chart with 1-3 series over a shared X axis. Faint horizontal gridlines, small muted axis labels, thick 5-6px lines that draw on with a stroke reveal, and a dot that fades in at each vertex. A legend appears only when there is more than one series. Each series is a comma-separated list of 3-8 numeric points; the builder maps them to the plot, computes real path lengths, and animates the draw. The chart IS the scene; text stays minimal so narration carries the words.",
   "builder": "build_lineChart",
   "classPrefix": "lc",
+  "layout": "centered",
   "defaultDuration": 8,
-  "intentTags": ["data", "informative", "workflow", "brand"],
+  "intentTags": [
+    "data",
+    "informative",
+    "workflow",
+    "brand"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
-    "unit": { "kind": "text", "required": false, "default": "" },
-    "xLabels": { "kind": "text", "required": false, "default": "" },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
+    "unit": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "xLabels": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
     "series": {
       "kind": "repeat",
       "min": 1,
       "max": 3,
       "item": {
-        "label": { "kind": "text", "required": true },
-        "values": { "kind": "text", "required": true }
+        "label": {
+          "kind": "text",
+          "required": true
+        },
+        "values": {
+          "kind": "text",
+          "required": true
+        }
       }
     }
   },

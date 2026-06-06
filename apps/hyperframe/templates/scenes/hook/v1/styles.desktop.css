@@ -1,6 +1,9 @@
-/* hook desktop-1080p (16:9): KINETIC TYPE. Text-only is the default and the
-   typography IS the visual — the headline scales to ~160px and spans the full
-   12-col band (cols 1/13) across up to 3 dramatic lines, no empty right third.
+/* hook desktop-1080p (16:9): KINETIC TYPE — left/full-bleed by design, NOT a
+   data-layout="centered" scene. Text-only is the default and the typography IS
+   the visual: the headline scales to 160px and spans the FULL 12-col band
+   (cols 1/13) across up to 3 dramatic lines, vertically centered in the band.
+   This is the one frame-fill exemption: left-aligned kinetic type carries the
+   full width on its own, so there is no asymmetric right void to fix.
    Everything is LEFT-aligned and starts at col 1: eyebrow above, title, then
    subtitle at --body-max below. Title carries a subtle vertical gradient via
    background-clip:text for depth; <strong> accents stay solid so they pop. */
@@ -58,14 +61,18 @@
   opacity: var(--layer-context);
 }
 
-/* Image present: keep the split, but text and visual are both top-aligned and
-   coherently LEFT — text owns cols 1-7 (still anchored at col 1), the visual
-   takes cols 8-13. Title drops to a still-large 112px so it reads in the
-   narrower column without colliding with the image. */
+/* Image variant: text owns cols 1-7 (still anchored at col 1), the visual takes
+   cols 8-13 and FILLS its half — stretched edge-to-edge over all three rows and
+   cropped with object-fit:cover. This kills the floating small image and the
+   dead right corners: text-block left, full-bleed media right, both full-height.
+   grid-template-rows: auto auto 1fr lets the image's 1fr track absorb the band
+   height; min-height:710px + align-content:stretch pin the band so the media
+   reaches top and bottom safe edges. */
 #ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) {
-  align-content: center;
+  align-content: stretch;
   align-items: start;
-  grid-template-rows: auto auto auto;
+  grid-template-rows: auto auto 1fr;
+  min-height: 710px;
   row-gap: 32px;
 }
 
@@ -87,13 +94,13 @@
 #ep-stage[data-format="desktop-1080p"] .hk-image {
   grid-column: 8 / 13;
   grid-row: 1 / 4;
-  align-self: start;
-  justify-self: start;
+  align-self: stretch;
+  justify-self: stretch;
   margin: 0;
   width: 100%;
   max-width: 100%;
-  max-height: 660px;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
   border-radius: 28px;
 }

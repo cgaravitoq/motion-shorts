@@ -1,73 +1,73 @@
-/* line-chart desktop-1080p (16:9) overrides — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. .scene-pad is the shell 12-col grid.
-   ALIGNMENT COHERENCE: everything LEFT. Eyebrow, title and the chart figure all
-   pin to col 1; the title fills up to --content-max (1200px) so the headline
-   reads in 1-2 lines instead of a narrow 3-line column; the figure spans the full
-   usable width (cols 1-12) and the SVG is left-aligned so the chart's y-axis sits
-   at col 1 directly under the title — never centered while the title is left.
-   Legend rides the chart's top-right corner inside the figure width so it never
-   adds a bottom row. >=40px air under the title block; SVG capped so the title +
-   chart fit inside the 710px usable band. Opacity layering separates structure
-   (gridlines), context (axis labels) and data (series + dots). */
+/* line-chart desktop-1080p (16:9) — v4 FRAME-FILL. Appended AFTER styles.css AND
+   shell.desktop.css in desktop builds only. .scene-pad is the shell 12-col grid
+   and carries data-layout="centered", so the master switch already centers the
+   eyebrow chip + title + subcopy as one header block.
 
-/* Direct children of .scene-pad (the 12-col grid) get explicit placement. */
+   FILL DOCTRINE: the header block is centered (cols 1/13, justify-self center),
+   the figure spans the FULL band (cols 1/13, width:100%, NO max-width) and its
+   SVG stretches edge to edge. The wide viewBox (1536x560, ~2.74:1) resolves a
+   100%-wide chart to ~560px tall, so the centered header (~210px) + 40px gap +
+   chart fit inside the 710px usable band with NO asymmetric void: the chart
+   touches both side safe edges and end-of-line value labels carry the right
+   terminus. Legend rides the top-right corner inside the now full-width figure.
+   Opacity layering separates structure (gridlines), context (axis labels) and
+   data (series + dots). */
+
 #ep-stage[data-format="desktop-1080p"] .scene-pad.lc {
   grid-template-rows: auto auto 1fr;
   align-content: center;
   row-gap: 0;
 }
 
+/* Header block: eyebrow chip + title centered (master switch handles centering;
+   we only place them in their grid rows and clear the legacy left overrides). */
 #ep-stage[data-format="desktop-1080p"] .lc .lc-eyebrow {
   grid-column: 1 / 13;
   grid-row: 1;
-  justify-self: start;
   align-self: end;
   margin: 0;
 }
 
-/* Title fills the headline band (cols 1-12, clamped to --content-max) so it
-   wraps at 1-2 lines instead of a narrow column. Left-anchored at col 1. */
+/* Title is the centered headline; capped to --content-max so it wraps at 1-2
+   lines and stays <=72px for a component scene. */
 #ep-stage[data-format="desktop-1080p"] .lc .lc-title {
   grid-column: 1 / 13;
   grid-row: 2;
-  justify-self: start;
   max-width: var(--content-max);
   margin: 0;
+  font-size: 64px;
+  line-height: 1.04;
 }
 
-/* Figure: primary visual, LEFT-anchored at col 1 (not centered). The figure
-   width is the binding size constraint: VB aspect 1000:480 (≈2.08:1) means a
-   ~940px-wide chart resolves to ~451px tall, so the eyebrow+title block (≈210px)
-   + 40px gap + chart all fit inside the 710px usable band WITHOUT letterboxing
-   (capping height instead would pad-center the drawing and re-break alignment).
-   align-items:flex-start hugs the left edge; the legend overlays the figure's
-   top-right, which is the chart's top-right. */
+/* Figure: primary visual, FULL-WIDTH and centered. No max-width so the chart
+   distributes across the entire 1536px band; align-items:center keeps the SVG on
+   the centre axis. The legend overlays the figure's top-right (chart top-right). */
 #ep-stage[data-format="desktop-1080p"] .lc .lc-figure {
   grid-column: 1 / 13;
   grid-row: 3;
-  justify-self: start;
+  justify-self: center;
   width: 100%;
-  max-width: 940px;
+  max-width: none;
   position: relative;
   margin: var(--title-block-gap) 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   gap: 0;
 }
 
-/* VB 1000×480 (isDesktop). Fills the figure width (left-anchored); height is
-   driven by the figure max-width above so the drawing is never height-clamped
-   and never letterboxed. */
+/* VB 1536x560 (isDesktop). Fills the figure width edge to edge; height resolves
+   from the wide aspect so the drawing is never letterboxed and the chart spans
+   the full band — no dead right half. */
 #ep-stage[data-format="desktop-1080p"] .lc .lc-svg {
   display: block;
   align-self: stretch;
   width: 100%;
   max-width: none;
   height: auto;
-  max-height: 480px;
+  max-height: 560px;
   overflow: visible;
 }
 
@@ -79,13 +79,15 @@
 #ep-stage[data-format="desktop-1080p"] .lc .lc-ylabels text,
 #ep-stage[data-format="desktop-1080p"] .lc .lc-xlabels text { opacity: var(--layer-context); }
 #ep-stage[data-format="desktop-1080p"] .lc .lc-series,
-#ep-stage[data-format="desktop-1080p"] .lc .lc-dots { opacity: var(--layer-primary); }
+#ep-stage[data-format="desktop-1080p"] .lc .lc-dots,
+#ep-stage[data-format="desktop-1080p"] .lc .lc-endlabels { opacity: var(--layer-primary); }
 
 #ep-stage[data-format="desktop-1080p"] .lc .lc-ylabels text { font-size: 30px; }
 #ep-stage[data-format="desktop-1080p"] .lc .lc-xlabels text { font-size: 30px; }
+#ep-stage[data-format="desktop-1080p"] .lc .lc-endlabels text { font-size: 30px; }
 
 /* Legend: right-aligned near the chart top, overlaying the empty upper corner
-   inside the figure width so it never pushes a bottom row. */
+   inside the full-width figure so it never pushes a bottom row. */
 #ep-stage[data-format="desktop-1080p"] .lc .lc-legend {
   position: absolute;
   top: 0;

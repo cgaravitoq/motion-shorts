@@ -6,19 +6,42 @@
   "description": "Two columns side by side, each with a column title and a list of 1-5 bullet points. The right column uses the accent to signal the winner/after state. Optional eyebrow + title. Columns reveal and points stagger in.",
   "builder": "build_comparison",
   "classPrefix": "cmp",
+  "layout": "centered",
   "defaultDuration": 8,
-  "intentTags": ["informative", "data", "workflow", "brand"],
+  "intentTags": [
+    "informative",
+    "data",
+    "workflow",
+    "brand"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
-    "leftTitle": { "kind": "text", "required": true },
-    "rightTitle": { "kind": "text", "required": true },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
+    "leftTitle": {
+      "kind": "text",
+      "required": true
+    },
+    "rightTitle": {
+      "kind": "text",
+      "required": true
+    },
     "leftPoints": {
       "kind": "repeat",
       "min": 1,
       "max": 5,
       "item": {
-        "text": { "kind": "text", "required": true }
+        "text": {
+          "kind": "text",
+          "required": true
+        }
       }
     },
     "rightPoints": {
@@ -26,7 +49,10 @@
       "min": 1,
       "max": 5,
       "item": {
-        "text": { "kind": "text", "required": true }
+        "text": {
+          "kind": "text",
+          "required": true
+        }
       }
     }
   },

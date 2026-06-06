@@ -1,49 +1,61 @@
-/* flow desktop-1080p (16:9): ALL-LEFT content scene. Eyebrow + title pin
-   top-left starting at col 1; the title spans cols 1-13 (up to --content-max
-   1200px) so it reads in 1-2 lines and grows to the right instead of wrapping
-   to three narrow lines. The rail is the primary component: a horizontal
-   sequence of badge-over-card nodes that also starts at col 1 and spans the
-   full 1536px usable band.
+/* flow desktop-1080p (16:9) — v4 FRAME-FILL, layout:centered.
 
-   EQUAL CARDS: align-items:stretch on the rail makes every node fill the row
-   height; inside each node the body is flex:1 so every .fl-step__body ends up
-   identical height regardless of detail length. Uniform width via flex:1 1 0.
+   Landing-hero header: eyebrow chip + title centered as one block (cols 1/13,
+   justify-self center; the shell master switch centers .scene-pad children and
+   turns .eyebrow into the pill chip). Title capped at 64px so it reads in 1-2
+   lines above a component row that owns the full band.
 
-   CONNECTORS: a short horizontal segment that lives ENTIRELY in the gap between
-   two nodes (gap minus 8px clearance each side), at badge-center height, drawn
-   with scaleX from the left edge (transform-origin matches timeline.js
-   drawOrigin "0% 50%"). It never overlaps the adjacent card. */
+   Rail = the primary component: a horizontal sequence of badge-over-card nodes
+   spanning the FULL 1536px usable band (cols 1/13, width 100%). flex:1 1 0 makes
+   N<=4 children GROW to equal width; align-self:stretch + align-items:stretch +
+   body flex:1 1 auto make every card fill the vertical band at equal height
+   regardless of detail length. No asymmetric void — the row touches both edges.
+
+   CONNECTOR: a SINGLE full-width horizontal spine (.fl-spine) running first-badge
+   -center to last-badge-center (badge 100px -> half 50px -> left:50px right:50px),
+   at badge vertical center (top:50px). Drawn once by build_flow via scaleX from
+   the left (transform-origin matches). Replaces the floating per-gap stubs. */
 
 #ep-stage[data-format="desktop-1080p"] .fl.scene-pad {
   grid-template-rows: auto auto 1fr;
   row-gap: var(--title-block-gap);
 }
 
-#ep-stage[data-format="desktop-1080p"] .fl-eyebrow { grid-column: 1 / 13; grid-row: 1; align-self: end; margin: 0; }
+#ep-stage[data-format="desktop-1080p"] .fl-eyebrow {
+  grid-column: 1 / 13;
+  grid-row: 1;
+  justify-self: center;
+  align-self: end;
+  margin: 0;
+}
 #ep-stage[data-format="desktop-1080p"] .fl-title {
   grid-column: 1 / 13;
   grid-row: 2;
+  justify-self: center;
   margin: 0;
-  max-width: var(--content-max);
+  max-width: var(--header-max);
+  font-size: 64px;
+  text-align: center;
 }
 
-/* Rail: primary visual, full usable width, starts at col 1, centered vertically
-   in its band. align-items:stretch -> every node fills the row height. */
+/* Rail: full-width component, stretches to fill its band so cards are tall. */
 #ep-stage[data-format="desktop-1080p"] .fl-rail {
   --fl-gap: 64px;
   grid-column: 1 / 13;
   grid-row: 3;
+  width: 100%;
   margin: 0;
-  align-self: center;
+  align-self: stretch;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: stretch;
   gap: var(--fl-gap);
+  padding-block: 24px;
 }
 
-/* Each node: uniform-width column, badge stacked over an equal-height body. */
+/* Each node: equal-width column, badge stacked over an equal-height body. */
 #ep-stage[data-format="desktop-1080p"] .fl-step {
   flex: 1 1 0;
   min-width: 0;
@@ -54,12 +66,14 @@
   gap: 28px;
 }
 
-/* Horizontal connector: lives in the gap ONLY, 8px clearance off each card. */
-#ep-stage[data-format="desktop-1080p"] .fl-step__connector {
-  left: calc(-1 * var(--fl-gap) + 8px);
-  top: 50px;
+/* Horizontal spine: first-badge-center to last-badge-center, badge-center height.
+   left/right:50px == badge half-width (100/2); top:50px == badge vertical center. */
+#ep-stage[data-format="desktop-1080p"] .fl-spine {
+  left: 50px;
+  right: 50px;
+  top: calc(24px + 50px);
   bottom: auto;
-  width: calc(var(--fl-gap) - 16px);
+  width: auto;
   height: 5px;
   border-radius: 999px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent) 70%, transparent), var(--source-accent));
@@ -82,6 +96,7 @@
   border-radius: 26px;
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 #ep-stage[data-format="desktop-1080p"] .fl-step__label { margin: 0; font-size: 36px; line-height: 1.1; }
 #ep-stage[data-format="desktop-1080p"] .fl-step__detail { margin-top: 12px; font-size: 25px; line-height: 1.26; }

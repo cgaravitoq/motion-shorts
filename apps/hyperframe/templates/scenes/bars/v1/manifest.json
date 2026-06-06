@@ -6,19 +6,42 @@
   "description": "A horizontal bar chart of 2-6 rows. Each row has a short label, a full-width track with a fill that grows from zero (scaleX, seek-safe), and a big value number on the right. The bars ARE the scene; text stays minimal so narration + captions carry the words. Bar height and gap adapt to the row count.",
   "builder": "build_bars",
   "classPrefix": "br",
+  "layout": "centered",
   "defaultDuration": 7.5,
-  "intentTags": ["data", "informative", "workflow", "brand"],
+  "intentTags": [
+    "data",
+    "informative",
+    "workflow",
+    "brand"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
     "bars": {
       "kind": "repeat",
       "min": 2,
       "max": 6,
       "item": {
-        "label": { "kind": "text", "required": true },
-        "value": { "kind": "text", "required": true },
-        "pct": { "kind": "text", "required": true }
+        "label": {
+          "kind": "text",
+          "required": true
+        },
+        "value": {
+          "kind": "text",
+          "required": true
+        },
+        "pct": {
+          "kind": "text",
+          "required": true
+        }
       }
     }
   },

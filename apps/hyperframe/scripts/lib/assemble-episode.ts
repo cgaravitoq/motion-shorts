@@ -125,7 +125,8 @@ export function assembleEpisode(
   const sections = scenes
     .map((sc) => {
       const inner = indent(sc.html.trimEnd(), 8);
-      return `      <section id="scene-${sc.id}" class="scene clip" data-start="${sc.windowStart}" data-duration="${sc.windowDuration}" data-track-index="${sc.track}" style="position:absolute; inset:0;">\n${inner}\n      </section>`;
+      const layoutAttr = desktop ? ` data-layout="${sc.manifest.layout ?? "top-left"}"` : "";
+      return `      <section id="scene-${sc.id}" class="scene clip" data-start="${sc.windowStart}" data-duration="${sc.windowDuration}" data-track-index="${sc.track}"${layoutAttr} style="position:absolute; inset:0;">\n${inner}\n      </section>`;
     })
     .join("\n");
 

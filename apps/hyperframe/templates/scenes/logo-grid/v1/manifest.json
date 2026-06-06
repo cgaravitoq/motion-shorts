@@ -6,17 +6,33 @@
   "description": "Social-proof band: a horizontal run of 3-8 name chips. Each chip is a CSS monogram disc (first letter of the label) paired with a wordmark label, panel-styled. Optional eyebrow + title pin top-left; the chip band sits below and packs into one row for up to 4 names, two rows for 5-8. Discs pop in first, then labels fade up.",
   "builder": "build_logoGrid",
   "classPrefix": "lg",
+  "layout": "centered",
   "defaultDuration": 7,
-  "intentTags": ["social", "brand", "informative"],
+  "intentTags": [
+    "social",
+    "brand",
+    "informative"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
     "items": {
       "kind": "repeat",
       "min": 3,
       "max": 8,
       "item": {
-        "label": { "kind": "text", "required": true }
+        "label": {
+          "kind": "text",
+          "required": true
+        }
       }
     }
   },

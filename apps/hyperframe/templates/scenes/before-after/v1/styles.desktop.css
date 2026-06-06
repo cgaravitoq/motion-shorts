@@ -1,10 +1,16 @@
 /* before-after desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. ALL-LEFT coherence: eyebrow,
-   title AND the media frame all start at the band's left edge (col 1 = x120).
-   .scene-pad is the 12-col grid: eyebrow + title pin top-left (cols 1/13,
-   rows 1-2, headline up to --content-max); the media frame is the primary
-   visual on row 3, left-aligned (justify-self: start) at col 1, fixed at
-   440px tall so the stack breathes inside the 710px usable band. */
+   shell.desktop.css in desktop builds only. v4 FRAME-FILL doctrine.
+
+   data-layout="centered": the shell master switch centers the .scene-pad
+   children (eyebrow -> pill chip, title + subcopy margin-inline:auto). The
+   header block is therefore ONE centered unit (cols 1/13). The media frame
+   below it is a SINGLE full-bleed reveal surface, not two static panels:
+   before-after's identity is the seek-safe vertical wipe of the AFTER image
+   over its own BEFORE copy on the SAME pixels — a dual 1fr split would have no
+   surface to wipe across. So we take the spec's single-reveal-asset branch:
+   one frame spanning cols 1/13 at width:100%, height 470px, the existing wipe
+   + moving divider, labels pinned to the band corners. The frame touches both
+   band edges -> symmetric fill, zero asymmetric void, four edges occupied. */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.ba {
   grid-template-rows: auto auto 1fr;
@@ -14,7 +20,6 @@
 #ep-stage[data-format="desktop-1080p"] .ba .ba-eyebrow {
   grid-column: 1 / 13;
   grid-row: 1;
-  justify-self: start;
   align-self: end;
   margin: 0;
 }
@@ -22,26 +27,39 @@
 #ep-stage[data-format="desktop-1080p"] .ba .ba-title {
   grid-column: 1 / 13;
   grid-row: 2;
-  justify-self: start;
-  max-width: var(--content-max);
+  max-width: var(--header-max);
   margin: 0;
-  font-size: var(--fs-headline);
+  font-size: 64px;
+  line-height: 1.05;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ba .ba-frame {
   grid-column: 1 / 13;
   grid-row: 3;
-  align-self: start;
-  justify-self: start;
+  justify-self: center;
+  align-self: center;
   margin-top: var(--title-block-gap);
-  width: auto;
-  height: 440px;
-  max-width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 32px;
+  width: 100%;
+  max-width: var(--surface);
+  height: 470px;
+  aspect-ratio: auto;
+  border-radius: 28px;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ba .ba-chip {
   font-size: 28px;
   padding: 14px 26px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .ba .ba-chip--before {
+  top: 32px;
+  left: 32px;
+}
+#ep-stage[data-format="desktop-1080p"] .ba .ba-chip--after {
+  bottom: 32px;
+  right: 32px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .ba .ba-divider {
+  width: 5px;
 }

@@ -1,12 +1,12 @@
 /* logo-grid desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. ALIGNMENT COHERENCE: everything is
-   LEFT-aligned at col 1. Eyebrow + title pin TOP-LEFT spanning the full grid
-   (cols 1/13) so the headline reads in 1-2 lines up to --content-max (1200px),
-   never clamped to a narrow 3-line column. The chip band sits 40px below, also
-   starting at col 1 across the full usable width (cols 1/13). The band packs one
-   row for up to 4 names and wraps to a second row for 5-8 via auto-flow. Opacity
-   layers: the monogram disc reads as context (--layer-context), the wordmark
-   label is primary data (--layer-primary). */
+   shell.desktop.css in desktop builds only. v4 FRAME-FILL (CARD_ROW): the
+   landing-hero treatment. Eyebrow chip + title center as ONE header block (cols
+   1/13, justify-self center) and the chip band spans the FULL surface (cols
+   1/13, width 100%) distributing its pills across repeat(4,1fr) so the outer
+   pills touch col-1/col-12 and the two rows fill the vertical band — no
+   asymmetric left-anchored void. Title is held to 64px so it reads in 1-2 lines
+   for a component scene. Opacity layers: the monogram disc reads as context
+   (--layer-context), the wordmark label is primary data (--layer-primary). */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.lg {
   grid-template-rows: auto auto 1fr;
@@ -16,29 +16,36 @@
 #ep-stage[data-format="desktop-1080p"] .lg .lg-eyebrow {
   grid-column: 1 / 13;
   grid-row: 1;
+  justify-self: center;
+  text-align: center;
   align-self: end;
-  margin: 0;
+  margin: 0 auto;
 }
 
 #ep-stage[data-format="desktop-1080p"] .lg .lg-title {
   grid-column: 1 / 13;
   grid-row: 2;
-  max-width: var(--content-max);
-  margin: 0;
+  justify-self: center;
+  text-align: center;
+  max-width: var(--header-max);
+  margin: 0 auto;
+  font-size: 64px;
 }
 
-/* Chip band: starts at col 1, owns the full usable width, two equal rows of up
-   to 4 columns. auto-flow keeps 3-4 names on one row and wraps 5-8 onto the
-   second. Top-aligned so it hangs directly under the title block at 40px gap. */
+/* Chip band: spans the full surface, two equal rows of up to 4 pills. With
+   repeat(4,1fr) across cols 1/13 the outer pills touch col-1/col-12; grid-auto-
+   rows:1fr + the 1fr grid-row let the two rows GROW to fill the vertical band. */
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band {
   grid-column: 1 / 13;
   grid-row: 3;
-  align-self: start;
+  width: 100%;
   margin-top: var(--title-block-gap);
   grid-template-columns: repeat(4, 1fr);
   grid-auto-flow: row;
-  gap: 32px var(--grid-gutter);
-  align-content: start;
+  grid-auto-rows: 1fr;
+  column-gap: var(--grid-gutter);
+  row-gap: 24px;
+  align-content: stretch;
   justify-items: stretch;
 }
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
@@ -49,10 +56,13 @@
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="7"] .lg-chip:nth-child(7) { grid-column: auto; }
 
 #ep-stage[data-format="desktop-1080p"] .lg .lg-chip {
-  min-height: 110px;
-  padding: 24px 28px;
+  min-height: 140px;
+  padding: 24px 30px;
   gap: 22px;
   border-radius: 26px;
+  /* defensive: the centered master switch sets text-align:center on .scene-pad
+     children; the chip is a left-reading disc+label row. */
+  text-align: left;
 }
 
 #ep-stage[data-format="desktop-1080p"] .lg .lg-chip__disc {
@@ -67,9 +77,6 @@
   opacity: var(--layer-primary);
 }
 
-/* Denser packs (6-8) stay readable in the two-row band. */
-#ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="6"] .lg-chip,
-#ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="7"] .lg-chip,
-#ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="8"] .lg-chip { min-height: 110px; padding: 22px 24px; }
+/* Denser packs (7-8) ease the label so two names per row stay on one line. */
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="7"] .lg-chip__label,
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="8"] .lg-chip__label { font-size: 30px; }

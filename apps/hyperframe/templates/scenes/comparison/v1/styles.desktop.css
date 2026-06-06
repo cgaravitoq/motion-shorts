@@ -1,11 +1,11 @@
 /* comparison desktop-1080p (16:9) overrides — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. Re-layout against the 12-col grid
-   on .scene-pad: the title block (eyebrow + title) pins TOP-LEFT (cols 1-7,
-   rows 1-2); the A|B comparison is the primary visual and owns the full usable
-   width (cols 1-12, row 3), vertically centred in its band so the columns read
-   as one deliberate row instead of a small symmetric cluster floating in void.
-   The reference A|B identity stays: the internal 1fr auto 1fr grid is kept, the
-   VS badge bumps to ~108px, and the columns get slightly more padding. */
+   shell.desktop.css in desktop builds only. v4 FRAME-FILL / landing-hero:
+   centered eyebrow chip + centered title as ONE header block spanning the full
+   header width (cols 1/13), then the A|VS|B comparison spans the FULL band
+   (cols 1/13). The internal 1fr auto 1fr grid is preserved; both panels stretch
+   to an equal ~560px min-height so the row fills the band as one deliberate
+   object — no asymmetric left-anchored void. The shell master switch already
+   centers .scene-pad children and turns .cmp-eyebrow into the pill chip. */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.cmp {
   grid-template-rows: auto auto 1fr;
@@ -13,31 +13,41 @@
 }
 
 #ep-stage[data-format="desktop-1080p"] .cmp .cmp-eyebrow {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 1;
   align-self: end;
+  justify-self: center;
+  text-align: center;
   margin: 0;
 }
 
 #ep-stage[data-format="desktop-1080p"] .cmp .cmp-title {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 2;
+  justify-self: center;
+  text-align: center;
+  max-width: var(--header-max);
   margin: 0;
+  font-size: 64px;
 }
 
 /* Comparison row: primary visual, full usable width, centred in its band.
-   The internal A | VS | B grid is preserved; column-gap leans on the desktop
-   --col-gap scale so the divider reads with broadcast breathing room. */
+   1fr auto 1fr keeps the A | VS | B identity; equal-stretch panels fill the
+   row so a longer point list never makes one panel taller than its sibling. */
 #ep-stage[data-format="desktop-1080p"] .cmp .cmp-grid {
   grid-column: 1 / 13;
   grid-row: 3;
+  width: 100%;
   align-self: center;
+  align-items: stretch;
+  grid-template-columns: 1fr auto 1fr;
+  column-gap: 48px;
   margin-top: var(--title-block-gap);
-  gap: 64px;
 }
 
 #ep-stage[data-format="desktop-1080p"] .cmp .cmp-col {
-  padding: 52px 44px;
+  min-height: 560px;
+  padding: 52px 48px;
   border-radius: 32px;
 }
 
@@ -50,6 +60,10 @@
 
 #ep-stage[data-format="desktop-1080p"] .cmp .cmp-point__text {
   font-size: 34px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-divider {
+  align-self: stretch;
 }
 
 #ep-stage[data-format="desktop-1080p"] .cmp .cmp-divider__vs {

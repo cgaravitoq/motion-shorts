@@ -1,49 +1,79 @@
-/* progress-ring desktop-1080p (16:9) — asset-led relayout on the 12-col grid.
-   Title block pins top-left (eyebrow + headline, cols 1/8). The ring row owns the
-   full 1536px band (cols 1/13, row below): dials scaled up and spread with generous
-   gaps so the gauges read as the primary visual instead of a small centered cluster.
-   Labels drop to the context opacity layer. Arc geometry (r=86) is unchanged, so the
-   builder's literal circumference and stepped count-up stay valid. */
+/* progress-ring desktop-1080p (16:9) — appended AFTER styles.css AND
+   shell.desktop.css in desktop builds. v4 FRAME-FILL / CARD_ROW (layout:centered):
+   the eyebrow chip + title form ONE centered header block (cols 1/13), and the
+   ring row spans the full band (cols 1/13, width 100%) distributing its rings as
+   equal 1fr tracks so each dial GROWS toward its share of the 1536px surface —
+   no asymmetric void above the gauges. Each ring is an equal-height column: the
+   dial sits on the data layer and its caption is centered directly underneath, so
+   a two-line label never makes one column taller than its siblings. Arc geometry
+   (viewBox 200, r=86) is unchanged, so the builder's literal circumference and
+   stepped count-up stay valid — only the rendered dial box scales. */
 
+/* Centered header block — eyebrow chip and title centred as one unit. */
 #ep-stage[data-format="desktop-1080p"] .pr.scene-pad { row-gap: var(--title-block-gap); }
 
 #ep-stage[data-format="desktop-1080p"] .pr-eyebrow {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 1;
   margin: 0;
-  justify-self: start;
+  justify-self: center;
+  text-align: center;
+  align-self: end;
 }
 
 #ep-stage[data-format="desktop-1080p"] .pr-title {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 2;
-  justify-self: start;
+  justify-self: center;
+  text-align: center;
+  max-width: var(--header-max);
+  font-size: 64px;
+  line-height: 1.04;
 }
 
+/* Ring row owns the full band and distributes rings as equal 1fr tracks so each
+   dial centers within its own column slice — the row fills cols 1/13 edge to edge
+   regardless of N (1, 2, or 3 rings). */
 #ep-stage[data-format="desktop-1080p"] .pr-row {
   grid-column: 1 / 13;
   grid-row: 3;
+  display: grid;
+  width: 100%;
   margin: 0;
-  align-items: flex-start;
+  gap: 0;
+  column-gap: var(--grid-gutter);
+  justify-items: center;
+  align-items: start;
+  align-content: center;
+}
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="1"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] {
+  grid-template-columns: repeat(3, 1fr);
 }
 
-#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="2"] { gap: 160px; }
-#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] { gap: 120px; }
+/* Each ring is a centered column: dial on top, caption directly underneath. */
+#ep-stage[data-format="desktop-1080p"] .pr-ring { gap: 32px; }
 
-#ep-stage[data-format="desktop-1080p"] .pr-ring { gap: 36px; }
+/* Dials sized to fill the 1fr vertical band (~300px), nudged larger for fewer
+   rings since each column owns more width. */
+#ep-stage[data-format="desktop-1080p"] .pr-dial { width: 360px; height: 360px; }
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="2"] .pr-dial { width: 340px; height: 340px; }
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] .pr-dial { width: 300px; height: 300px; }
 
-#ep-stage[data-format="desktop-1080p"] .pr-dial { width: 460px; height: 460px; }
-#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="2"] .pr-dial { width: 400px; height: 400px; }
-#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] .pr-dial { width: 340px; height: 340px; }
-
-#ep-stage[data-format="desktop-1080p"] .pr-num { font-size: 116px; }
-#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="2"] .pr-num { font-size: 100px; }
-#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] .pr-num { font-size: 84px; }
+#ep-stage[data-format="desktop-1080p"] .pr-num { font-size: 96px; }
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="2"] .pr-num { font-size: 92px; }
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] .pr-num { font-size: 80px; }
 
 #ep-stage[data-format="desktop-1080p"] .pr-label {
   margin-top: 4px;
   font-size: 32px;
+  text-align: center;
   opacity: var(--layer-context);
   max-width: 420px;
 }
-#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] .pr-label { max-width: 340px; }
+#ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] .pr-label { max-width: 360px; }

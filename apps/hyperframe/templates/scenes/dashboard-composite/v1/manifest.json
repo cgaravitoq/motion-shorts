@@ -6,20 +6,45 @@
   "description": "A heterogeneous KPI dashboard of 3-4 panel tiles filling the wide frame. Each tile shows a big tabular value, a label, an optional delta chip, and a mini horizontal progress track whose fill width comes from an inline --pct. Optional eyebrow + title. Tiles stagger in, fills draw scaleX 0->1 (seek-safe), delta chips pop last.",
   "builder": "build_dashboardComposite",
   "classPrefix": "dc",
+  "layout": "centered",
   "defaultDuration": 8,
-  "intentTags": ["data", "informative", "brand"],
+  "intentTags": [
+    "data",
+    "informative",
+    "brand"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": true },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": true
+    },
     "tiles": {
       "kind": "repeat",
       "min": 3,
       "max": 4,
       "item": {
-        "label": { "kind": "text", "required": true },
-        "value": { "kind": "text", "required": true },
-        "pct": { "kind": "text", "required": true },
-        "delta": { "kind": "text", "required": false, "default": "" }
+        "label": {
+          "kind": "text",
+          "required": true
+        },
+        "value": {
+          "kind": "text",
+          "required": true
+        },
+        "pct": {
+          "kind": "text",
+          "required": true
+        },
+        "delta": {
+          "kind": "text",
+          "required": false,
+          "default": ""
+        }
       }
     }
   },

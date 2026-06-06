@@ -4,15 +4,18 @@
    set (every token in shell.css :root MUST appear here — enforced by the
    token-superset contract test) so desktop and mobile never share spacing.
 
-   Desktop composition system (asset-led, 70/30):
-   - 12-col grid on .scene-pad: 12x106px cols + 24px gutters = 1536px usable.
-     Text anchors to cols 1-7 (--content-max), assets own cols 8-12.
-   - Headings pin top-left; never center heading+component as one group.
-   - Layout padding is --safe-x:120px; the 192px title-safe band remains a
-     lint-desktop-safe ceiling for data-critical text only.
-   - Watermark: broadcast bug norm ~5% of frame height -> 56px top inset
-     (5.2% of 1080, optical parity with mobile's 96/1920), 120px mark so it
-     anchors the corner instead of floating.
+   Desktop composition system (v4 frame-fill):
+   - 12-col grid on .scene-pad: 12x106px cols + 24px gutters = 1536px usable;
+     vertical band 710px (1080 - 140 - 230).
+   - data-layout="centered" scenes (manifest-driven) get the landing-hero
+     treatment: eyebrow chip + title + subcopy centered as ONE header block,
+     and the component below spans the FULL band, distributing or scaling its
+     children. Whitespace is legal only when symmetric — the asymmetric
+     left-anchored void is the one forbidden state.
+   - data-layout="top-left" (default) keeps the type's intrinsic layout
+     (media-split 70/30, statement-lower-third, hook kinetic, self-centered
+     heroes, header-hidden graphs).
+   - Watermark: broadcast bug norm ~5% of frame height -> 56px top inset.
    - Opacity layers for charts/diagrams: structure 0.15, context 0.4, data 1. */
 
 #ep-stage[data-format="desktop-1080p"] {
@@ -33,6 +36,8 @@
   --grid-col: 106px;
   --grid-gutter: 24px;
   --col-gap: 96px;
+  --header-max: 1320px;
+  --surface: 1536px;
   --layer-primary: 1;
   --layer-context: 0.4;
   --layer-structure: 0.15;
@@ -47,6 +52,28 @@
 }
 
 #ep-stage[data-format="desktop-1080p"] .subcopy { margin-top: 28px; max-width: var(--body-max); }
+
+/* v4 master switch: centered-layout scenes center the header block; the
+   eyebrow becomes the landing-hero pill chip. Per-type CSS distributes the
+   component row to fill the band. */
+#ep-stage[data-format="desktop-1080p"] [data-layout="centered"] .scene-pad {
+  justify-items: center;
+  text-align: center;
+}
+#ep-stage[data-format="desktop-1080p"] [data-layout="centered"] .scene-pad .eyebrow {
+  display: inline-flex;
+  padding: 8px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  margin-inline: auto;
+}
+#ep-stage[data-format="desktop-1080p"] [data-layout="centered"] .scene-pad .headline {
+  margin-inline: auto;
+}
+#ep-stage[data-format="desktop-1080p"] [data-layout="centered"] .scene-pad .subcopy {
+  margin-inline: auto;
+}
 
 /* Caption band clears the ~90px YouTube player control bar. */
 #ep-stage[data-format="desktop-1080p"] #captions { bottom: 60px; height: 130px; }

@@ -13,12 +13,16 @@
 function build_lineChart(tl, t, s, p) {
   const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const SVGNS = "http://www.w3.org/2000/svg";
-  const VB_W = 1000;
-  const VB_H = isDesktop ? 480 : 620;
-  const PAD_L = 96;
-  const PAD_R = 36;
-  const PAD_T = isDesktop ? 26 : 30;
-  const PAD_B = isDesktop ? 72 : 84;
+  // Desktop is the wide v4 frame-fill viewBox (1536x560, ~2.74:1) so a 100%-wide
+  // figure resolves ~560px tall and the chart spans the full band; portrait keeps
+  // the taller intrinsic 1000x620 box. PAD_R on desktop reserves room for the
+  // end-of-line value labels at each series' right terminus.
+  const VB_W = isDesktop ? 1536 : 1000;
+  const VB_H = isDesktop ? 560 : 620;
+  const PAD_L = isDesktop ? 120 : 96;
+  const PAD_R = isDesktop ? 184 : 36;
+  const PAD_T = isDesktop ? 28 : 30;
+  const PAD_B = isDesktop ? 76 : 84;
   const plotX0 = PAD_L;
   const plotX1 = VB_W - PAD_R;
   const plotY0 = PAD_T;
@@ -62,6 +66,7 @@ function build_lineChart(tl, t, s, p) {
   const xLabelGroup = document.querySelector(s(".lc-xlabels"));
   const seriesGroup = document.querySelector(s(".lc-series"));
   const dotGroup = document.querySelector(s(".lc-dots"));
+  const endLabelGroup = document.querySelector(s(".lc-endlabels"));
   if (!gridGroup || !seriesGroup) return;
 
   if (isDesktop) {
@@ -108,6 +113,7 @@ function build_lineChart(tl, t, s, p) {
   const dotEls = [];
   const lineLengths = [];
   const dotFracs = [];
+  const endLabelEls = [];
 
   series.forEach((sr, si) => {
     const pts = sr.values.map((v, i) => [xAt(i), yAt(v)]);
@@ -139,6 +145,20 @@ function build_lineChart(tl, t, s, p) {
     });
     dotEls.push(dots);
     dotFracs.push(pts.map((_, pi) => (total > 0 ? cum[pi] / total : pi / Math.max(1, pts.length - 1))));
+
+    // End-of-line value label at the right terminus (desktop frame-fill only):
+    // the wide viewBox leaves a right gutter (PAD_R), so the final value rides
+    // it and the right edge carries data instead of dead space.
+    if (isDesktop && endLabelGroup) {
+      const [lx, ly] = pts[pts.length - 1];
+      const label = document.createElementNS(SVGNS, "text");
+      label.setAttribute("class", `lc-endlabel lc-endlabel--${si}`);
+      label.setAttribute("x", (lx + 22).toFixed(2));
+      label.setAttribute("y", ly.toFixed(2));
+      label.textContent = fmtTick(sr.values[sr.values.length - 1]);
+      endLabelGroup.appendChild(label);
+      endLabelEls.push(label);
+    }
   });
 
   // ── seek-safe entrance ──────────────────────────────────────────────────
@@ -150,6 +170,9 @@ function build_lineChart(tl, t, s, p) {
     tl.set(el, { strokeDasharray: len, strokeDashoffset: len }, 0);
   });
   dotEls.flat().forEach((el) => {
+    tl.set(el, { autoAlpha: 0 }, 0);
+  });
+  endLabelEls.forEach((el) => {
     tl.set(el, { autoAlpha: 0 }, 0);
   });
 
@@ -173,6 +196,11 @@ function build_lineChart(tl, t, s, p) {
       const at = start + dotFracs[si][pi] * DRAW;
       tl.to(c, { autoAlpha: 1, duration: 0.34, ease: "power2.out" }, at);
     });
+  });
+
+  endLabelEls.forEach((el, si) => {
+    const at = t + 1.0 + si * SERIES_STAGGER + DRAW;
+    tl.to(el, { autoAlpha: 1, duration: 0.34, ease: "power2.out" }, at);
   });
 
   tl.from(s(".lc-legend__item"), { y: 16, opacity: 0, duration: 0.4, stagger: 0.12, ease: "power2.out" }, t + 1.0);

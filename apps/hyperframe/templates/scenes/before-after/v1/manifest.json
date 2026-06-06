@@ -6,15 +6,44 @@
   "description": "Visual diff: two stacked images inside one self-framed media frame. The AFTER image sits on top of the BEFORE and is revealed by a seek-safe vertical wipe, with a moving divider line and two corner label chips. Optional eyebrow + title.",
   "builder": "build_beforeAfter",
   "classPrefix": "ba",
+  "layout": "centered",
   "defaultDuration": 7,
-  "intentTags": ["informative", "data", "social", "brand", "vfx"],
+  "intentTags": [
+    "informative",
+    "data",
+    "social",
+    "brand",
+    "vfx"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
-    "imageBefore": { "kind": "image", "required": true },
-    "imageAfter": { "kind": "image", "required": true },
-    "labelBefore": { "kind": "text", "required": false, "default": "antes" },
-    "labelAfter": { "kind": "text", "required": false, "default": "después" }
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
+    "imageBefore": {
+      "kind": "image",
+      "required": true
+    },
+    "imageAfter": {
+      "kind": "image",
+      "required": true
+    },
+    "labelBefore": {
+      "kind": "text",
+      "required": false,
+      "default": "antes"
+    },
+    "labelAfter": {
+      "kind": "text",
+      "required": false,
+      "default": "después"
+    }
   },
   "validation": []
 }
