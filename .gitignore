@@ -99,3 +99,6 @@ pnpm-debug.log*
 
 # Publishing credentials (OAuth refresh tokens, long-lived platform tokens)
 /apps/hyperframe/.secrets/
+
+# Alchemy v2 local state (per-machine; resources re-adopt by deterministic names)
+.alchemy/
