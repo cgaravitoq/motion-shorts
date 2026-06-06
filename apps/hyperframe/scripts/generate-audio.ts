@@ -83,11 +83,12 @@ Options:
   --speed=<0.5..1.5>     Voice tuning. <1 slower, >1 faster. Provider-specific
                          caps apply: ElevenLabs v2 [0.7, 1.2], Inworld
                          [0.5, 1.5]. Repo default 1.04 (narration preset).
-  --pause-sentence=<ms>  Inject model-safe pauses after .!? Default 400 on v2.
-                         On v3 this is opt-in; hand-authored tags are preferred.
+  --pause-sentence=<ms>  Inject SSML pauses after .!? Default 400. v2/v2.5 only —
+                         on eleven_v3 injection never runs (hand-author
+                         [short pause]/[long pause] tags instead).
                          0 disables. Capped at 3000.
-  --pause-clause=<ms>    Inject model-safe pause after :;—. Default 250 on v2.
-                         On v3 this is opt-in. 0 disables.
+  --pause-clause=<ms>    Inject SSML pause after :;—. Default 250. v2/v2.5 only —
+                         ignored on eleven_v3. 0 disables.
   --no-pause-injection   Skip pause injection entirely (use when the script
                          already contains hand-authored pause tags).
   --caption-format=<list>
@@ -263,10 +264,13 @@ const main = async () => {
       `[generate-audio] pause-injection: skipped — provider="${ttsProviderNameForDefaults}" does not support SSML/v3 break tags. --pause-* flags ignored.`,
     );
   }
+  if (hasExplicitPauseControls && isV3) {
+    console.warn(
+      "[generate-audio] pause-injection: skipped — eleven_v3 pause tags produce unpredictable multi-second gaps. Hand-author [short pause]/[long pause] in the script instead. --pause-* flags ignored.",
+    );
+  }
   const shouldInjectPauses =
-    !values["no-pause-injection"] &&
-    ttsProviderNameForDefaults === "elevenlabs" &&
-    (!isV3 || hasExplicitPauseControls);
+    !values["no-pause-injection"] && ttsProviderNameForDefaults === "elevenlabs" && !isV3;
   const injectPausesForText = (raw: string): PacingResult =>
     shouldInjectPauses
       ? (isV3 ? injectElevenV3Pauses : injectPauses)(raw, {
