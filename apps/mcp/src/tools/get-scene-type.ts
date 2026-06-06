@@ -1,15 +1,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import type { ToolDefinition } from ".";
 import { failure, success } from "./_helpers";
 import { HUB_ROOT, resolveSceneType } from "./scene-hub-runtime";
 
 const inputSchema = Schema.Struct({
   type: Schema.NonEmptyString,
-  version: Schema.optionalWith(Schema.Number.pipe(Schema.int(), Schema.positive()), {
-    default: () => 1,
-  }),
+  version: Schema.Number.check(Schema.isInt(), Schema.isGreaterThan(0)).pipe(
+    Schema.withDecodingDefault(Effect.succeed(1)),
+  ),
 });
 const decodeInput = Schema.decodeUnknownSync(inputSchema);
 

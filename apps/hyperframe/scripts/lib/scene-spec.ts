@@ -9,7 +9,7 @@
  * access (scene-type resolution, slot-vs-manifest, duplicate ids) stay here.
  */
 import { decodeSceneSpec, formatParseError, type SlotDef } from "@cgaravitoq/spec";
-import { Either } from "effect";
+import { Result } from "effect";
 import { resolveSceneType } from "./scene-instantiator";
 
 export interface SceneSpecValidation {
@@ -56,9 +56,9 @@ export function validateSceneSpec(
     return { ok: false, errors: ["spec is not an object"], warnings };
   }
 
-  const errors = Either.match(decodeSceneSpec(spec), {
-    onLeft: (parseError) => formatParseError(parseError),
-    onRight: () => [] as string[],
+  const errors = Result.match(decodeSceneSpec(spec), {
+    onFailure: (parseError) => formatParseError(parseError),
+    onSuccess: () => [] as string[],
   });
 
   const rawScenes = (spec as { scenes?: unknown }).scenes;

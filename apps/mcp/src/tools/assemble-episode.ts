@@ -4,7 +4,7 @@ import { failure, success } from "./_helpers";
 import { assembleEpisode, HUB_ROOT, validateSceneSpec } from "./scene-hub-runtime";
 
 const inputSchema = Schema.Struct({
-  spec: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+  spec: Schema.Record(Schema.String, Schema.Unknown),
 });
 const decodeInput = Schema.decodeUnknownSync(inputSchema);
 

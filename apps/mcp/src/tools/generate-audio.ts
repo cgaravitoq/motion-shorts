@@ -7,10 +7,10 @@ import { failure, success } from "./_helpers";
 import { createJobId, ensureOutputDir } from "./local-runtime";
 
 const inputSchema = Schema.Struct({
-  text: Schema.NonEmptyString.pipe(
-    Schema.maxLength(5000, { message: () => "text exceeds the 5000-char hard limit per request" }),
+  text: Schema.NonEmptyString.check(
+    Schema.isMaxLength(5000, { message: "text exceeds the 5000-char hard limit per request" }),
   ),
-  lang: Schema.Literal("en", "es"),
+  lang: Schema.Literals(["en", "es"]),
   voice: Schema.optional(Schema.String),
   stability: Schema.optional(Schema.Number),
   similarityBoost: Schema.optional(Schema.Number),

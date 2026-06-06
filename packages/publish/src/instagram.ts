@@ -124,8 +124,8 @@ export const publishInstagramReel = async ({
   // total polling time bounded by timeoutMs.
   const pollSchedule = Schedule.exponential(Duration.millis(pollIntervalMs), 1.5).pipe(
     Schedule.jittered,
-    Schedule.union(Schedule.spaced(Duration.millis(pollIntervalMs * 6))),
-    Schedule.upTo(Duration.millis(timeoutMs)),
+    Schedule.either(Schedule.spaced(Duration.millis(pollIntervalMs * 6))),
+    Schedule.both(Schedule.during(Duration.millis(timeoutMs))),
   );
 
   const poll = checkStatus.pipe(
@@ -150,7 +150,7 @@ export const publishInstagramReel = async ({
 
   const exit = await Effect.runPromiseExit(poll);
   if (Exit.isFailure(exit)) {
-    const failure = Cause.failureOption(exit.cause);
+    const failure = Cause.findErrorOption(exit.cause);
     throw Option.isSome(failure) ? failure.value : new Error(Cause.pretty(exit.cause));
   }
 

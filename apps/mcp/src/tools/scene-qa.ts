@@ -7,9 +7,9 @@ import { failure, success } from "./_helpers";
 import { HUB_ROOT } from "./scene-hub-runtime";
 
 const inputSchema = Schema.Struct({
-  slug: Schema.String.pipe(Schema.pattern(/^[a-z0-9][a-z0-9-]*$/)),
+  slug: Schema.String.check(Schema.isPattern(/^[a-z0-9][a-z0-9-]*$/)),
   scenes: Schema.optional(Schema.Array(Schema.String)),
-  frames: Schema.optional(Schema.Literal(1, 3)),
+  frames: Schema.optional(Schema.Literals([1, 3])),
 });
 const decodeInput = Schema.decodeUnknownSync(inputSchema);
 

@@ -5,7 +5,7 @@ import { HUB_ROOT, listSceneTypeSummaries } from "./scene-hub-runtime";
 
 const INTENT_ENUM = ["informative", "data", "workflow", "social", "brand", "vfx"] as const;
 
-const inputSchema = Schema.Struct({ intent: Schema.optional(Schema.Literal(...INTENT_ENUM)) });
+const inputSchema = Schema.Struct({ intent: Schema.optional(Schema.Literals([...INTENT_ENUM])) });
 const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const listSceneTypesTool: ToolDefinition = {

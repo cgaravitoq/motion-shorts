@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
-import { Either } from "effect";
+import { Result } from "effect";
 import { formatParseError } from "./parse-error";
 import { decodeSceneTypeManifest } from "./manifest";
 
@@ -30,10 +30,10 @@ describe("SceneTypeManifest", () => {
     it(`decodes the real "${type}" manifest`, () => {
       const json = JSON.parse(fs.readFileSync(file, "utf8"));
       const result = decodeSceneTypeManifest(json);
-      if (Either.isLeft(result)) {
-        throw new Error(formatParseError(result.left, "manifest").join("\n"));
+      if (Result.isFailure(result)) {
+        throw new Error(formatParseError(result.failure, "manifest").join("\n"));
       }
-      expect(result.right.type).toBe(type);
+      expect(result.success.type).toBe(type);
     });
   }
 
@@ -41,9 +41,9 @@ describe("SceneTypeManifest", () => {
     const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
     delete json.builder;
     const result = decodeSceneTypeManifest(json);
-    expect(Either.isLeft(result)).toBe(true);
-    if (Either.isLeft(result)) {
-      expect(formatParseError(result.left, "manifest").join("\n")).toContain("builder");
+    expect(Result.isFailure(result)).toBe(true);
+    if (Result.isFailure(result)) {
+      expect(formatParseError(result.failure, "manifest").join("\n")).toContain("builder");
     }
   });
 
@@ -51,13 +51,13 @@ describe("SceneTypeManifest", () => {
     const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
     json.slots = { broken: { kind: "markdown" } };
     const result = decodeSceneTypeManifest(json);
-    expect(Either.isLeft(result)).toBe(true);
+    expect(Result.isFailure(result)).toBe(true);
   });
 
   it("rejects a repeat slot without min/max", () => {
     const json = JSON.parse(fs.readFileSync(realManifests[0]?.file ?? "", "utf8"));
     json.slots = { items: { kind: "repeat", item: {} } };
     const result = decodeSceneTypeManifest(json);
-    expect(Either.isLeft(result)).toBe(true);
+    expect(Result.isFailure(result)).toBe(true);
   });
 });

@@ -11,7 +11,7 @@ import {
   type RemoteObject,
   runPromiseOrThrow,
 } from "@cgaravitoq/spec";
-import { Effect, Either } from "effect";
+import { Effect, Result } from "effect";
 
 const DEFAULT_PROJECT_PREFIX = "motion-shorts";
 const REGION = "auto";
@@ -414,9 +414,9 @@ const readRemoteManifest = async (manifestPath: string): Promise<RemoteManifest>
   }
 
   const decoded = decodeRemoteManifest(manifest);
-  if (Either.isLeft(decoded)) {
+  if (Result.isFailure(decoded)) {
     throw new Error(
-      `Malformed remote manifest at ${manifestPath}: ${formatParseError(decoded.left, "manifest").join("; ")}.`,
+      `Malformed remote manifest at ${manifestPath}: ${formatParseError(decoded.failure, "manifest").join("; ")}.`,
     );
   }
 

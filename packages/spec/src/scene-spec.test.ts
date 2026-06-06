@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { Either } from "effect";
+import { Result } from "effect";
 import { formatParseError } from "./parse-error";
 import { decodeSceneSpec } from "./scene-spec";
 
@@ -18,18 +18,18 @@ const validSpec = {
 describe("SceneSpec", () => {
   it("decodes a valid spec", () => {
     const result = decodeSceneSpec(validSpec);
-    if (Either.isLeft(result)) {
-      throw new Error(formatParseError(result.left).join("\n"));
+    if (Result.isFailure(result)) {
+      throw new Error(formatParseError(result.failure).join("\n"));
     }
-    expect(result.right.slug).toBe("demo-short");
-    expect(result.right.scenes).toHaveLength(2);
+    expect(result.success.slug).toBe("demo-short");
+    expect(result.success.scenes).toHaveLength(2);
   });
 
   it("rejects a non-kebab slug with an actionable message", () => {
     const result = decodeSceneSpec({ ...validSpec, slug: "Demo Short" });
-    expect(Either.isLeft(result)).toBe(true);
-    if (Either.isLeft(result)) {
-      const messages = formatParseError(result.left).join("\n");
+    expect(Result.isFailure(result)).toBe(true);
+    if (Result.isFailure(result)) {
+      const messages = formatParseError(result.failure).join("\n");
       expect(messages).toContain("spec.slug");
       expect(messages).toContain("kebab-case");
     }
@@ -37,22 +37,22 @@ describe("SceneSpec", () => {
 
   it("rejects empty scenes", () => {
     const result = decodeSceneSpec({ ...validSpec, scenes: [] });
-    expect(Either.isLeft(result)).toBe(true);
+    expect(Result.isFailure(result)).toBe(true);
   });
 
   it("rejects a non-positive scene duration", () => {
     const scenes = [{ id: "hook", type: "hook", duration: 0, slots: {} }];
     const result = decodeSceneSpec({ ...validSpec, scenes });
-    expect(Either.isLeft(result)).toBe(true);
-    if (Either.isLeft(result)) {
-      expect(formatParseError(result.left).join("\n")).toContain("scenes[0].duration");
+    expect(Result.isFailure(result)).toBe(true);
+    if (Result.isFailure(result)) {
+      expect(formatParseError(result.failure).join("\n")).toContain("scenes[0].duration");
     }
   });
 
   it("rejects an unknown scene status", () => {
     const scenes = [{ id: "hook", type: "hook", status: "rejected", slots: {} }];
     const result = decodeSceneSpec({ ...validSpec, scenes });
-    expect(Either.isLeft(result)).toBe(true);
+    expect(Result.isFailure(result)).toBe(true);
   });
 
   it("collects every structural error in one pass", () => {
@@ -61,9 +61,9 @@ describe("SceneSpec", () => {
       width: Number.POSITIVE_INFINITY,
       scenes: [{ id: "Hook!", type: "", duration: -1 }],
     });
-    expect(Either.isLeft(result)).toBe(true);
-    if (Either.isLeft(result)) {
-      const issues = formatParseError(result.left);
+    expect(Result.isFailure(result)).toBe(true);
+    if (Result.isFailure(result)) {
+      const issues = formatParseError(result.failure);
       expect(issues.length).toBeGreaterThanOrEqual(4);
     }
   });

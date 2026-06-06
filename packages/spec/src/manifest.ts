@@ -1,7 +1,11 @@
 import { Schema } from "effect";
+import { exitToResult } from "./parse-error";
 
-export const ScalarSlotKind = Schema.Literal("text", "richText");
+export const ScalarSlotKind = Schema.Literals(["text", "richText"]);
 export type ScalarSlotKind = typeof ScalarSlotKind.Type;
+
+const NonNegativeInt = Schema.Number.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(0));
+const PositiveInt = Schema.Number.check(Schema.isInt(), Schema.isGreaterThan(0));
 
 export const ItemFieldDef = Schema.Struct({
   kind: ScalarSlotKind,
@@ -19,32 +23,31 @@ export type ScalarSlotDef = typeof ScalarSlotDef.Type;
 
 export const RepeatSlotDef = Schema.Struct({
   kind: Schema.Literal("repeat"),
-  min: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
-  max: Schema.Number.pipe(Schema.int(), Schema.positive()),
-  item: Schema.Record({ key: Schema.String, value: ItemFieldDef }),
+  min: NonNegativeInt,
+  max: PositiveInt,
+  item: Schema.Record(Schema.String, ItemFieldDef),
 });
 export type RepeatSlotDef = typeof RepeatSlotDef.Type;
 
-export const SlotDef = Schema.Union(ScalarSlotDef, RepeatSlotDef);
+export const SlotDef = Schema.Union([ScalarSlotDef, RepeatSlotDef]);
 export type SlotDef = typeof SlotDef.Type;
 
 export const SceneTypeManifest = Schema.Struct({
   id: Schema.NonEmptyString,
   type: Schema.NonEmptyString,
-  version: Schema.Number.pipe(Schema.int(), Schema.positive()),
+  version: PositiveInt,
   label: Schema.NonEmptyString,
   description: Schema.String,
   builder: Schema.NonEmptyString,
   classPrefix: Schema.NonEmptyString,
-  defaultDuration: Schema.Number.pipe(Schema.finite(), Schema.positive()),
+  defaultDuration: Schema.Number.check(Schema.isFinite(), Schema.isGreaterThan(0)),
   intentTags: Schema.Array(Schema.String),
-  slots: Schema.Record({ key: Schema.String, value: SlotDef }),
+  slots: Schema.Record(Schema.String, SlotDef),
   validation: Schema.Array(Schema.String),
-  fixedTrack: Schema.optional(Schema.Number.pipe(Schema.int(), Schema.nonNegative())),
+  fixedTrack: Schema.optional(NonNegativeInt),
   role: Schema.optional(Schema.String),
 });
 export type SceneTypeManifest = typeof SceneTypeManifest.Type;
 
-export const decodeSceneTypeManifest = Schema.decodeUnknownEither(SceneTypeManifest, {
-  errors: "all",
-});
+const decode = Schema.decodeUnknownExit(SceneTypeManifest, { errors: "all" });
+export const decodeSceneTypeManifest = (input: unknown) => exitToResult(decode(input));

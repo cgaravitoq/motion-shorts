@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { Effect, Either } from "effect";
+import { Effect, Result } from "effect";
 import { fetchWithRetry, fetchWithRetryPromise, type FetchLike } from "./http";
 
 const scripted = (responses: Array<() => Response | Error>): { fetchImpl: FetchLike; calls: () => number } => {
@@ -60,12 +60,12 @@ describe("fetchWithRetry", () => {
   it("fails with a tagged HttpRequestError on persistent network failure", async () => {
     const { fetchImpl, calls } = scripted([() => new Error("ECONNRESET")]);
     const result = await Effect.runPromise(
-      Effect.either(fetchWithRetry("https://x.test/e", undefined, { ...fast, retries: 1, fetchImpl })),
+      Effect.result(fetchWithRetry("https://x.test/e", undefined, { ...fast, retries: 1, fetchImpl })),
     );
-    expect(Either.isLeft(result)).toBe(true);
-    if (Either.isLeft(result)) {
-      expect(result.left._tag).toBe("HttpRequestError");
-      expect(result.left.message).toContain("ECONNRESET");
+    expect(Result.isFailure(result)).toBe(true);
+    if (Result.isFailure(result)) {
+      expect(result.failure._tag).toBe("HttpRequestError");
+      expect(result.failure.message).toContain("ECONNRESET");
     }
     expect(calls()).toBe(2);
   });
@@ -82,13 +82,13 @@ describe("fetchWithRetry", () => {
   it("fails with a tagged HttpTimeoutError when every attempt times out", async () => {
     const never: FetchLike = () => new Promise<Response>(() => {});
     const result = await Effect.runPromise(
-      Effect.either(
+      Effect.result(
         fetchWithRetry("https://x.test/g", undefined, { baseDelayMs: 1, timeoutMs: 10, retries: 1, fetchImpl: never }),
       ),
     );
-    expect(Either.isLeft(result)).toBe(true);
-    if (Either.isLeft(result)) {
-      expect(result.left._tag).toBe("HttpTimeoutError");
+    expect(Result.isFailure(result)).toBe(true);
+    if (Result.isFailure(result)) {
+      expect(result.failure._tag).toBe("HttpTimeoutError");
     }
   });
 

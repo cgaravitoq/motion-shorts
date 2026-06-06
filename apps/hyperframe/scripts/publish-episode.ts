@@ -37,7 +37,7 @@ import {
   writeStoredToken,
 } from "@cgaravitoq/publish";
 import { decodePublishLedger, formatParseError, type PublishLedger } from "@cgaravitoq/spec";
-import { Either } from "effect";
+import { Result } from "effect";
 import { validateDistribution } from "./lib/distribution-spec";
 import { resolveEpisodeContext } from "./lib/episode-context";
 import {
@@ -159,9 +159,9 @@ const readLedger = (): PublishLedger | null => {
   if (!fs.existsSync(ledgerPath)) return null;
   const parsed = JSON.parse(fs.readFileSync(ledgerPath, "utf8"));
   const decoded = decodePublishLedger(parsed);
-  if (Either.isLeft(decoded)) {
+  if (Result.isFailure(decoded)) {
     fail(
-      `malformed publish ledger at ${ledgerPath}:\n  ${formatParseError(decoded.left, "ledger").join("\n  ")}`,
+      `malformed publish ledger at ${ledgerPath}:\n  ${formatParseError(decoded.failure, "ledger").join("\n  ")}`,
     );
   }
   return parsed;

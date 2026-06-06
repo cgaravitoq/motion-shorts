@@ -1,21 +1,23 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { ParseResult } from "effect";
+import { Schema, SchemaIssue } from "effect";
 
 export const success = (body: unknown): CallToolResult => ({
   content: [{ type: "text", text: JSON.stringify(body, null, 2) }],
 });
 
-const formatParseError = (error: ParseResult.ParseError): string =>
-  ParseResult.ArrayFormatter.formatErrorSync(error)
-    .map((issue) => {
-      const path = issue.path.length ? issue.path.join(".") : "(root)";
+const standardFormatter = SchemaIssue.makeFormatterStandardSchemaV1();
+
+const formatSchemaError = (error: Schema.SchemaError): string =>
+  standardFormatter(error.issue)
+    .issues.map((issue) => {
+      const path = issue.path?.length ? issue.path.join(".") : "(root)";
       return `${path}: ${issue.message}`;
     })
     .join("\n");
 
 export const failure = (error: unknown): CallToolResult => {
-  const message = ParseResult.isParseError(error)
-    ? formatParseError(error)
+  const message = Schema.isSchemaError(error)
+    ? formatSchemaError(error)
     : error instanceof Error
       ? error.message
       : String(error);

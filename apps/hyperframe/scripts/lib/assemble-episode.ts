@@ -18,7 +18,7 @@ import {
   SceneSpecInvalid,
   type SceneTypeManifest,
 } from "@cgaravitoq/spec";
-import { Either } from "effect";
+import { Result } from "effect";
 import { instantiateScene } from "./scene-instantiator";
 
 const shellDir = (hubRoot?: string): string => path.resolve(hubRoot ?? process.cwd(), "templates/_shell");
@@ -69,8 +69,8 @@ export interface AssembledEpisode {
 export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string } = {}): AssembledEpisode {
   const warnings: string[] = [];
   const decoded = decodeSceneSpec(input);
-  if (Either.isLeft(decoded)) {
-    throw new SceneSpecInvalid({ issues: formatParseError(decoded.left) });
+  if (Result.isFailure(decoded)) {
+    throw new SceneSpecInvalid({ issues: formatParseError(decoded.failure) });
   }
   // keep the raw object (the schema pass is validation-only) so JSON key order
   // — and therefore emitted bytes — cannot drift

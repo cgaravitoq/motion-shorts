@@ -5,7 +5,7 @@ import { HUB_ROOT, routeIntent } from "./scene-hub-runtime";
 
 const INTENT_ENUM = ["informative", "data", "workflow", "social", "brand", "vfx"] as const;
 
-const inputSchema = Schema.Struct({ intent: Schema.Literal(...INTENT_ENUM) });
+const inputSchema = Schema.Struct({ intent: Schema.Literals([...INTENT_ENUM]) });
 const decodeInput = Schema.decodeUnknownSync(inputSchema);
 
 export const recommendSceneTypesTool: ToolDefinition = {

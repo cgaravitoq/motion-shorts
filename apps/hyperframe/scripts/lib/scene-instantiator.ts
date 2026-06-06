@@ -21,7 +21,7 @@ import {
   type RepeatSlotDef,
   type SceneTypeManifest,
 } from "@cgaravitoq/spec";
-import { Either } from "effect";
+import { Result } from "effect";
 
 // hubRoot is the apps/hyperframe dir. Defaults to cwd (CLI runs from there);
 // the MCP server passes an absolute path so it works from any cwd.
@@ -62,8 +62,8 @@ export interface ResolvedSceneType {
 function readValidatedManifest(file: string, type: string, version: number): SceneTypeManifest {
   const manifest: unknown = JSON.parse(fs.readFileSync(file, "utf8"));
   const decoded = decodeSceneTypeManifest(manifest);
-  if (Either.isLeft(decoded)) {
-    throw new ManifestInvalid({ type, version, issues: formatParseError(decoded.left, "manifest") });
+  if (Result.isFailure(decoded)) {
+    throw new ManifestInvalid({ type, version, issues: formatParseError(decoded.failure, "manifest") });
   }
   // keep the raw parse: the schema pass is validation-only, so instantiation bytes cannot change
   return manifest as SceneTypeManifest;

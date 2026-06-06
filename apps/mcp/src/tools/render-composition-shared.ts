@@ -2,7 +2,7 @@ import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import { getAudioDurationSeconds } from "@cgaravitoq/audio";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { failure, success } from "./_helpers";
 import { createJobId, ensureOutputDir, renderCompositionToFile } from "./local-runtime";
 
@@ -11,11 +11,13 @@ export const renderCompositionInputSchema = Schema.Struct({
   assets: Schema.optional(
     Schema.Array(Schema.Struct({ name: Schema.String, data: Schema.String })),
   ),
-  format: Schema.optionalWith(Schema.Literal("mp4", "mov", "webm"), { default: () => "mp4" }),
-  fps: Schema.optionalWith(Schema.Literal(24, 30, 60), { default: () => 30 }),
-  quality: Schema.optionalWith(Schema.Literal("draft", "standard", "high"), {
-    default: () => "standard",
-  }),
+  format: Schema.Literals(["mp4", "mov", "webm"]).pipe(
+    Schema.withDecodingDefault(Effect.succeed("mp4")),
+  ),
+  fps: Schema.Literals([24, 30, 60]).pipe(Schema.withDecodingDefault(Effect.succeed(30))),
+  quality: Schema.Literals(["draft", "standard", "high"]).pipe(
+    Schema.withDecodingDefault(Effect.succeed("standard")),
+  ),
 });
 const decodeInput = Schema.decodeUnknownSync(renderCompositionInputSchema);
 

@@ -35,7 +35,7 @@
     "@cgaravitoq/audio": "workspace:*",
     "@cgaravitoq/publish": "workspace:*",
     "@cgaravitoq/spec": "workspace:*",
-    "effect": "3.21.3"
+    "effect": "4.0.0-beta.78"
   },
   "devDependencies": {
     "hyperframes": "0.6.70"

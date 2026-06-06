@@ -55,9 +55,9 @@ export const fetchWithRetry = (
     try: (signal) => fetchImpl(url, { ...init, signal }),
     catch: (cause) => new HttpRequestError({ url, cause }),
   }).pipe(
-    Effect.timeoutFail({
+    Effect.timeoutOrElse({
       duration: Duration.millis(timeoutMs),
-      onTimeout: () => new HttpTimeoutError({ url, timeoutMs }),
+      orElse: () => Effect.fail(new HttpTimeoutError({ url, timeoutMs })),
     }),
     Effect.filterOrFail(
       (response) => !isRetryableStatus(response.status),
@@ -67,7 +67,7 @@ export const fetchWithRetry = (
 
   const backoff = Schedule.exponential(Duration.millis(baseDelayMs)).pipe(
     Schedule.jittered,
-    Schedule.intersect(Schedule.recurs(retries)),
+    Schedule.both(Schedule.recurs(retries)),
   );
 
   return attempt.pipe(
