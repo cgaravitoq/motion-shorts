@@ -15,7 +15,6 @@
 #ep-stage[data-format="desktop-1080p"] .pr-eyebrow {
   grid-column: 1 / 13;
   grid-row: 1;
-  margin: 0;
   justify-self: center;
   text-align: center;
   align-self: end;

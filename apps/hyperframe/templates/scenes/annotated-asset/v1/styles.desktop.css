@@ -16,7 +16,6 @@
   grid-column: 1 / 13;
   grid-row: 1;
   align-self: end;
-  margin: 0 auto 18px;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ax .ax-title {
@@ -40,7 +39,7 @@
   justify-self: center;
   width: 100%;
   max-width: 1400px;
-  height: 620px;
+  height: 540px;
   margin-top: var(--title-block-gap);
   padding: 0;
 }
@@ -59,7 +58,7 @@
 #ep-stage[data-format="desktop-1080p"] .ax .ax-frame:has(.ax-image[src=""]) {
   width: 100%;
   max-width: 1400px;
-  min-height: 620px;
+  min-height: 540px;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ax .ax-pin {

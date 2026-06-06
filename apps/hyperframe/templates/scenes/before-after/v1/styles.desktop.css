@@ -21,7 +21,6 @@
   grid-column: 1 / 13;
   grid-row: 1;
   align-self: end;
-  margin: 0;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ba .ba-title {

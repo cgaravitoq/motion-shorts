@@ -66,7 +66,8 @@
   border: 1px solid var(--line);
   border-radius: 999px;
   background: color-mix(in srgb, var(--panel) 60%, transparent);
-  margin-inline: auto;
+  /* canonical chip->title breathing gap — per-type CSS must not zero it */
+  margin: 0 auto 28px;
 }
 #ep-stage[data-format="desktop-1080p"] [data-layout="centered"] .scene-pad .headline {
   margin-inline: auto;

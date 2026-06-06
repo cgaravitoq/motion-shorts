@@ -25,7 +25,6 @@
   grid-column: 1 / 13;
   grid-row: 1;
   align-self: end;
-  margin: 0;
 }
 
 /* Title is the centered headline; capped to --content-max so it wraps at 1-2
@@ -67,7 +66,7 @@
   width: 100%;
   max-width: none;
   height: auto;
-  max-height: 560px;
+  max-height: 510px;
   overflow: visible;
 }
 
