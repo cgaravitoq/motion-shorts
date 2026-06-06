@@ -141,11 +141,13 @@ cat > examples/<slug>.txt <<'EOF'
 EOF
 
 bun run audio examples/<slug>.txt --lang=es \
-  --speed=1.0 --pause-sentence=300 --pause-clause=0 \
+  --speed=1.0 --no-pause-injection \
   --out=public/voice/<slug>
 
 ffplay -nodisp -autoexit public/voice/<slug>/voice.mp3   # afplay on macOS
 ```
+
+Pacing on `eleven_v3`: never auto-inject pauses (`--pause-*` is ignored by `generate-audio` on v3 — tags add unpredictable multi-second gaps). Hand-author at most 1-2 expressive tags in the script (e.g. `[excited]` in the hook, `[thoughtful]` at the twist); see `docs/voice-config.md`.
 
 Gate 2 loop: "Suena bien? Algun termino mal pronunciado?" — edit script + re-run until approved. See `audio-pipeline` for TTS/STT details.
 
