@@ -23,7 +23,7 @@ function build_contrib_heatmap(tl, t, s, p) {
     // height budget kept modest so heading + legend + meta still breathe.
     const gap = 8;
     const widthBudget = isDesktop ? 1456 : 832;
-    const cellMax = isDesktop ? 45 : 52;
+    const cellMax = isDesktop ? 52 : 52;
     const cellByWidth = Math.floor((widthBudget - (cols - 1) * gap) / cols);
     const cell = Math.max(20, Math.min(cellMax, cellByWidth));
     grid.style.setProperty("--ch-cols", String(cols));

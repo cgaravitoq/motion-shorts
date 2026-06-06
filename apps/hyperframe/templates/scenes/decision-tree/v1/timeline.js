@@ -11,12 +11,12 @@
 // Result columns + the root are placed synchronously up front (deterministic setup).
 function build_decisionTree(tl, t, s, p) {
   const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
-  const W = isDesktop ? 1500 : 912;
-  const H = isDesktop ? 640 : 760;
+  const W = isDesktop ? 1560 : 912;
+  const H = isDesktop ? 680 : 760;
   const ROOT_X = W / 2;
-  const TRUNK_TOP = isDesktop ? 170 : 196;
-  const ELBOW_Y = isDesktop ? 290 : 320;
-  const CHILD_TOP = isDesktop ? 370 : 420;
+  const TRUNK_TOP = isDesktop ? 200 : 196;
+  const ELBOW_Y = isDesktop ? 340 : 320;
+  const CHILD_TOP = isDesktop ? 430 : 420;
   const branches = Array.isArray(p && p.branches) ? p.branches : [];
   const n = branches.length;
 

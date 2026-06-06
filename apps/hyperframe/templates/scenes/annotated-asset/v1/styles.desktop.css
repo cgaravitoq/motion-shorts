@@ -1,47 +1,88 @@
 /* annotated-asset desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. .scene-pad is the 12-col grid:
-   eyebrow + title pin top-left (cols 1/8); the annotated media frame is the
-   primary visual and owns the full usable width (cols 1/13) on the row below,
-   centred in its band. Pins + chips ride var(--layer-primary); the image
-   stays at full opacity as the asset. */
+   shell.desktop.css in desktop builds only. ALIGNMENT COHERENCE: everything is
+   ALL-LEFT — eyebrow, title AND the media frame all anchor to col 1 of the
+   12-col grid. The frame is left-aligned (justify-self: start), NEVER centred,
+   so its left edge lines up with the title's left edge. A real
+   var(--title-block-gap) air gap separates the title block from the frame, and
+   the frame height is capped so eyebrow + title (2 lines) + gap + frame fit the
+   710px band — the top pins never collide with the title. The frame is
+   width-led (a fixed annotated board) with the image contained inside, so the
+   pins have a stable surface and every chip — width-capped and wrapping — stays
+   inside the rounded frame regardless of the authored pin x%. */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.ax {
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto;
   align-content: center;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ax .ax-eyebrow {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 1;
   align-self: end;
-  margin: 0;
+  margin: 0 0 18px;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ax .ax-title {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 2;
+  max-width: var(--content-max);
   margin: 0;
 }
 
+/* Frame: col 1, LEFT-aligned (matches the title's left edge), with a real
+   air gap above. align-self:start keeps the gap honest (no vertical centring
+   that would eat the gap). Height-led and shrink-wrapped to the IMAGE: the
+   board is exactly the rendered image box, so authored x/y% pins anchor to
+   real image pixels (no letterbox matte for pins to float on). Budget:
+   title block (~245px max) + 40px gap + 460px frame <= 710px band. */
 #ep-stage[data-format="desktop-1080p"] .ax .ax-frame {
   grid-column: 1 / 13;
   grid-row: 3;
-  align-self: center;
-  justify-self: center;
-  width: auto;
+  align-self: start;
+  justify-self: start;
+  width: fit-content;
   max-width: 100%;
+  height: 460px;
   margin-top: var(--title-block-gap);
+  padding: 0;
 }
 
+/* The image drives the board width at the fixed board height. */
 #ep-stage[data-format="desktop-1080p"] .ax .ax-image {
-  max-height: 620px;
+  display: block;
   width: auto;
-  max-width: 100%;
+  height: 100%;
+  max-width: 1400px;
+  max-height: none;
+  object-fit: contain;
 }
 
+/* No-image fallback canvas: fixed left-aligned board so the pins anchor
+   deterministically even without an image. */
 #ep-stage[data-format="desktop-1080p"] .ax .ax-frame:has(.ax-image[src=""]) {
-  width: 1100px;
-  min-height: 560px;
+  width: min(1000px, 100%);
+  min-height: 460px;
 }
 
-#ep-stage[data-format="desktop-1080p"] .ax .ax-pin { opacity: var(--layer-primary); }
+#ep-stage[data-format="desktop-1080p"] .ax .ax-pin {
+  opacity: var(--layer-primary);
+  gap: 14px;
+}
+
+/* Compact dots so they don't crowd the desktop board. */
+#ep-stage[data-format="desktop-1080p"] .ax .ax-pin__dot {
+  width: 48px;
+  height: 48px;
+  font-size: 26px;
+}
+
+/* Chips: cap width and allow wrapping so a long label never shoots past the
+   frame's right border. With the board at 1000px wide and chips capped at
+   180px, an authored pin up to x~78% keeps its chip inside the frame. */
+#ep-stage[data-format="desktop-1080p"] .ax .ax-pin__chip {
+  max-width: 180px;
+  white-space: normal;
+  padding: 10px 16px;
+  font-size: 24px;
+  line-height: 1.12;
+}

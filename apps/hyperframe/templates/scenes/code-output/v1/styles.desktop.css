@@ -42,9 +42,9 @@
 #ep-stage[data-format="desktop-1080p"] .co .co-window {
   border-radius: 30px;
 }
-#ep-stage[data-format="desktop-1080p"] .co .co-window__body { padding: 34px 44px; }
+#ep-stage[data-format="desktop-1080p"] .co .co-window__body { padding: 34px 44px 34px 32px; }
 
-/* The taller 832px band has more vertical room than portrait, so relax each
+/* The taller band has more vertical room than portrait, so relax each
    compaction notch one step while staying clear of the bottom dead zone. */
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="8"] .co-line__text,
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="9"] .co-line__text,
@@ -52,10 +52,16 @@
   font-size: 27px;
   line-height: 1.3;
 }
+#ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="8"] .co-line::before,
+#ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="9"] .co-line::before,
+#ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="10"] .co-line::before {
+  font-size: 24px;
+  line-height: 1.3;
+}
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="8"] .co-window__body,
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="9"] .co-window__body,
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="10"] .co-window__body {
-  padding: 26px 44px;
+  padding: 26px 44px 26px 32px;
   gap: 10px;
 }
 

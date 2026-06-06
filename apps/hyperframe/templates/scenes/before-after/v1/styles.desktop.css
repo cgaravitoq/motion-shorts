@@ -1,8 +1,10 @@
 /* before-after desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. .scene-pad is the 12-col grid:
-   eyebrow + title pin top-left (cols 1/8, rows 1-2); the media frame is the
-   primary visual, spanning the full usable width (cols 1/13, row 3) and
-   vertically centred in its band, capped at ~620px tall. */
+   shell.desktop.css in desktop builds only. ALL-LEFT coherence: eyebrow,
+   title AND the media frame all start at the band's left edge (col 1 = x120).
+   .scene-pad is the 12-col grid: eyebrow + title pin top-left (cols 1/13,
+   rows 1-2, headline up to --content-max); the media frame is the primary
+   visual on row 3, left-aligned (justify-self: start) at col 1, fixed at
+   440px tall so the stack breathes inside the 710px usable band. */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.ba {
   grid-template-rows: auto auto 1fr;
@@ -10,28 +12,31 @@
 }
 
 #ep-stage[data-format="desktop-1080p"] .ba .ba-eyebrow {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 1;
+  justify-self: start;
   align-self: end;
   margin: 0;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ba .ba-title {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 2;
+  justify-self: start;
+  max-width: var(--content-max);
   margin: 0;
-  font-size: 72px;
+  font-size: var(--fs-headline);
 }
 
 #ep-stage[data-format="desktop-1080p"] .ba .ba-frame {
   grid-column: 1 / 13;
   grid-row: 3;
-  align-self: center;
-  justify-self: center;
+  align-self: start;
+  justify-self: start;
   margin-top: var(--title-block-gap);
   width: auto;
-  height: 100%;
-  max-height: 620px;
+  height: 440px;
+  max-width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 32px;
 }

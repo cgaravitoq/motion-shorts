@@ -1,60 +1,99 @@
-/* hook desktop-1080p (16:9): asset-led 70/30. Text-only default anchors the
-   eyebrow/title/subtitle top-left, biased into the top third of the usable
-   band (no dead-center symmetric column, no black right half). With an image
-   the text confines to cols 1-7 and the visual owns cols 7-13. */
+/* hook desktop-1080p (16:9): KINETIC TYPE. Text-only is the default and the
+   typography IS the visual — the headline scales to ~160px and spans the full
+   12-col band (cols 1/13) across up to 3 dramatic lines, no empty right third.
+   Everything is LEFT-aligned and starts at col 1: eyebrow above, title, then
+   subtitle at --body-max below. Title carries a subtle vertical gradient via
+   background-clip:text for depth; <strong> accents stay solid so they pop. */
 
+/* Auto rows (no explicit grid-template-rows) so a hidden empty subtitle
+   (.hk-subtitle:empty { display:none }) reserves no track and leaves no
+   phantom gap. Children flow in document order: eyebrow, title, subtitle. */
 #ep-stage[data-format="desktop-1080p"] .scene-pad.hk {
-  grid-template-rows: 132px auto auto auto 1fr;
-  align-content: start;
+  grid-template-rows: none;
+  grid-auto-rows: auto;
+  align-content: center;
   align-items: start;
+  row-gap: var(--title-block-gap);
 }
 
 #ep-stage[data-format="desktop-1080p"] .hk-eyebrow {
-  grid-column: 1 / 9;
-  grid-row: 2;
-  margin: 0 0 24px;
+  grid-column: 1 / 13;
+  grid-row: auto;
+  margin: 0 0 calc(var(--title-block-gap) * -0.4);
+  letter-spacing: 0.04em;
 }
 
 #ep-stage[data-format="desktop-1080p"] .hk-title--xl {
-  grid-column: 1 / 9;
-  grid-row: 3;
-  font-size: 104px;
-  line-height: 0.98;
-  max-width: 880px;
+  grid-column: 1 / 13;
+  grid-row: auto;
+  margin: 0;
+  max-width: none;
+  width: 100%;
+  font-size: 160px;
+  line-height: 0.94;
+  font-weight: 840;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--paper);
+  background: linear-gradient(180deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 62%, var(--ink)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Solid accent on emphasized spans — restore fill so they read over the
+   gradient title and become the focal punch of the kinetic type. */
+#ep-stage[data-format="desktop-1080p"] .hk-title--xl strong {
+  color: var(--source-accent-2);
+  -webkit-text-fill-color: var(--source-accent-2);
+  background: none;
+  font-weight: 880;
 }
 
 #ep-stage[data-format="desktop-1080p"] .hk-subtitle {
-  grid-column: 1 / 8;
-  grid-row: 4;
-  margin: 36px 0 0;
-  max-width: 680px;
+  grid-column: 1 / 13;
+  grid-row: auto;
+  margin: 0;
+  max-width: var(--body-max);
+  opacity: var(--layer-context);
 }
 
-/* Image present: narrow text to cols 1-7, hand cols 7-13 to the visual. */
+/* Image present: keep the split, but text and visual are both top-aligned and
+   coherently LEFT — text owns cols 1-7 (still anchored at col 1), the visual
+   takes cols 8-13. Title drops to a still-large 112px so it reads in the
+   narrower column without colliding with the image. */
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) {
+  align-content: center;
+  align-items: start;
+  grid-template-rows: auto auto auto;
+  row-gap: 32px;
+}
+
 #ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-eyebrow,
-#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-title--xl {
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-title--xl,
+#ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-subtitle {
   grid-column: 1 / 8;
 }
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-title--xl {
-  font-size: 92px;
-  max-width: 720px;
+  font-size: 112px;
+  line-height: 0.96;
 }
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.hk:has(.hk-image:not([src=""])) .hk-subtitle {
-  grid-column: 1 / 8;
-  max-width: 620px;
+  max-width: none;
 }
 
 #ep-stage[data-format="desktop-1080p"] .hk-image {
-  grid-column: 7 / 13;
-  grid-row: 2 / 5;
-  align-self: center;
-  justify-self: end;
+  grid-column: 8 / 13;
+  grid-row: 1 / 4;
+  align-self: start;
+  justify-self: start;
   margin: 0;
-  width: auto;
+  width: 100%;
   max-width: 100%;
-  max-height: 640px;
+  max-height: 660px;
   height: auto;
   object-fit: contain;
+  border-radius: 28px;
 }

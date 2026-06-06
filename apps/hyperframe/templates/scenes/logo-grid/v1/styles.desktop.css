@@ -1,10 +1,12 @@
 /* logo-grid desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. Re-layout against the 12-col grid
-   on .scene-pad: eyebrow + title pin TOP-LEFT (cols 1-7, rows 1-2); the chip
-   band is the primary visual and owns the full usable width (cols 1-12, row 3),
-   centred in its band. The band packs one row for up to 4 names and wraps to a
-   second row for 5-8 via auto-flow. Opacity layers: the monogram disc reads as
-   context (--layer-context), the wordmark label is primary data (--layer-primary). */
+   shell.desktop.css in desktop builds only. ALIGNMENT COHERENCE: everything is
+   LEFT-aligned at col 1. Eyebrow + title pin TOP-LEFT spanning the full grid
+   (cols 1/13) so the headline reads in 1-2 lines up to --content-max (1200px),
+   never clamped to a narrow 3-line column. The chip band sits 40px below, also
+   starting at col 1 across the full usable width (cols 1/13). The band packs one
+   row for up to 4 names and wraps to a second row for 5-8 via auto-flow. Opacity
+   layers: the monogram disc reads as context (--layer-context), the wordmark
+   label is primary data (--layer-primary). */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.lg {
   grid-template-rows: auto auto 1fr;
@@ -12,29 +14,32 @@
 }
 
 #ep-stage[data-format="desktop-1080p"] .lg .lg-eyebrow {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 1;
   align-self: end;
   margin: 0;
 }
 
 #ep-stage[data-format="desktop-1080p"] .lg .lg-title {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 2;
+  max-width: var(--content-max);
   margin: 0;
 }
 
-/* Chip band: full usable width, two equal rows of up to 4 columns. auto-flow
-   keeps 3-4 names on one row and wraps 5-8 onto the second row. */
+/* Chip band: starts at col 1, owns the full usable width, two equal rows of up
+   to 4 columns. auto-flow keeps 3-4 names on one row and wraps 5-8 onto the
+   second. Top-aligned so it hangs directly under the title block at 40px gap. */
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band {
   grid-column: 1 / 13;
   grid-row: 3;
-  align-self: center;
+  align-self: start;
   margin-top: var(--title-block-gap);
   grid-template-columns: repeat(4, 1fr);
   grid-auto-flow: row;
   gap: 32px var(--grid-gutter);
-  align-content: center;
+  align-content: start;
+  justify-items: stretch;
 }
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
 

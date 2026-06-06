@@ -16,19 +16,20 @@
    - Opacity layers for charts/diagrams: structure 0.15, context 0.4, data 1. */
 
 #ep-stage[data-format="desktop-1080p"] {
-  --safe-top: 108px;
+  --safe-top: 140px;
   /* caption band spans 60-190px from the bottom (see #captions below) */
   --safe-bottom: 230px;
   --safe-x: 120px;
-  --title-block-gap: 32px;
-  --content-max: 760px;
+  --title-block-gap: 40px;
+  --content-max: 1200px;
+  --body-max: 760px;
   --fs-eyebrow: 24px;
-  --fs-headline: 92px;
+  --fs-headline: 88px;
   --fs-subcopy: 32px;
   --fs-caption: 48px;
   --wm-inset-top: 56px;
   --wm-inset-right: 64px;
-  --wm-size: 120px;
+  --wm-size: 90px;
   --grid-col: 106px;
   --grid-gutter: 24px;
   --col-gap: 96px;
@@ -45,7 +46,7 @@
   justify-content: center;
 }
 
-#ep-stage[data-format="desktop-1080p"] .subcopy { margin-top: 28px; max-width: var(--content-max); }
+#ep-stage[data-format="desktop-1080p"] .subcopy { margin-top: 28px; max-width: var(--body-max); }
 
 /* Caption band clears the ~90px YouTube player control bar. */
 #ep-stage[data-format="desktop-1080p"] #captions { bottom: 60px; height: 130px; }

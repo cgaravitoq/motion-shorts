@@ -1,25 +1,25 @@
 /* contrib-heatmap desktop-1080p (16:9) overrides — appended AFTER styles.css AND
-   shell.desktop.css. Asset-led: eyebrow + title pin top-left (cols 1/8); the
-   heatmap panel owns the full width below (cols 1/13) and the 7xN grid scales
-   UP to the 1456px width budget (cellMax 68, set in timeline.js) so the grid IS
-   the scene instead of a small centered block floating in a symmetric void.
-   Opacity layering: cells stay primary; legend + caption drop to the context
-   layer so the data reads first. */
+   shell.desktop.css. ALIGNMENT COHERENCE: eyebrow, title AND panel all left-align
+   at col 1. The heatmap panel anchors the scene (the grid IS the scene), not a
+   small centered block in a void. The desktop meta row (.ch-caption + .ch-badge)
+   is removed so the title block clears the ceiling and the panel breathes: the
+   in-panel legend keeps the less->more key. Vertical budget (710px usable):
+   title block (~130px, 1 line at 1200px) + 40px gap + panel (~545px). */
 
 /* Direct children of .scene-pad (the 12-col grid) get explicit placement. */
 #ep-stage[data-format="desktop-1080p"] .scene-pad.ch {
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr;
   align-content: center;
   text-align: left;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ch-eyebrow {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 1;
   align-self: end;
 }
 #ep-stage[data-format="desktop-1080p"] .ch-title {
-  grid-column: 1 / 8;
+  grid-column: 1 / 13;
   grid-row: 2;
   max-width: var(--content-max);
 }
@@ -27,18 +27,19 @@
 #ep-stage[data-format="desktop-1080p"] .ch-panel {
   grid-column: 1 / 13;
   grid-row: 3;
-  margin: var(--title-block-gap) 0 0;
+  justify-self: start;
   align-self: center;
-  padding: 40px 48px;
-  gap: 32px;
+  margin: var(--title-block-gap) 0 0;
+  padding: 32px 48px;
+  gap: 24px;
+  align-items: flex-start;
 }
 
 #ep-stage[data-format="desktop-1080p"] .ch-legend { gap: 16px; opacity: var(--layer-context); }
 
-#ep-stage[data-format="desktop-1080p"] .ch-meta {
-  grid-column: 1 / 13;
-  grid-row: 4;
-  margin-top: var(--title-block-gap);
-  gap: 24px;
+/* Drop the meta row on desktop: the title would otherwise hit the ceiling. */
+#ep-stage[data-format="desktop-1080p"] .ch-meta,
+#ep-stage[data-format="desktop-1080p"] .ch-caption,
+#ep-stage[data-format="desktop-1080p"] .ch-badge {
+  display: none;
 }
-#ep-stage[data-format="desktop-1080p"] .ch-caption { opacity: var(--layer-context); }

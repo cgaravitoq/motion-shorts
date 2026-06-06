@@ -1,24 +1,36 @@
-/* fanout desktop-1080p (16:9): asset-led side-by-side. Eyebrow+title pin to the
-   left third (cols 1-3, vertically centered as one block); the horizontal
-   source -> workers -> synth graph owns cols 4-12 (~75% width). Connectors are
-   horizontal rails that span the inter-column gaps and draw with scaleX (origin
-   set in timeline.js, isDesktop branch). */
+/* fanout desktop-1080p (16:9): the graph IS the scene. Eyebrow + title are
+   hidden — the source -> workers -> synth diagram carries the message on its
+   own and CENTERS in the frame (a single object owning the whole band reads as
+   centered, which is alignment-coherent). The graph fills the full 12-col band
+   and scales up to own the frame.
 
-.scene-pad.fo { align-items: center; grid-template-rows: max-content max-content; }
+   Connector geometry: the two connector lanes are explicit grid columns (1fr)
+   between the source/workers/synth columns. Each rail is one full-lane line per
+   worker, vertically aligned to its worker row via a matching column flexbox
+   (space-around on BOTH the rail lanes and the workers column, so rail Y ==
+   worker Y). Each rail spans the full lane AND tucks under the adjacent chip
+   edges via a calc width + negative margins, so the line visually CONNECTS the
+   source chip edge to the worker chip edge (and worker -> synth) with no
+   floating gap. The scaleX draw (timeline.js isDesktop branch) is unchanged:
+   out-rails draw from the source edge outward, in-rails from the synth edge. */
 
-.fo-eyebrow { grid-column: 1 / 4; grid-row: 1; align-self: end; margin: 0; }
-.fo-title { grid-column: 1 / 4; grid-row: 2; align-self: start; margin: 0; }
+.scene-pad.fo { align-items: center; justify-content: center; grid-template-rows: 1fr; }
+
+.scene-pad.fo .fo-eyebrow,
+.scene-pad.fo .fo-title { display: none; }
 
 .fo-graph {
-  grid-column: 4 / 13;
-  grid-row: 1 / 3;
+  --fo-tuck: 24px;
+  grid-column: 1 / 13;
+  grid-row: 1;
   align-self: center;
+  justify-self: center;
   margin: 0;
   width: 100%;
   max-width: none;
-  height: 560px;
+  height: 600px;
   display: grid;
-  grid-template-columns: max-content minmax(96px, 1fr) max-content minmax(96px, 1fr) max-content;
+  grid-template-columns: max-content 1fr max-content 1fr max-content;
   align-items: center;
   justify-items: center;
 }
@@ -32,42 +44,52 @@
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: space-evenly;
-  gap: 32px;
+  justify-content: space-around;
+  gap: 0;
   height: 100%;
 }
-.fo-graph[data-count="5"] .fo-row--workers,
-.fo-graph[data-count="6"] .fo-row--workers { gap: 22px; }
 
-/* nodes enlarged ~15-20% over base */
-.fo-node { padding: 30px 40px; gap: 20px; border-radius: 24px; }
-.fo-node__dot { width: 20px; height: 20px; box-shadow: 0 0 0 7px color-mix(in srgb, var(--source-accent) 22%, transparent); }
-.fo-node__label { font-size: 46px; }
+/* nodes enlarged to own the frame */
+.fo-node { padding: 34px 46px; gap: 22px; border-radius: 26px; }
+.fo-node__dot { width: 22px; height: 22px; box-shadow: 0 0 0 8px color-mix(in srgb, var(--source-accent) 22%, transparent); }
+.fo-node__label { font-size: 52px; }
 
-.fo-node--worker { padding: 24px 34px; }
-.fo-node--worker .fo-node__label { font-size: 40px; }
-.fo-node--worker .fo-node__dot { width: 16px; height: 16px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--source-accent-2) 22%, transparent); }
-.fo-node--synth { padding: 32px 46px; }
-.fo-node--synth .fo-node__dot { box-shadow: 0 0 0 8px color-mix(in srgb, var(--source-accent-2) 24%, transparent); }
+.fo-node--source { padding: 38px 50px; }
+.fo-node--source .fo-node__label { font-size: 54px; }
+.fo-node--worker { padding: 26px 38px; }
+.fo-node--worker .fo-node__label { font-size: 44px; }
+.fo-node--worker .fo-node__dot { width: 18px; height: 18px; box-shadow: 0 0 0 7px color-mix(in srgb, var(--source-accent-2) 22%, transparent); }
+.fo-node--synth { padding: 40px 54px; }
+.fo-node--synth .fo-node__label { font-size: 54px; }
+.fo-node--synth .fo-node__dot { box-shadow: 0 0 0 9px color-mix(in srgb, var(--source-accent-2) 24%, transparent); }
 
-/* rails span the full gap between the columns and fan vertically to each worker */
+/* each rail lane fans its lines to the same Y positions the workers sit at
+   (space-around on both), so every connector lands on a worker row. */
 .fo-links {
-  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
-  justify-content: space-evenly;
-  gap: 32px;
+  justify-content: space-around;
+  gap: 0;
 }
 .fo-links--out { grid-column: 2; }
 .fo-links--in { grid-column: 4; }
-/* override base portrait height/gap (higher base specificity via [data-count]) */
-.fo-graph[data-count="2"] .fo-links { gap: 32px; height: 100%; width: 100%; }
+/* neutralise the portrait base height/gap rules (matched [data-count] specificity) */
+.fo-graph[data-count="2"] .fo-links,
 .fo-graph[data-count="5"] .fo-links,
-.fo-graph[data-count="6"] .fo-links { gap: 22px; height: 100%; width: 100%; }
+.fo-graph[data-count="6"] .fo-links { height: 100%; gap: 0; }
 
-.fo-link { flex: none; width: 100%; height: 5px; border-radius: 999px; }
-.fo-link--out { background: linear-gradient(90deg, var(--source-accent), color-mix(in srgb, var(--source-accent) 45%, transparent)); transform-origin: 0% 50%; }
-.fo-link--in { background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent-2) 45%, transparent), var(--source-accent-2)); transform-origin: 100% 50%; }
+/* the line spans the full lane AND tucks --fo-tuck px under BOTH adjacent chip
+   edges, so it touches the source chip edge and the worker chip edge — no gap.
+   width grows by 2*tuck, negative inline margins pull it under both chips. */
+.fo-link {
+  flex: none;
+  width: calc(100% + var(--fo-tuck) * 2);
+  margin-inline: calc(var(--fo-tuck) * -1);
+  height: 6px;
+  border-radius: 999px;
+}
+.fo-link--out { background: linear-gradient(90deg, var(--source-accent), color-mix(in srgb, var(--source-accent) 55%, var(--source-accent-2))); transform-origin: 0% 50%; }
+.fo-link--in { background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent) 55%, var(--source-accent-2)), var(--source-accent-2)); transform-origin: 100% 50%; }

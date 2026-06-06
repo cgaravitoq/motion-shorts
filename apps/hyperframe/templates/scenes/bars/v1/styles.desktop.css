@@ -1,18 +1,19 @@
-/* bars desktop-1080p (16:9): asset-led 70/30. Eyebrow+title pin top-left
-   (cols 1/8); the bar chart owns the full width below (cols 1/13) and scales UP
-   — tall tracks, wide columns, prominent value labels. The bars ARE the scene,
-   so the chart fills the band instead of floating in a centered void.
-   Vertical bars: value (top, --layer-primary) / track / label (bottom,
-   --layer-context). Fill grows scaleY 0->1 from the bottom (timeline.js axis). */
+/* bars desktop-1080p (16:9): ALL-LEFT content scene. Eyebrow + 1-line title pin
+   top-left (col 1, --content-max). The bar chart sits below, left-aligned at col
+   1 (justify-content: flex-start), >= --title-block-gap clear air under the title.
+   Tracks are budgeted for the 710px usable band: ~320px base, ~360 at count2,
+   down to ~280 at count6; value/label sizes preserved.
+   Fill is a single-hue accent-2 column (subtle same-hue vertical gradient +
+   soft glow); tracks stay the dark panel. Grows scaleY 0->1 (timeline.js axis). */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.br {
-  grid-template-rows: auto auto 1fr;
-  align-content: stretch;
+  grid-template-rows: auto auto auto;
+  align-content: center;
   row-gap: 0;
 }
 
-.br-eyebrow { grid-column: 1 / 8; grid-row: 1; }
-.br-title { grid-column: 1 / 13; grid-row: 2; max-width: none; }
+.br-eyebrow { grid-column: 1 / 13; grid-row: 1; }
+.br-title { grid-column: 1 / 13; grid-row: 2; max-width: var(--content-max); }
 
 .br-chart {
   grid-column: 1 / 13;
@@ -22,29 +23,30 @@
   list-style: none;
   display: flex;
   flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
+  align-items: flex-end;
+  justify-content: flex-start;
+  align-self: start;
+  justify-self: start;
 }
-.br-chart[data-count="2"] { gap: 200px; }
-.br-chart[data-count="3"] { gap: 132px; }
-.br-chart[data-count="4"] { gap: 88px; }
-.br-chart[data-count="5"] { gap: 60px; }
-.br-chart[data-count="6"] { gap: 44px; }
+.br-chart[data-count="2"] { gap: 72px; }
+.br-chart[data-count="3"] { gap: 64px; }
+.br-chart[data-count="4"] { gap: 56px; }
+.br-chart[data-count="5"] { gap: 44px; }
+.br-chart[data-count="6"] { gap: 36px; }
 
 .br-row {
   display: grid;
   grid-template-areas: "value" "track" "label";
   grid-template-rows: auto auto auto;
   justify-items: center;
-  row-gap: 24px;
-  width: 240px;
+  row-gap: 20px;
+  width: 220px;
 }
-.br-chart[data-count="2"] .br-row { width: 300px; }
-.br-chart[data-count="3"] .br-row { width: 260px; }
-.br-chart[data-count="4"] .br-row { width: 210px; }
-.br-chart[data-count="5"] .br-row { width: 170px; }
-.br-chart[data-count="6"] .br-row { width: 144px; }
+.br-chart[data-count="2"] .br-row { width: 280px; }
+.br-chart[data-count="3"] .br-row { width: 240px; }
+.br-chart[data-count="4"] .br-row { width: 196px; }
+.br-chart[data-count="5"] .br-row { width: 162px; }
+.br-chart[data-count="6"] .br-row { width: 136px; }
 
 .br-value {
   grid-area: value;
@@ -66,19 +68,19 @@
 .br-track {
   grid-area: track;
   position: relative;
-  width: 168px;
-  height: 360px;
+  width: 160px;
+  height: 320px;
   justify-self: center;
   border-radius: 28px;
   background: var(--panel);
   border: 1px solid var(--line);
   overflow: hidden;
 }
-.br-chart[data-count="2"] .br-track { width: 208px; height: 400px; }
-.br-chart[data-count="3"] .br-track { width: 188px; height: 380px; }
-.br-chart[data-count="4"] .br-track { width: 148px; height: 360px; }
-.br-chart[data-count="5"] .br-track { width: 124px; height: 340px; }
-.br-chart[data-count="6"] .br-track { width: 104px; height: 320px; }
+.br-chart[data-count="2"] .br-track { width: 200px; height: 360px; }
+.br-chart[data-count="3"] .br-track { width: 176px; height: 340px; }
+.br-chart[data-count="4"] .br-track { width: 140px; height: 320px; }
+.br-chart[data-count="5"] .br-track { width: 116px; height: 300px; }
+.br-chart[data-count="6"] .br-track { width: 100px; height: 280px; }
 
 .br-fill {
   position: absolute;
@@ -87,8 +89,12 @@
   height: var(--pct, 0%);
   border-radius: 28px;
   transform-origin: 50% 100%;
-  background: linear-gradient(0deg, color-mix(in srgb, var(--source-accent) 78%, transparent), var(--source-accent-2));
-  box-shadow: 0 0 40px color-mix(in srgb, var(--source-accent-2) 28%, transparent);
+  background: linear-gradient(
+    180deg,
+    var(--source-accent-2),
+    color-mix(in srgb, var(--source-accent-2) 70%, #000)
+  );
+  box-shadow: 0 0 44px color-mix(in srgb, var(--source-accent-2) 32%, transparent);
 }
 
 .br-label {
