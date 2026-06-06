@@ -1,0 +1,9 @@
+/* title-cards desktop-1080p (16:9) — appended AFTER styles.css in desktop builds only. */
+.tc-grid { gap: 32px; }
+.tc-grid[data-count="2"] { grid-template-columns: 1fr 1fr; }
+.tc-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+.tc-grid[data-count="4"] { grid-template-columns: 1fr 1fr; }
+.tc-grid[data-count="5"] { grid-template-columns: repeat(3, 1fr); }
+.tc-grid[data-count="6"] { grid-template-columns: repeat(3, 1fr); }
+.tc-card { min-height: 180px; }
+.tc-grid[data-count="5"] .tc-card, .tc-grid[data-count="6"] .tc-card { min-height: 0; padding: 30px 28px; }

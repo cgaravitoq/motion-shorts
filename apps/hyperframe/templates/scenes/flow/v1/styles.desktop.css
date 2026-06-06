@@ -1,0 +1,12 @@
+/* flow desktop-1080p (16:9): rail reflows column->row, nodes become vertical badge-over-card stacks, connectors become horizontal segments. */
+.fl-rail { margin: 44px 0 0; flex-direction: row; align-items: stretch; justify-content: center; }
+.fl-rail[data-count] { gap: 40px; }
+
+.fl-step { grid-template-columns: 1fr; justify-items: center; align-items: start; gap: 22px; }
+
+.fl-step__connector { left: calc(-1 * var(--fl-gap, 40px)); top: 46px; bottom: auto; width: var(--fl-gap, 40px); height: 4px; background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent) 70%, transparent), var(--source-accent)); transform-origin: 0% 50%; }
+.fl-rail[data-count] .fl-step__connector { --fl-gap: 40px; }
+
+.fl-step__body { width: 100%; padding: 22px 24px; }
+.fl-step__label { font-size: 34px; }
+.fl-step__detail { font-size: 24px; }

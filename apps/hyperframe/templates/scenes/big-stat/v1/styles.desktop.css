@@ -1,0 +1,5 @@
+/* big-stat desktop-1080p (16:9) overrides — appended AFTER styles.css. */
+.bs { align-items: center; text-align: center; }
+.bs-value { font-size: 280px; }
+.bs-suffix { font-size: 126px; }
+.bs-context { max-width: 1100px; }

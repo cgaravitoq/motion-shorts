@@ -1,0 +1,19 @@
+/* code / terminal-window desktop-1080p (16:9) overrides — appended after styles.css only in desktop builds. */
+.cd-title { font-size: 76px; line-height: 1.04; }
+
+.cd-window { max-width: 1150px; margin-inline: auto; }
+.cd-window__body { padding: 32px 44px; }
+
+.cd-window[data-lines="7"] .cd-line__text,
+.cd-window[data-lines="8"] .cd-line__text { font-size: 26px; line-height: 1.26; }
+.cd-window[data-lines="7"] .cd-window__body,
+.cd-window[data-lines="8"] .cd-window__body { padding: 26px 44px; gap: 10px; }
+
+.cd-window[data-lines="9"] .cd-line__text,
+.cd-window[data-lines="10"] .cd-line__text,
+.cd-window[data-lines="11"] .cd-line__text,
+.cd-window[data-lines="12"] .cd-line__text { font-size: 24px; line-height: 1.24; }
+.cd-window[data-lines="9"] .cd-window__body,
+.cd-window[data-lines="10"] .cd-window__body,
+.cd-window[data-lines="11"] .cd-window__body,
+.cd-window[data-lines="12"] .cd-window__body { padding: 24px 44px; gap: 7px; }

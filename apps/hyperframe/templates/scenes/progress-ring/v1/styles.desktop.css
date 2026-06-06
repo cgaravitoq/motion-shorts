@@ -1,0 +1,12 @@
+/* progress-ring desktop-1080p (16:9) — dials capped for the shorter landscape band, multi-ring gaps widened, numbers rescaled to match. */
+.pr-row[data-count="2"] { gap: 120px; }
+.pr-row[data-count="3"] { gap: 96px; }
+
+.pr-dial { width: 380px; height: 380px; }
+.pr-row[data-count="2"] .pr-dial { width: 340px; height: 340px; }
+
+.pr-num { font-size: 96px; }
+.pr-row[data-count="2"] .pr-num { font-size: 84px; }
+
+.pr-label { max-width: 440px; }
+.pr-row[data-count="3"] .pr-label { max-width: 340px; }

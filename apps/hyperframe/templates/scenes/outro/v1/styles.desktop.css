@@ -1,0 +1,7 @@
+/* outro desktop-1080p (16:9) overrides — appended AFTER styles.css in desktop builds only */
+.brand-outro__lockup { width: 640px; height: 356px; margin-bottom: 30px; }
+.brand-outro__aura { width: 620px; height: 620px; }
+.brand-outro__mark { width: 510px; }
+.brand-outro__name { font-size: 84px; }
+.brand-outro__tagline { margin: 24px 0 0; max-width: 960px; font-size: 34px; }
+.brand-outro__source { margin: 38px 0 0; font-size: 24px; }

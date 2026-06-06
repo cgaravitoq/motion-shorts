@@ -8,6 +8,7 @@
 // BEFORE any tween. This runs synchronously at load — fully deterministic, so
 // identical p.data => identical DOM => identical bytes.
 function build_contrib_heatmap(tl, t, s, p) {
+  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const grid = document.querySelector(s(".ch-grid"));
   const rows = String(p && p.data ? p.data : "")
     .split("/")
@@ -21,8 +22,10 @@ function build_contrib_heatmap(tl, t, s, p) {
     // Fit a 7xN grid inside the safe band: width budget ~832px after panel pad,
     // height budget kept modest so heading + legend + meta still breathe.
     const gap = 8;
-    const cellByWidth = Math.floor((832 - (cols - 1) * gap) / cols);
-    const cell = Math.max(20, Math.min(52, cellByWidth));
+    const widthBudget = isDesktop ? 1456 : 832;
+    const cellMax = isDesktop ? 68 : 52;
+    const cellByWidth = Math.floor((widthBudget - (cols - 1) * gap) / cols);
+    const cell = Math.max(20, Math.min(cellMax, cellByWidth));
     grid.style.setProperty("--ch-cols", String(cols));
     grid.style.setProperty("--ch-cell", cell + "px");
     grid.style.setProperty("--ch-gap", gap + "px");

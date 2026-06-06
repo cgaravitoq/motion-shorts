@@ -1,0 +1,22 @@
+/* bars desktop-1080p (16:9): rows reflow to a row of VERTICAL bars (value on top, tall track, label below). */
+
+.br-chart { list-style: none; margin: var(--title-block-gap) 0 0; padding: 0; display: flex; flex-direction: row; align-items: stretch; justify-content: center; height: 440px; }
+.br-chart[data-count="2"] { gap: 140px; }
+.br-chart[data-count="3"] { gap: 104px; }
+.br-chart[data-count="4"] { gap: 80px; }
+.br-chart[data-count="5"] { gap: 60px; }
+.br-chart[data-count="6"] { gap: 44px; }
+
+.br-row { display: grid; grid-template-columns: minmax(110px, 1fr); grid-template-areas: "value" "track" "label"; grid-template-rows: auto 1fr auto; align-items: stretch; justify-items: center; column-gap: 0; row-gap: 22px; max-width: 220px; }
+.br-chart[data-count="5"] .br-row, .br-chart[data-count="6"] .br-row { max-width: 180px; }
+
+.br-label { grid-area: label; margin: 0; font-size: 34px; line-height: 1.08; font-weight: 680; color: var(--paper); letter-spacing: 0; text-align: center; }
+.br-chart[data-count="5"] .br-label, .br-chart[data-count="6"] .br-label { font-size: 30px; }
+
+.br-value { grid-area: value; margin: 0; font-size: 64px; line-height: 0.96; font-weight: 820; letter-spacing: -0.02em; color: var(--source-accent-2); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: center; }
+.br-chart[data-count="5"] .br-value, .br-chart[data-count="6"] .br-value { font-size: 54px; }
+
+.br-track { grid-area: track; position: relative; width: 116px; height: auto; align-self: stretch; justify-self: center; border-radius: 26px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+.br-chart[data-count="5"] .br-track, .br-chart[data-count="6"] .br-track { width: 96px; }
+
+.br-fill { position: absolute; inset: auto 0 0 0; width: 100%; height: var(--pct, 0%); border-radius: 26px; transform-origin: 50% 100%; background: linear-gradient(0deg, color-mix(in srgb, var(--source-accent) 78%, transparent), var(--source-accent-2)); box-shadow: 0 0 32px color-mix(in srgb, var(--source-accent-2) 26%, transparent); }

@@ -1,0 +1,6 @@
+/* comparison desktop-1080p (16:9) overrides — appended after styles.css in desktop builds only. */
+.cmp-grid { gap: 40px; }
+.cmp-col__title { margin: 0 0 26px; font-size: 52px; }
+.cmp-list { gap: 18px; }
+.cmp-point__text { font-size: 33px; }
+.cmp-divider__vs { width: 104px; height: 104px; font-size: 36px; }

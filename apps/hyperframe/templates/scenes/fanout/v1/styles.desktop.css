@@ -1,0 +1,17 @@
+/* fanout desktop-1080p (16:9) overrides — graph rotates left-to-right */
+.fo-graph { margin: var(--title-block-gap) auto 0; width: 100%; max-width: 1500px; height: 480px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; }
+
+.fo-row { display: flex; justify-content: center; width: auto; }
+.fo-row--workers { gap: 0; flex-direction: column; flex-wrap: nowrap; align-items: center; justify-content: space-evenly; height: 100%; }
+.fo-graph[data-count="5"] .fo-row--workers,
+.fo-graph[data-count="6"] .fo-row--workers { gap: 0; }
+
+.fo-node--worker { padding: 16px 28px; }
+
+.fo-links { display: flex; align-items: center; justify-content: space-evenly; gap: 0; flex-direction: column; flex-wrap: nowrap; width: 150px; height: 100%; }
+.fo-graph[data-count="2"] .fo-links { gap: 0; }
+.fo-graph[data-count="5"] .fo-links,
+.fo-graph[data-count="6"] .fo-links { gap: 0; width: 120px; height: 100%; }
+.fo-link { flex: none; width: 100%; height: 4px; border-radius: 999px; }
+.fo-link--out { background: linear-gradient(90deg, var(--source-accent), color-mix(in srgb, var(--source-accent) 45%, transparent)); transform-origin: 0% 50%; }
+.fo-link--in { background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent-2) 45%, transparent), var(--source-accent-2)); transform-origin: 100% 50%; }

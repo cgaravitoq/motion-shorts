@@ -5,6 +5,7 @@
  *   manifest.json   typed slot declarations (text | richText | repeat)
  *   fragment.html   inner DOM with __SLOT__ tokens and <!-- repeat:NAME --> blocks
  *   styles.css      class-based styles (shared across instances of this type)
+ *   styles.desktop.css  optional 16:9 overrides, emitted only by desktop builds
  *   timeline.js     build_<builder>(tl, t, s, p) entrance choreography
  *
  * Token rules (deterministic, so identical params => identical bytes):
@@ -56,6 +57,7 @@ export interface ResolvedSceneType {
   manifest: SceneTypeManifest;
   fragment: string;
   styles: string;
+  stylesDesktop: string | null;
   timeline: string;
 }
 
@@ -74,11 +76,13 @@ export function resolveSceneType(type: string, version = 1, hubRoot?: string): R
   if (!fs.existsSync(dir)) {
     throw new Error(`unknown scene-type "${type}@${version}" (looked in ${path.relative(process.cwd(), dir)})`);
   }
+  const desktopCssPath = path.join(dir, "styles.desktop.css");
   return {
     dir,
     manifest: readValidatedManifest(path.join(dir, "manifest.json"), type, version),
     fragment: fs.readFileSync(path.join(dir, "fragment.html"), "utf8"),
     styles: fs.readFileSync(path.join(dir, "styles.css"), "utf8"),
+    stylesDesktop: fs.existsSync(desktopCssPath) ? fs.readFileSync(desktopCssPath, "utf8") : null,
     timeline: fs.readFileSync(path.join(dir, "timeline.js"), "utf8"),
   };
 }
@@ -147,6 +151,7 @@ function renderRepeat(
 export interface InstantiatedScene {
   html: string;
   css: string;
+  cssDesktop: string | null;
   timeline: string;
   manifest: SceneTypeManifest;
 }
@@ -184,5 +189,5 @@ export function instantiateScene(args: {
       html = html.replaceAll(`__${tokenize(name)}__`, value);
     }
   }
-  return { html, css: resolved.styles, timeline: resolved.timeline, manifest };
+  return { html, css: resolved.styles, cssDesktop: resolved.stylesDesktop, timeline: resolved.timeline, manifest };
 }

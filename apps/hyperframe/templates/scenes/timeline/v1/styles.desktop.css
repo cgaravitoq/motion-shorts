@@ -1,0 +1,11 @@
+/* timeline desktop-1080p (16:9) overrides — appended AFTER styles.css. Axis flip: vertical rail -> horizontal rail, events stack left-to-right as equal columns (dot on top, body below). */
+.tln-list { flex-direction: row; align-items: start; gap: 40px; padding-top: 14px; }
+.tln-list[data-count="5"] { gap: 32px; }
+.tln-list[data-count="6"] { gap: 26px; }
+.tln-rail { left: 14px; right: 14px; top: 35px; bottom: auto; width: auto; height: 4px; background: linear-gradient(90deg, var(--source-accent), var(--source-accent-2)); transform-origin: 0% 50%; }
+.tln-event { flex: 1 1 0; min-width: 0; grid-template-columns: none; grid-template-rows: 46px 1fr; justify-items: center; align-items: start; column-gap: 0; row-gap: 24px; }
+.tln-event__body { width: 100%; padding: 22px 26px; }
+.tln-event__marker { font-size: 24px; }
+.tln-event__text { margin: 10px 0 0; font-size: 25px; }
+.tln-list[data-count="5"] .tln-event__text,
+.tln-list[data-count="6"] .tln-event__text { font-size: 24px; }

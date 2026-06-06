@@ -1,0 +1,11 @@
+/* decision-tree desktop-1080p (16:9) overrides — appended after styles.css */
+.dt-tree { width: 1500px; height: 640px; }
+
+.dt-node--root { left: 750px; width: 720px; min-height: 170px; }
+
+.dt-branch { top: 370px; width: 360px; }
+.dt-tree[data-count="2"] .dt-branch { width: 460px; }
+
+.dt-branch__badge { top: -74px; }
+
+.dt-node--result { min-height: 200px; }

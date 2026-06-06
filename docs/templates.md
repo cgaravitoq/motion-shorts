@@ -21,6 +21,8 @@ templates/
     shell.css                   design tokens, background layers, scene
                                 container, shared typography roles, captions,
                                 brand-corner watermark
+    shell.desktop.css           16:9 token overrides, appended only by
+                                `assemble --format=desktop`
     shell.html.tmpl             document skeleton: head, GSAP cdn, bg/audio/
                                 captions tracks, the single paused timeline,
                                 __SLOT__ tokens filled by the assembler
@@ -28,6 +30,8 @@ templates/
     manifest.json               typed slot schema + builder + metadata
     fragment.html               inner DOM with __SLOT__ tokens / repeat blocks
     styles.css                  class-scoped CSS for this type
+    styles.desktop.css          optional 16:9 overrides, appended after
+                                styles.css only in desktop builds
     timeline.js                 build_<x>(tl, t, s, p) entrance choreography
     sample.json                 example params (used by scene:gallery)
 ```
@@ -132,6 +136,7 @@ Rules:
 - **No `repeat: -1`, `Math.random`, `Date.now`, or async.** Determinism is enforced by lint.
 - If an element animates **to** visible or needs a hidden initial state (drawing connectors, blurred-in text), **hide it at literal time `0` first** with `tl.set(s(...), {...}, 0)` so it materialises correctly at any seek position. See `flow/v1/timeline.js` (connectors) and `outro/v1/timeline.js` (text + watermark fade) for the pattern.
 - The assembler already reveals/hides the `<section>` via the generic crossfade. Your builder only animates the scene's **own content**.
+- **Format branching**: when the 16:9 desktop layout needs a different draw axis or geometry (e.g. a connector drawing `scaleX` instead of `scaleY`), branch on the stage attribute as the first statement of the builder: `const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";`. The portrait branch must keep today's exact values; CSS-only differences belong in `styles.desktop.css`, not the builder.
 
 ## Token rules (fragment.html → params)
 
@@ -166,7 +171,9 @@ Create `templates/scenes/<type>/v1/` with these five files:
 4. **`timeline.js`** — the `build_<x>(tl, t, s, p)` function matching `manifest.builder`. Follow the builder contract above. `title-cards/v1/timeline.js` is the canonical reference (it documents the contract inline).
 5. **`sample.json`** — example params with every slot filled (repeat slots near their max), so `scene:gallery` can exercise the type.
 
-The assembler auto-discovers the type (no registration needed). After adding it, add it to a `scene-spec.json` and run `scene:check` + `assemble` + `scene:gallery` to verify it renders and stays within frame.
+Optionally add **`styles.desktop.css`** with the type's 16:9 overrides — the assembler appends it after `styles.css` only when assembling with `--format=desktop` (no `[data-format]` gating needed; reuse the base selectors at equal-or-higher specificity to override them). All 17 shipped types carry one.
+
+The assembler auto-discovers the type (no registration needed). After adding it, add it to a `scene-spec.json` and run `scene:check` + `assemble` + `scene:gallery` to verify it renders and stays within frame — and `scene-qa --format=desktop` if you shipped a desktop layout.
 
 ## Commands (CWD = `apps/hyperframe`)
 
@@ -174,8 +181,10 @@ The assembler auto-discovers the type (no registration needed). After adding it,
 bun run new:episode <slug> [--intent=informative|data|workflow|social|brand|vfx]
 # scaffold a starter scene-spec.json (seeded from the intent skeleton) + assemble index.html
 
-bun run assemble <slug>
-# regenerate index.html from scene-spec.json — run after EVERY spec edit
+bun run assemble <slug> [--format=desktop]
+# regenerate index.html (9:16) from scene-spec.json — run after EVERY spec edit
+# --format=desktop writes index.desktop.html (16:9) instead; each invocation
+# generates ONE format and never touches the other file
 
 bun run scene:check [<spec>...]
 # validate scene-spec(s) against scene-type manifests (no assembly)

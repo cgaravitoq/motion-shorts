@@ -11,13 +11,14 @@
 // tweens strokeDashoffset len -> 0 (seek-safe). No pathLength, no getTotalLength,
 // no randomness, no time APIs.
 function build_lineChart(tl, t, s, p) {
+  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const SVGNS = "http://www.w3.org/2000/svg";
   const VB_W = 1000;
-  const VB_H = 620;
+  const VB_H = isDesktop ? 480 : 620;
   const PAD_L = 96;
   const PAD_R = 36;
-  const PAD_T = 30;
-  const PAD_B = 84;
+  const PAD_T = isDesktop ? 26 : 30;
+  const PAD_B = isDesktop ? 72 : 84;
   const plotX0 = PAD_L;
   const plotX1 = VB_W - PAD_R;
   const plotY0 = PAD_T;
@@ -62,6 +63,11 @@ function build_lineChart(tl, t, s, p) {
   const seriesGroup = document.querySelector(s(".lc-series"));
   const dotGroup = document.querySelector(s(".lc-dots"));
   if (!gridGroup || !seriesGroup) return;
+
+  if (isDesktop) {
+    const svg = document.querySelector(s(".lc-svg"));
+    if (svg) svg.setAttribute("viewBox", `0 0 ${VB_W} ${VB_H}`);
+  }
 
   const tickStep = niceTick(yMax / 4);
   const fmtTick = (n) => {

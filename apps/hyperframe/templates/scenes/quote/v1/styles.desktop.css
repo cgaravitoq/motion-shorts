@@ -1,0 +1,6 @@
+/* quote desktop-1080p (16:9) — appended AFTER styles.css in desktop builds only */
+.qt-mark { margin: 0 0 -42px -8px; font-size: 190px; }
+.qt-quote { max-width: 1150px; font-size: 88px; }
+.qt-attribution { margin-top: 48px; }
+.qt-attribution__name { font-size: 42px; }
+.qt-attribution__role { font-size: 28px; }

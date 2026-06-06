@@ -1,0 +1,10 @@
+/* social-card desktop-1080p (16:9) overrides — appended AFTER styles.css */
+.soc-title { font-size: 56px; }
+.soc-card { max-width: 780px; margin: 0 auto; padding: 48px 48px 44px; }
+.soc-card__avatar { width: 88px; height: 88px; font-size: 38px; }
+.soc-card__name { font-size: 36px; }
+.soc-card__handle { font-size: 26px; }
+.soc-card__body { margin: 34px 0 0; font-size: 36px; }
+.soc-card__engagement { margin: 40px 0 0; gap: 56px; }
+.soc-card__stat { font-size: 28px; }
+.soc-card__stat-icon { font-size: 30px; }

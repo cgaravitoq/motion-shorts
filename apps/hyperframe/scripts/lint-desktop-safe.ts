@@ -311,7 +311,8 @@ function isExemptActionSafe(element: TrackedElement): boolean {
   const classes = classList(element.attrs);
   return (
     id === "brand-corner" ||
-    classes.some((name) => /^(bg-mesh|bg-grid|vignette|scene)$/i.test(name))
+    id === "captions" ||
+    classes.some((name) => /^(bg-[a-z-]+|hf-grain-overlay|vignette|scene)$/i.test(name))
   );
 }
 

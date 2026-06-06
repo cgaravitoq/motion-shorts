@@ -1,0 +1,7 @@
+/* metric desktop-1080p (16:9) overrides — appended AFTER styles.css in desktop builds. */
+.mt-grid[data-count="3"] { grid-template-columns: 1fr 1fr 1fr; }
+.mt-grid[data-count="4"] { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.mt-card { min-height: 150px; }
+.mt-card__value { font-size: 72px; }
+.mt-grid[data-count="3"] .mt-card__value, .mt-grid[data-count="4"] .mt-card__value { font-size: 60px; }
+.mt-grid[data-count="1"] .mt-card__value { font-size: 120px; }

@@ -10,11 +10,13 @@
 // it draws via strokeDashoffset len->0 (the seek-safe primitive, like progress-ring).
 // Result columns + the root are placed synchronously up front (deterministic setup).
 function build_decisionTree(tl, t, s, p) {
-  const W = 912;
+  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
+  const W = isDesktop ? 1500 : 912;
+  const H = isDesktop ? 640 : 760;
   const ROOT_X = W / 2;
-  const TRUNK_TOP = 196;
-  const ELBOW_Y = 320;
-  const CHILD_TOP = 420;
+  const TRUNK_TOP = isDesktop ? 170 : 196;
+  const ELBOW_Y = isDesktop ? 290 : 320;
+  const CHILD_TOP = isDesktop ? 370 : 420;
   const branches = Array.isArray(p && p.branches) ? p.branches : [];
   const n = branches.length;
 
@@ -22,6 +24,10 @@ function build_decisionTree(tl, t, s, p) {
   const childXs = fractions.map((f) => Math.round(f * W));
 
   const wireGroup = document.querySelector(s(".dt-wires__paths"));
+  if (isDesktop) {
+    const svg = document.querySelector(s(".dt-wires"));
+    if (svg) svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  }
   const nodes = gsap.utils.toArray(s(".dt-branch"));
   const lengths = [];
   childXs.forEach((cx, i) => {

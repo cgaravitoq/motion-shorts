@@ -1,0 +1,5 @@
+/* line-chart desktop-1080p (16:9) overrides — appended after styles.css */
+.lc-figure { margin: var(--title-block-gap) 0 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 28px; }
+.lc-svg { display: block; width: auto; max-width: 100%; height: auto; max-height: 400px; overflow: visible; }
+.lc-ylabels text { fill: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 30px; font-weight: 560; text-anchor: end; dominant-baseline: middle; }
+.lc-xlabels text { fill: var(--muted); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 30px; font-weight: 560; text-anchor: middle; dominant-baseline: hanging; }
