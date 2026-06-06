@@ -38,7 +38,7 @@
   justify-self: center;
   align-self: center;
   width: 100%;
-  max-width: var(--surface);
+  max-width: 1240px;
   margin: var(--title-block-gap) auto 0;
   padding: 32px 48px;
   display: grid;

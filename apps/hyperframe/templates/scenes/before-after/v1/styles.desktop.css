@@ -38,10 +38,9 @@
   justify-self: center;
   align-self: center;
   margin-top: var(--title-block-gap);
-  width: 100%;
-  max-width: var(--surface);
-  height: 470px;
-  aspect-ratio: auto;
+  width: min(920px, 100%);
+  aspect-ratio: 16 / 9;
+  height: auto;
   border-radius: 28px;
 }
 

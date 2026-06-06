@@ -67,10 +67,11 @@
 }
 
 /* Horizontal spine: first-badge-center to last-badge-center, badge-center height.
-   left/right:50px == badge half-width (100/2); top:50px == badge vertical center. */
+   left:50px == badge half-width (100/2); the right end must stop at the LAST
+   badge's center, which sits at the start of the last 1fr slot: right =
+   slotWidth - 50px where slotWidth = (100% - (N-1)*gap)/N. Per-count below. */
 #ep-stage[data-format="desktop-1080p"] .fl-spine {
   left: 50px;
-  right: 50px;
   top: calc(24px + 50px);
   bottom: auto;
   width: auto;
@@ -79,6 +80,11 @@
   background: linear-gradient(90deg, color-mix(in srgb, var(--source-accent) 70%, transparent), var(--source-accent));
   transform-origin: 0% 50%;
 }
+#ep-stage[data-format="desktop-1080p"] .fl-rail[data-count="2"] .fl-spine { right: calc((100% - var(--fl-gap)) / 2 - 50px); }
+#ep-stage[data-format="desktop-1080p"] .fl-rail[data-count="3"] .fl-spine { right: calc((100% - 2 * var(--fl-gap)) / 3 - 50px); }
+#ep-stage[data-format="desktop-1080p"] .fl-rail[data-count="4"] .fl-spine { right: calc((100% - 3 * var(--fl-gap)) / 4 - 50px); }
+#ep-stage[data-format="desktop-1080p"] .fl-rail[data-count="5"] .fl-spine { right: calc((100% - 4 * var(--fl-gap)) / 5 - 50px); }
+#ep-stage[data-format="desktop-1080p"] .fl-rail[data-count="6"] .fl-spine { right: calc((100% - 5 * var(--fl-gap)) / 6 - 50px); }
 
 #ep-stage[data-format="desktop-1080p"] .fl-step__badge {
   width: 100px;

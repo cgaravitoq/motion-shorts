@@ -37,7 +37,7 @@
   justify-self: center;
   align-self: stretch;
   width: 100%;
-  max-width: 1536px;
+  max-width: 1180px;
   min-height: clamp(420px, calc(710px - 200px), 560px);
   margin-top: var(--title-block-gap);
   margin-inline: auto;
