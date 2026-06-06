@@ -60,20 +60,20 @@ TTS_PROVIDER=inworld bun run audio examples/<sample>.txt --out=out/audio-inworld
 
 ## Pause injection
 
-Scripts run through `injectPauses()` (`packages/audio/src/script-pacing.ts`) BEFORE hitting the API:
+Scripts run through `injectPauses()` (`packages/audio/src/script-pacing.ts`) BEFORE hitting the API — **v2/v2.5 only**. On `eleven_v3` (the production default) injection NEVER runs and `--pause-*` flags are ignored with a warning: v3 pause tags produce unpredictable multi-second gaps.
 
 | Punctuation | Generated pause control |
 |---|---|
-| `.!?` | `eleven_v3`: no auto-injection unless `--pause-*` is explicit; v2: `<break time="0.4s" />` |
-| `:;--` | `eleven_v3`: no auto-injection unless `--pause-*` is explicit; v2: `<break time="0.25s" />` |
+| `.!?` | `eleven_v3`: never; v2: `<break time="0.4s" />` |
+| `:;--` | `eleven_v3`: never; v2: `<break time="0.25s" />` |
 
-Override per call:
+Override per call (v2/v2.5 only):
 - `--pause-sentence=<ms>` (default 400, cap 3000)
 - `--pause-clause=<ms>` (default 250, cap 3000)
-- `--no-pause-injection` -- skip when script already has hand-authored pause tags
+- `--no-pause-injection` -- skip injection entirely
 
 Density ceiling: ~1 pause/audio tag per 8-10 words. More destabilizes generation (hallucinations).
-For v3, prefer hand-authored tags in the script over automatic pause injection.
+For v3, hand-author at most 1-2 expressive tags in the script (`[excited]`, `[thoughtful]`, `[short pause]`).
 
 ## STT quality check (mandatory)
 

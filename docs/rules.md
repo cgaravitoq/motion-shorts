@@ -131,7 +131,7 @@ Run from `apps/hyperframe/` cwd:
 - `bun run scene:gallery` — generate the gallery episode exercising every scene-type.
 - `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]` — per-scene visual QA: snapshots key frames per scene + `hyperframes inspect` for overflow/overlap. Writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. No full mp4. `--scenes` re-checks only changed scenes.
 - `bun run render:episode <slug> --format=mp4 [--keep-local]` — final full render (after per-scene approval).
-- `bun run audio examples/<slug>.txt --lang=es --speed=1.0 --pause-sentence=300 --pause-clause=0 --out=public/voice/<slug>` — TTS + captions.
+- `bun run audio examples/<slug>.txt --lang=es --speed=1.0 --no-pause-injection --out=public/voice/<slug>` — TTS + captions.
 
 Render variants:
 
@@ -197,8 +197,7 @@ See `docs/voice-config.md` for full voice configuration.
 
 ## 24. Script-side pause injection
 
-`@cgaravitoq/audio` injects model-safe pause tags after `.!?` and `:;--`: Eleven v3 gets `[short pause]` / `[long pause]` only when pause flags are explicit; v2/v2.5 gets SSML `<break />`.
-Skip via `--no-pause-injection`. Override `--pause-sentence=<ms>` and `--pause-clause=<ms>`.
+Pause injection is **v2/v2.5-only** (SSML `<break />` after `.!?` and `:;--`, via `--pause-sentence=<ms>` / `--pause-clause=<ms>`). On `eleven_v3` — the production default — injection never runs and `--pause-*` flags are ignored with a warning: v3 pause tags produce unpredictable multi-second gaps. Hand-author at most 1-2 expressive tags in the script instead (`[excited]`, `[thoughtful]`, `[short pause]`).
 
 ## 25. Captions shape
 

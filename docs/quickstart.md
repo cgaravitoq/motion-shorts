@@ -59,7 +59,7 @@ bun run dev src/episodes/short-09                    # opens a specific episode
 
 # Audio + captions end-to-end (default: ES preset + Scribe STT)
 bun run audio examples/short-09.txt --lang=es \
-  --speed=1.0 --pause-sentence=300 --pause-clause=0 \
+  --speed=1.0 --no-pause-injection \
   --out=public/voice/short-09
 
 # Force offline STT (whisper.cpp via npx hyperframes transcribe)
@@ -173,7 +173,7 @@ echo "Your voiceover script." > examples/my-short.txt
 
 # 5. Generate voice + captions, then listen BEFORE approving visuals
 bun run audio examples/my-short.txt --lang=es \
-  --speed=1.0 --pause-sentence=300 --pause-clause=0 \
+  --speed=1.0 --no-pause-injection \
   --out=public/voice/my-short
 
 # 6. Per-scene visual QA (iterate: edit spec, assemble, re-check changed scenes)

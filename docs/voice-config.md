@@ -34,7 +34,7 @@ bun run audio examples/<slug>.txt --lang=es \
 
 - `model=eleven_v3` — expressive default for production shorts; use `--model=eleven_multilingual_v2` only for fallback/regression tests.
 - `speed=1.04` — natural but a little tighter for 30-45s technical shorts.
-- Do not auto-inject pauses on v3 by default. Hand-author one or two expressive tags where they matter.
+- Pause injection NEVER runs on v3 — `generate-audio` ignores `--pause-*` flags with a warning (incident 2026-06-06: auto-injected `[short pause]` tags inflated a 64s short by several seconds of dead air). Hand-author one or two expressive tags where they matter.
 - For v2 fallback only: add `--pause-sentence=300 --pause-clause=0`.
 
 ## Voice tuning preset
@@ -50,12 +50,11 @@ ElevenLabs rejects extreme `speed` values; keep production Spanish narration in 
 
 ## Script-side pause injection
 
-`@cgaravitoq/audio` injects model-safe pauses before calling the API:
+`@cgaravitoq/audio` injects model-safe pauses before calling the API — **v2/v2.5 only**:
 
 | Model | Trigger | Generated tag |
 |-------|---------|---------------|
-| `eleven_v3` | `.!?` | `[short pause]` or `[long pause]` only when `--pause-*` is explicit |
-| `eleven_v3` | `:;--` | same, usually disabled via `--pause-clause=0` |
+| `eleven_v3` | — | never injects; `--pause-*` flags are ignored with a warning |
 | v2 / v2.5 | `.!?` | `<break time="0.4s" />` |
 | v2 / v2.5 | `:;--` | `<break time="0.25s" />` |
 
