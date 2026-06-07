@@ -36,7 +36,7 @@ All work happens in-process:
 
 - lint calls `@hyperframes/core`.
 - audio calls `@cgaravitoq/audio` and writes `voice.mp3` plus `captions.json`.
-- scene-hub tools call the engine in `apps/hyperframe/scripts/lib` (instantiator / assembler / spec validator / router); `scene_qa` shells out to `apps/hyperframe/scripts/scene-qa.mjs`.
+- scene-hub tools call the engine in `apps/hyperframe/scripts/lib` (instantiator / assembler / spec validator / router); `scene_qa` shells out to `apps/hyperframe/scripts/scene-qa.ts`.
 - render materialises a temporary project, calls `@hyperframes/producer`, writes the output video, and removes the temporary project.
 
 Outputs go to `MCP_OUTPUT_DIR`, defaulting to `~/.motion-shorts/out`.
@@ -94,7 +94,7 @@ bun run mcp:inspector
 
 Verify the tools and resources appear, then call:
 
-1. `list_scene_types` and expect the 17 scene-types (hook, title-cards, flow, fanout, metric, bars, big-stat, comparison, timeline, quote, code, social-card, progress-ring, line-chart, contrib-heatmap, decision-tree, outro) with slot summaries.
+1. `list_scene_types` and expect the 24 scene-types (hook, title-cards, flow, outro, … through the desktop-first types) with slot summaries.
 2. `validate_scene_spec` with a small spec and expect `{ ok: true }`; `assemble_episode` with the same spec and expect `html`.
 3. `render_composition` with a tiny composition and expect a local `outputPath`.
 

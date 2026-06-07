@@ -20,7 +20,7 @@ The local motion-shorts MCP exposes the scene-hub pipeline plus lint, audio, and
 
 | Tool | Purpose |
 |------|---------|
-| `list_scene_types` | List the 17 scene-types (hook, title-cards, flow, fanout, metric, bars, big-stat, comparison, timeline, quote, code, social-card, progress-ring, line-chart, contrib-heatmap, decision-tree, outro) with their slot ranges. |
+| `list_scene_types` | List the 24 scene-types (read dynamically from `templates/scenes/`, including the desktop-first types) with their slot ranges. See `bun run scene:gallery` for the full preview. |
 | `get_scene_type` | Fetch one scene-type's manifest (slots, ranges, sample spec). |
 | `recommend_scene_types` | Given an intent (`informative`, `data`, `workflow`, `social`, `brand`, `vfx`), suggest scene-types to compose the short. |
 | `validate_scene_spec` | Validate a `scene-spec.json` against the scene-type manifests (mirrors `bun run scene:check`). |

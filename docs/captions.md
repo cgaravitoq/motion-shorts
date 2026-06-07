@@ -35,7 +35,7 @@ The sidecars carry the same word-level timing as `captions.json` but in standard
 
 `apps/hyperframe/src/episodes/demo-explainer-blocks/assets/` ships:
 
-- `voice.mp3` — Inworld TTS (in R2 via `assets.remote.json`; `bun run hydrate:episode demo-explainer-blocks --manifest=assets` to fetch).
+- `voice.mp3` — ElevenLabs TTS (in R2 via `assets.remote.json`; `bun run hydrate:episode demo-explainer-blocks --manifest=assets` to fetch).
 - `captions.json` — word-level (Hyperframes runtime burn-in).
 - `captions.srt` — sidecar for YouTube / LinkedIn.
 - `captions.vtt` — sidecar for Vimeo / web players.

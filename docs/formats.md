@@ -30,6 +30,8 @@ bun run render:episode <slug> --format=mov   # ProRes 4444 + alpha
 bun run render:episode <slug> --format=webm  # VP9 + alpha
 ```
 
+**Transparent output.** Verified by ffprobe on draft renders (1920×1080, 30 fps): only `mov` actually preserves alpha through the repo's render path — it produces an alpha-capable `pix_fmt=yuva444p12le`. `webm` does **not** preserve alpha here (it falls back to `pix_fmt=yuv420p`), despite the `--format=webm` "VP9 + alpha" label. Use `mov` for any transparent render.
+
 Opt into 60 fps with `--fps=60`. The render wrapper forwards the frame rate to Hyperframes and stamps `data-fps="60"` onto the working-copy stage. The 30 fps target bitrate scales 1.5× at 60 fps.
 
 | Variant         | 30 fps bitrate | 60 fps bitrate |
@@ -87,7 +89,7 @@ The shell (`templates/_shell/shell.css`) reserves the bottom strip for captions 
 
 ## Safe zones — 16:9 desktop
 
-`_shell/shell.desktop.css` swaps the safe-band tokens for landscape: `--safe-top: 180px`, `--safe-bottom: 220px`, `--safe-x: 192px`, `--title-block-gap: 44px` — a ~1536 × 680 px usable band. The caption band keeps its `bottom: 4.5% / height: 12%` geometry (≈49–179 px from the bottom at 1080 tall) with the karaoke font recomputed to 48px. `lint:desktop-safe` additionally enforces YouTube's dead zones: the bottom 120 px end-screen bar and the bottom-right 160×160 px CTA slot must stay clear of `data-critical` content, and title-safe insets are 192 px L/R, 108 px T/B.
+`_shell/shell.desktop.css` swaps the safe-band tokens for landscape: `--safe-top: 140px`, `--safe-bottom: 230px`, `--safe-x: 120px`, `--title-block-gap: 40px` — a ~1536 × 710 px usable band. The caption band drops the percentage geometry and is pinned in absolute px (`#captions { bottom: 60px; height: 130px }`, spanning 60–190 px from the bottom, clearing the ~90 px YouTube player control bar) with the karaoke font recomputed to 48px. `lint:desktop-safe` additionally enforces YouTube's dead zones: the bottom 120 px end-screen bar and the bottom-right 160×160 px CTA slot must stay clear of `data-critical` content, and title-safe insets are 192 px L/R, 108 px T/B.
 
 ## Lint
 
@@ -99,6 +101,6 @@ bun run lint:desktop-safe                      # scan every src/episodes/*/index
 bun run lint:desktop-safe src/episodes/<slug>  # scan one desktop variant
 ```
 
-`lint:seek-safe` enforces AGENTS.md rule 7 (docs/rules.md rule 21): the timeline must be `paused: true` and registered in `window.__timelines["<id>"]`, and discrete transitions must use `tl.set(...)` — tween callbacks (`onStart` / `onComplete` / `onRepeat`) and `tl.call()` do not fire during frame-by-frame seek. It also flags `repeat: -1` (non-deterministic) and other determinism hazards.
+`lint:seek-safe` enforces AGENTS.md rule 7 (docs/rules.md rule 7): the timeline must be `paused: true` and registered in `window.__timelines["<id>"]`, and discrete transitions must use `tl.set(...)` — tween callbacks (`onStart` / `onComplete` / `onRepeat`) and `tl.call()` do not fire during frame-by-frame seek. It also flags `repeat: -1` (non-deterministic) and other determinism hazards.
 
 Validate the spec before assembling, and per-scene QA after, with `bun run scene:check` and `bun run scripts/scene-qa.ts <slug>` (see AGENTS.md). The desktop variant gets its own per-scene pass: `bun run scripts/scene-qa.ts <slug> --format=desktop` snapshots at 1920×1080 into `renders/<slug>-desktop-qa/`.

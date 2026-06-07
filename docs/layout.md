@@ -31,8 +31,11 @@ motion-shorts/                 (monorepo root)
 │       │   │   ├── shell.css          Tokens, background layers, brand-corner watermark styles.
 │       │   │   └── shell.html.tmpl    Shell template: bg layers, brand corner, single paused GSAP timeline +
 │       │   │                          crossfades, captions/audio, track allocation, registry.
-│       │   └── scenes/<type>/v1/      One dir per scene-type (hook, title-cards, flow, metric, big-stat,
-│       │       │                      comparison, timeline, quote, code, social-card, outro).
+│       │   └── scenes/<type>/v1/      One dir per scene-type (24 total: hook, title-cards, flow, fanout,
+│       │       │                      metric, bars, big-stat, comparison, timeline, quote, code, social-card,
+│       │       │                      progress-ring, line-chart, contrib-heatmap, decision-tree, media-split,
+│       │       │                      annotated-asset, code-output, dashboard-composite, statement-lower-third,
+│       │       │                      logo-grid, before-after, outro).
 │       │       ├── manifest.json      Scene-type contract: slots, ranges, required fields.
 │       │       ├── fragment.html      HTML fragment for the scene.
 │       │       ├── styles.css         Scene-scoped CSS.
@@ -55,24 +58,34 @@ motion-shorts/                 (monorepo root)
 │       │   └── dev.ts                `bun run dev [dir]`: hyperframes preview wrapper.
 │       ├── examples/                Script .txt files (input to `bun run audio`).
 │       ├── public/voice/<slug>/     Canonical per-episode audio assets (mp3 + captions.json). Gitignored.
-│       ├── samples/                 Voice library samples for picking presets. Gitignored.
 │       ├── out/                     Auxiliary CLI working copies. Gitignored.
 │       ├── renders/                 Local render cache (`--keep-local`) + `<slug>-qa/` scene-QA output. Gitignored.
-│       ├── docs/specs/              App-specific spec drafts.
 │       ├── hyperframes.json         `paths.episodes: "src/episodes"` — relative to app cwd.
 │       ├── package.json             @cgaravitoq/hyperframe (private, dep: @cgaravitoq/audio).
 │       └── tsconfig.json            extends ../../tsconfig.json.
 │   └── mcp/                       Local stdio MCP server; tools call repo packages directly.
 ├── packages/
-│   ├── audio/                       TTS + STT + ffprobe + script pacing (@cgaravitoq/audio).
+│   ├── audio/                       TTS + STT + ffprobe + script pacing + BGM (@cgaravitoq/audio).
 │   │   ├── src/
 │   │   │   ├── index.ts             Public exports (in-source, no compile step).
-│   │   │   ├── elevenlabs.ts, factory.ts, types.ts                TTS.
+│   │   │   ├── elevenlabs.ts, inworld.ts, factory.ts, types.ts    TTS providers + factory.
+│   │   │   ├── multi-speaker.ts     Multi-speaker dialogue synthesis.
 │   │   │   ├── stt-elevenlabs-scribe.ts, stt-factory.ts, stt-types.ts, stt-hyperframes-transcribe.ts  STT.
+│   │   │   ├── captions-export.ts   Caption serialization.
+│   │   │   ├── bgm-mixer.ts, bgm-resolver.ts                       Background-music mixing.
 │   │   │   ├── ffprobe.ts           getAudioDurationSeconds().
 │   │   │   ├── script-pacing.ts     Model-safe pause injection.
+│   │   │   ├── cache.ts, env.ts     TTS cache; env reads (no process.env outside env.ts).
 │   │   │   └── __tests__/           vitest specs.
 │   │   ├── package.json             @cgaravitoq/audio (private, in-source: main/types/exports -> ./src/index.ts).
+│   │   └── tsconfig.json            extends ../../tsconfig.json.
+│   ├── spec/                        Effect-Schema scene-spec + manifests, the engine's single source of truth (@cgaravitoq/spec).
+│   │   ├── src/                     scene-spec, manifest, remote-manifest, publish-ledger, errors (+ vitest specs).
+│   │   ├── package.json             @cgaravitoq/spec (private).
+│   │   └── tsconfig.json            extends ../../tsconfig.json.
+│   ├── publish/                     Platform publishing client: YouTube / TikTok / Instagram (@cgaravitoq/publish).
+│   │   ├── src/                     youtube, tiktok, instagram, presign, secrets, ledger (+ __tests__).
+│   │   ├── package.json             @cgaravitoq/publish (private).
 │   │   └── tsconfig.json            extends ../../tsconfig.json.
 │   └── r2-client/                   R2 upload/hydration client (@cgaravitoq/r2-client).
 │       ├── src/
@@ -83,8 +96,7 @@ motion-shorts/                 (monorepo root)
 │       │   └── __tests__/           vitest specs.
 │       ├── package.json             @cgaravitoq/r2-client (private).
 │       └── tsconfig.json            extends ../../tsconfig.json.
-├── docs/                            Cross-cutting documentation (rules, layout, decisions).
-│   └── decisions/                   Historical design decisions (one file per decision).
+├── docs/                            Cross-cutting documentation (rules, layout, formats, publishing) + research/.
 ├── .agents/skills/                  Canonical skill source (audio-pipeline, canonical-short, new-episode, produce-from-source).
 ├── .claude/skills/                  Symlinks -> .agents/skills/<name>.
 ├── .codex/skills/                   Symlinks -> .agents/skills/<name>.
@@ -98,10 +110,9 @@ motion-shorts/                 (monorepo root)
 └── bun.lock                         Single lockfile.
 ```
 
-> **Monolithic single-file, generated.** Production shorts use ZERO `data-composition-src`.
-> The runtime force-applies `position: absolute; top:0; left:0; 100%x100%` on tracked stage
-> children, which collapses any sub-comp internal flex layout. The assembler always emits one
-> flat `index.html` per episode; `scene-spec.json` is the only thing you edit.
+> **Monolithic single-file, generated.** The assembler always emits one flat `index.html` per
+> episode (zero `data-composition-src`); `scene-spec.json` is the only thing you edit.
+> See `AGENTS.md` constraint #1 for the runtime force-apply rationale.
 
 ## Scene-hub model
 
@@ -110,13 +121,16 @@ motion-shorts/                 (monorepo root)
 | Episode source of truth | `apps/hyperframe/src/episodes/<slug>/scene-spec.json` |
 | Generated render input | `apps/hyperframe/src/episodes/<slug>/index.html` (never hand-edit) |
 | Universal shell | `apps/hyperframe/templates/_shell/{shell.css,shell.html.tmpl}` |
-| Scene-type building blocks (17) | `apps/hyperframe/templates/scenes/<type>/v1/` |
+| Scene-type building blocks (24) | `apps/hyperframe/templates/scenes/<type>/v1/` |
 | Assembler engine | `apps/hyperframe/scripts/lib/{scene-instantiator,assemble-episode,scene-spec,scene-router}.ts` |
 
-Scene-types (the only building blocks): `hook`, `title-cards`, `flow`, `metric`, `big-stat`,
-`comparison`, `timeline`, `quote`, `code`, `social-card`, `outro`. Repeatable slots carry ranges
-(e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5,
-`timeline.events` 3-6, `code.lines` 1-12). `outro` is the pinned brand sign-off — always last, fixed track 7.
+Scene-types (the only building blocks): `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`,
+`big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`,
+`contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`,
+`dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`. Repeatable slots
+carry ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4,
+`comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12). `outro` is the pinned
+brand sign-off — always last, fixed track 7.
 
 ## Key paths summary
 

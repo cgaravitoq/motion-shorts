@@ -44,6 +44,11 @@ bun run new:episode short-09 --intent=workflow      # seed from an intent skelet
 # Regenerate index.html from scene-spec.json (run after every spec edit)
 bun run assemble short-09
 
+# Optional 16:9 desktop variant: assemble index.desktop.html, then render it
+# (each assemble generates one format only). See docs/formats.md for details.
+bun run assemble short-09 --format=desktop
+bun run render:episode short-09 --variant=desktop-1080p --format=mp4
+
 # Validate scene-spec(s) against the scene-type manifests (no assembly)
 bun run scene:check                                  # all episodes
 bun run scene:check src/episodes/short-09/scene-spec.json
@@ -70,7 +75,7 @@ STT_PROVIDER=hyperframes-transcribe bun run audio examples/short-09.txt \
 bun run scene:gallery
 
 # Final full render (after per-scene approval).
-# Uses meta.tail (default `tail: 3`) unless --tail overrides.
+# Resolves tail as: --tail flag > meta.json `tail` > 0.3s default.
 bun run render:episode short-09 --format=mp4
 
 # Local HTML dashboard for render telemetry ledger.
@@ -99,7 +104,7 @@ bunx hyperframes lint src/episodes/short-09
 
 ## Scene-hub preflight
 
-Each short is built from 17 scene-types — the only building blocks: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `outro`. `outro` is the pinned brand sign-off and is always last. The scene-hub lives at `apps/hyperframe/templates/`: `_shell/` holds the universal look (tokens, background layers, brand-corner watermark, the single paused GSAP timeline + crossfades, captions/audio, track allocation, registry), and `scenes/<type>/v1/` holds each scene-type's `manifest.json`, `fragment.html`, `styles.css`, `timeline.js`, and `sample.json`.
+Each short is built from 24 scene-types — the only building blocks: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`. `outro` is the pinned brand sign-off and is always last. The scene-hub lives at `apps/hyperframe/templates/`: `_shell/` holds the universal look (tokens, background layers, brand-corner watermark, the single paused GSAP timeline + crossfades, captions/audio, track allocation, registry), and `scenes/<type>/v1/` holds each scene-type's `manifest.json`, `fragment.html`, `styles.css`, `timeline.js`, and `sample.json`.
 
 Repeatable slots have ranges: `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12. Validate any spec with `bun run scene:check` before assembling. Remote agents can call MCP `list_scene_types`, `get_scene_type`, and `recommend_scene_types(intent)` for the same lookup.
 
@@ -130,8 +135,8 @@ The command writes `apps/hyperframe/src/episodes/<slug>/assets/source.json` plus
 
 | Target | Command | Notes |
 |--------|---------|-------|
-| YouTube (h264) | `bun run render:episode <slug> --format=mp4 --crf=18` | yuv420p |
-| LinkedIn (square) | `bun run render:episode <slug> --format=mp4` | Stage: `data-width=data-height=1080` |
+| YouTube (9:16) | `bun run render:episode <slug> --format=mp4 --crf=18` | Default, portrait 1080×1920, yuv420p |
+| Desktop (16:9) | `bun run assemble <slug> --format=desktop` then `bun run render:episode <slug> --variant=desktop-1080p --format=mp4` | 1920×1080 landscape — see `docs/formats.md` |
 | Overlay (alpha) | `bunx hyperframes render <dir> --format mov` | ProRes 4444 + alpha |
 | Overlay (web) | `bunx hyperframes render <dir> --format webm` | VP9 alpha |
 

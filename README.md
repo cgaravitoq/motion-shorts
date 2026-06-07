@@ -24,13 +24,19 @@ deterministic assembler turns the spec into one monolithic, paused
 **scene-type hub** under `apps/hyperframe/templates/` — a universal
 `_shell/` (tokens, background layers, brand-corner watermark, the single
 paused GSAP timeline + crossfades, captions/audio, track allocation) plus
-17 typed scene-types in `scenes/<type>/v1/`: `hook`, `title-cards`,
+24 typed scene-types in `scenes/<type>/v1/`: `hook`, `title-cards`,
 `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`,
 `quote`, `code`, `social-card`, `progress-ring`, `line-chart`,
-`contrib-heatmap`, `decision-tree`, and `outro` (the pinned brand sign-off,
-always last).
+`contrib-heatmap`, `decision-tree`, `outro` (the pinned brand sign-off,
+always last), plus seven desktop-first asset-led types — `media-split`,
+`annotated-asset`, `code-output`, `dashboard-composite`,
+`statement-lower-third`, `logo-grid`, and `before-after`.
 Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps`
 2-6, `metric.stats` 1-4, `timeline.events` 3-6, `code.lines` 1-12).
+
+A short renders 9:16 by default; pass `--format=desktop` to also assemble a
+16:9 `index.desktop.html` (rendered with `render:episode --variant=desktop-1080p`),
+where the desktop-first types come into their own.
 
 No React, no JSX, no build step. Render is local, single-machine,
 headless Chrome + ffmpeg, frame-accurate. See
@@ -92,8 +98,9 @@ All commands run from `apps/hyperframe/`:
 # Scaffold a starter scene-spec.json + assemble index.html
 bun run new:episode <slug> [--intent=informative|data|workflow|social|brand|vfx]
 
-# Regenerate index.html from scene-spec.json (after every spec edit)
-bun run assemble <slug>
+# Regenerate index.html from scene-spec.json (after every spec edit).
+# --format=desktop instead writes the 16:9 index.desktop.html.
+bun run assemble <slug> [--format=short|desktop]
 
 # Validate scene-spec(s) against the scene-type manifests (no assembly)
 bun run scene:check [<spec>...]
@@ -104,10 +111,11 @@ bun run scene:gallery
 # Per-scene visual QA: snapshot key frames + inspect overflow/overlap.
 # Writes renders/<slug>-qa/<scene-id>/*.png + report.json (no full mp4).
 # --scenes re-checks only the scenes you changed.
-bun run scripts/scene-qa.mjs <slug> [--scenes=id1,id2]
+bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]
 
-# Final full render (only after per-scene QA approval)
-bun run render:episode <slug> --format=mp4 [--keep-local]
+# Final full render (only after per-scene QA approval).
+# Add --variant=desktop-1080p to render the 16:9 index.desktop.html.
+bun run render:episode <slug> --format=mp4 [--variant=desktop-1080p] [--keep-local]
 
 # TTS + word-level captions
 bun run audio examples/<slug>.txt --lang=es --speed=1.0 \
@@ -123,7 +131,7 @@ cd apps/hyperframe
 bun run render:episode demo-explainer-blocks --format=mp4
 ```
 
-- **With `voice.mp3`** under `assets/`: `render-episode.mjs` ffprobes it, stamps
+- **With `voice.mp3`** under `assets/`: `render-episode.ts` ffprobes it, stamps
   `data-duration` on the stage and the `<audio id="voiceover">` tag, inlines
   `assets/captions.json` for word-level karaoke, and renders with audio.
 - **Without `voice.mp3`** (e.g. on a fresh clone with no ElevenLabs key):
@@ -153,7 +161,7 @@ locally.
 
 ### Working-copy semantics (read once before cleaning anything)
 
-`render-episode.mjs` builds a self-contained working copy under
+`render-episode.ts` builds a self-contained working copy under
 `apps/hyperframe/out/episodes/<slug>/` so the canonical episode under
 `src/episodes/<slug>/` never gets mutated. The working copy has two symlinks:
 
@@ -198,8 +206,8 @@ bun run assemble my-first-short
 
 # 6. Per-scene visual QA: snapshot key frames + inspect overflow/overlap.
 #    Iterate only the scenes you reject (edit spec → assemble → re-check).
-bun run scripts/scene-qa.mjs my-first-short
-# bun run scripts/scene-qa.mjs my-first-short --scenes=hook,flow
+bun run scripts/scene-qa.ts my-first-short
+# bun run scripts/scene-qa.ts my-first-short --scenes=hook,flow
 
 # 7. Final render (uses meta.tail = 3 by default; --tail=<s> overrides)
 bun run render:episode my-first-short --format=mp4
@@ -210,10 +218,9 @@ brand-corner crossfade, color palettes, TTS pronunciation gotchas) is in
 [`.agents/skills/canonical-short/SKILL.md`](./.agents/skills/canonical-short/SKILL.md).
 
 The brand wordmark and tagline default to `cgaravitoq` / `AI Engineering`
-in `scripts/new-episode.mjs` (so the demo episodes render unchanged).
-Override per-clone via the `BRAND_NAME` and `BRAND_TAGLINE` env vars,
-or replace `logo-mark.svg` and the brand text directly in your scaffolded
-episodes.
+in `templates/scenes/outro/v1/fragment.html` (so the demo episodes render
+unchanged). `.env.example` declares matching `BRAND_NAME` / `BRAND_TAGLINE`
+vars; to rebrand, edit the outro fragment text directly.
 
 ## Layout
 
@@ -230,11 +237,16 @@ apps/hyperframe/
                            _shell/        Universal look (tokens, bg layers,
                                           brand-corner, paused GSAP timeline,
                                           captions/audio, track allocation)
-                           scenes/<type>/v1/  17 scene-types: hook, title-cards,
+                           scenes/<type>/v1/  24 scene-types: hook, title-cards,
                                           flow, fanout, metric, bars, big-stat,
                                           comparison, timeline, quote, code,
                                           social-card, progress-ring, line-chart,
                                           contrib-heatmap, decision-tree, outro
+                                          + 7 desktop-first: media-split,
+                                          annotated-asset, code-output,
+                                          dashboard-composite,
+                                          statement-lower-third, logo-grid,
+                                          before-after
   examples/<slug>.txt    Narration scripts (one per episode)
   public/voice/<slug>/   Canonical audio assets (gitignored, regenerable)
   renders/               Local render + scene-qa cache (gitignored)
@@ -243,6 +255,11 @@ apps/hyperframe/
 packages/audio/          @cgaravitoq/audio — ElevenLabs TTS + Scribe STT,
                          ffprobe, script pacing. In-source TS (no compile).
                          Consumed via "workspace:*".
+packages/spec/           @cgaravitoq/spec — Effect-Schema single source of
+                         truth for scene-spec + remote manifests, imported
+                         across the engine.
+packages/publish/        @cgaravitoq/publish — YouTube/TikTok/Instagram
+                         upload clients + token/ledger helpers.
 packages/r2-client/      R2 upload/manifest helper for render + audio artifacts.
 apps/mcp/                Local stdio MCP server: list_scene_types,
                          get_scene_type, recommend_scene_types,

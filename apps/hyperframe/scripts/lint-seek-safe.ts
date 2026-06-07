@@ -2,7 +2,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
-// AGENTS.md rule 7 + docs/rules.md rule 21: Hyperframes seeks the timeline
+// AGENTS.md rule 7 + docs/rules.md rule 7: Hyperframes seeks the timeline
 // frame-by-frame and never plays it. Tween-level callbacks (onStart, onComplete,
 // onRepeat), tl.call(), and any async-callback construction (setTimeout,
 // setInterval, requestAnimationFrame) do not fire during seek. The timeline

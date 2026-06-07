@@ -1,40 +1,37 @@
 # Brand packs (white-label)
 
-`apps/hyperframe/brands/<slug>/brand.json` lets the scaffolder + render pipeline emit shorts in a different visual identity (palette, fonts, handle, voice).
+> **Status: half-shipped.** The render-time contract below is real and working. The authoring side is **not implemented**: `new:episode` has no `--brand` flag and the `apps/hyperframe/brands/` directory does not exist yet. To use a brand pack today you must create `brands/<slug>/brand.json` and set `meta.brand` in the episode's `meta.json` by hand.
 
-Existing demos (`catalog-components-lab/`, `demo-explainer-blocks/`, `demo-explainer-with-logo/`, `demo-social-overlays/`, `source-driven-catalog-demo/`, `source-driven-editorial-demo/`) keep their hardcoded `:root` block intact — brand packs only apply to episodes whose `meta.json` declares `"brand": "<slug>"`.
+A brand pack stamps a per-episode color palette into the render. It applies only to episodes whose `meta.json` declares `"brand": "<slug>"`; existing demos (which keep a hardcoded `:root` block) are unaffected.
 
-```
-apps/hyperframe/brands/
-  default/brand.json   Baseline (mirrors theme.css, publishable=true).
-  <your-brand>/brand.json   Your own white-label pack. Set publishable=false
-                            for partner/customer brands whose guidelines
-                            forbid mixing assets with other handles.
-```
+## The render-time contract
 
-## Brand JSON fields
+On render, `render-episode.ts` reads `meta.brand` and resolves `apps/hyperframe/brands/<slug>/brand.json`. If `meta.brand` is set but that file is missing, the render **fails** with an error. The brand JSON it parses (`BrandPack` interface, `render-episode.ts:211-216`) reads exactly four fields:
 
 | Field | Description |
 |-------|-------------|
-| `palette` | CSS variable map. Keys become `var(--brand-<key>)` at render time. |
-| `handle` | Social handle (e.g., `@your_handle`) |
-| `wordmark` | Brand name text |
-| `fonts` | Font family overrides |
-| `voice.elevenlabsVoiceIdEs` | ElevenLabs voice ID for Spanish |
-| `voice.elevenlabsVoiceIdEn` | ElevenLabs voice ID for English |
-| `publishable` | Legal gate. `false` = CI should block publish. |
-| `notes` | Freeform notes about usage restrictions |
+| `slug` | Brand slug; echoed onto the stamped `<style data-brand="…">`. |
+| `palette` | **Required.** CSS variable map. Each key `k` becomes `--brand-<k>` at render time. |
+| `publishable` | Optional legal gate. `false` logs a publish warning at render. |
+| `notes` | Optional freeform note, appended to the `publishable=false` warning. |
 
-## Workflow
+No other fields are read. The palette is turned into a `:root { --brand-<key>: <value>; … }` block and injected into the `<style id="brand-vars">` placeholder that the universal shell already emits (`templates/_shell/shell.html.tmpl:9`). The stamp lands only in the working copy under `apps/hyperframe/out/episodes/<slug>/index.html`; `src/` stays diff-clean.
+
+When `publishable === false`, `render-episode.ts` (lines 469-472) emits a warning naming the brand and its `notes`. CI consumers should treat that as a publish gate.
+
+## Workflow (manual today)
 
 ```bash
 cd apps/hyperframe
-bun run new:episode <slug> --brand=<your-brand>   # emits meta.brand, var(--brand-*) refs,
-                                                  # and a <style id="brand-vars"> placeholder
-bun run render:episode <slug>                     # reads meta.brand, stamps :root vars
-                                                  # into the working copy under out/
+# 1. Create brands/<your-brand>/brand.json with a "palette" map (and optional
+#    publishable=false + notes for partner brands).
+# 2. Add "brand": "<your-brand>" to src/episodes/<slug>/meta.json.
+# 3. Reference var(--brand-<key>) wherever you want the palette to apply.
+bun run render:episode <slug>   # reads meta.brand, stamps palette into out/…/index.html
 ```
 
-`render-episode.ts` warns when `publishable=false`; CI consumers should treat that as a publish gate. The stamp happens in `apps/hyperframe/out/episodes/<slug>/index.html` only — `src/` stays diff-clean.
+## Not implemented
 
-> Note: `brands/` does not exist yet — it's a planned feature. The first brand pack land creates `apps/hyperframe/brands/default/brand.json`.
+- `bun run new:episode --brand=<slug>` — no `--brand` flag exists; the scaffolder takes only `--intent`, `--width`, `--height`, `--slug`.
+- `brands/` directory and a baseline `brands/default/brand.json` — neither exists on disk.
+- `handle`, `wordmark`, `fonts`, `voice.*` fields — not read by any code.

@@ -85,7 +85,6 @@ For diagrams, choose the frame based on density. Compact charts or small decisio
 | Publish to YouTube/Instagram (`publish:auth`, `publish:episode`) | `docs/publishing.md` |
 | MCP integrations (scene-hub tools + Notion) | `docs/mcp-integrations.md` |
 | Source URL capture | `docs/quickstart.md#source-url-capture` |
-| Past design decisions | `docs/decisions/` |
 | **Build a new short (e2e playbook)** | `.agents/skills/canonical-short/SKILL.md` |
 | Generate audio + captions | `.agents/skills/audio-pipeline/SKILL.md` |
 | Scaffold a new episode | `.agents/skills/new-episode/SKILL.md` |
