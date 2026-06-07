@@ -51,7 +51,7 @@ Options:
 After scaffold:
   1. Edit src/episodes/<slug>/scene-spec.json (fill slots; pick scene-types).
   2. bun run assemble <slug>        # regenerate index.html
-  3. bun run scripts/scene-qa.mjs <slug>   # per-scene snapshot + inspect
+  3. bun run scripts/scene-qa.ts <slug>   # per-scene snapshot + inspect
   4. Drop assets/voice.mp3 + assets/captions.json, then render:episode <slug>.
 `);
   process.exit(values.help ? 0 : 1);
@@ -139,5 +139,5 @@ console.log("  meta.json, hyperframes.json, assets/, lib -> ../../lib");
 console.log("\nNext steps:");
 console.log(`  1. Edit ${path.relative(process.cwd(), path.join(epDir, "scene-spec.json"))} (slots + scene-types)`);
 console.log(`  2. bun run assemble ${slug}`);
-console.log(`  3. bun run scripts/scene-qa.mjs ${slug}   # per-scene review`);
+console.log(`  3. bun run scripts/scene-qa.ts ${slug}   # per-scene review`);
 console.log(`  4. add assets/voice.mp3 + captions.json, then bun run render:episode ${slug}`);

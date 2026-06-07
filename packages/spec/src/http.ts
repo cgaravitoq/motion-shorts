@@ -76,7 +76,7 @@ export const fetchWithRetry = (
   );
 };
 
-/** Promise bridge for the .mjs pipeline scripts; rethrows the original tagged error. */
+/** Promise bridge for the imperative pipeline scripts; rethrows the original tagged error. */
 export const fetchWithRetryPromise = (
   url: string,
   init?: RequestInit,

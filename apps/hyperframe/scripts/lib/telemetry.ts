@@ -1,7 +1,7 @@
 /**
  * Render telemetry — stage timers, asset inventory, NDJSON ledger.
  *
- * Wraps `apps/hyperframe/scripts/render-episode.mjs` boundaries with
+ * Wraps `apps/hyperframe/scripts/render-episode.ts` boundaries with
  * `performance.now()` timers and persists a one-line summary per run to
  * `apps/hyperframe/.metrics/runs.ndjson`. The dashboard surfacing the
  * ledger is intentionally deferred to a follow-up.

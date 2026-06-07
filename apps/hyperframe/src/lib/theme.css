@@ -5,7 +5,7 @@
  * shorts (`src/episodes/short-{01..08}/`) override the palette in their own
  * inline `:root` block — that's intentional, each short owns its visual
  * identity. The tokens here are the safe fallbacks the scaffolder relies on
- * (see `scripts/new-episode.mjs`'s `var(--ink, #060912)` / `var(--paper, ...)`
+ * (see `scripts/new-episode.ts`'s `var(--ink, #060912)` / `var(--paper, ...)`
  * patterns).
  *
  * Hyperframes' deterministic font mapping does NOT resolve CSS vars in

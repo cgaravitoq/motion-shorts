@@ -2,7 +2,7 @@ import { Cause, Effect, Exit, Option } from "effect";
 
 /**
  * Run an Effect as a Promise, rethrowing the ORIGINAL failure instead of a
- * FiberFailure wrapper — the imperative .mjs pipeline and its tests match on
+ * FiberFailure wrapper — the imperative pipeline scripts and their tests match on
  * error messages and instanceof.
  */
 export const runPromiseOrThrow = async <A, E>(effect: Effect.Effect<A, E>): Promise<A> => {
