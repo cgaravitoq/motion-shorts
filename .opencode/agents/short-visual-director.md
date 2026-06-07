@@ -5,9 +5,8 @@ model: anthropic/claude-opus-4-8
 temperature: 0.4
 permission:
   edit:
-    "apps/hyperframe/src/episodes/*/scene-spec.json": allow
-    "apps/hyperframe/src/episodes/*/index.html": allow
     "*": deny
+    "apps/hyperframe/src/episodes/*/scene-spec.json": allow
   bash:
     "*": deny
     "ls *": allow
