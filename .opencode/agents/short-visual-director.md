@@ -15,6 +15,7 @@ permission:
     "rg *": allow
     "cat *": allow
     "sed *": allow
+    "bun run new:episode *": allow
     "bun run scene:gallery*": allow
     "bun run scene:check *": allow
     "bun run assemble *": allow
