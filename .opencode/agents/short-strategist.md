@@ -25,7 +25,7 @@ You turn an idea into a production-ready short direction. Do not write files, ge
 Read the relevant skills before drafting:
 
 - `short-router` for intent classification.
-- `canonical-short` for script length, five-scene structure, and TTS pronunciation rules.
+- `canonical-short` for script length, scene structure, and TTS pronunciation rules.
 
 ## Output
 
@@ -34,15 +34,14 @@ Return exactly three options with different hook types:
 ```md
 ### Draft A -- <Hook Type>
 
-**Script** (~80-100 words ES unless requested otherwise):
+**Script** (~115-135 words ES so narration lands at >=50s, unless requested otherwise):
 <voiceover text>
 
-**5-scene outline:**
+**Scene outline** (hook first, payoff last; typically 5-7 scenes, each scene-type used at most once):
 1. Hook (0-Xs) -- <visual>
-2. Concept (Xs-Ys) -- <visual>
-3. Detail (Ys-Zs) -- <visual>
-4. Adoption (Zs-Ws) -- <visual>
-5. Payoff (Ws-end) -- <visual>
+2. <beat> (Xs-Ys) -- <visual>
+...
+N. Payoff (...-end) -- <visual>
 
 **Intent:** informative | data | workflow | social | brand | vfx
 **Palette proposal:** primary #hex + accent #hex + secondary #hex

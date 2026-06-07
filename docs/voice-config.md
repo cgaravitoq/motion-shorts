@@ -100,7 +100,7 @@ The model applies Castilian phonetics to English tech terms mixed inline in Span
 3. **English compounds with no cognate** (`fine-tuning`, `embeddings`) — leave as-is, but listen for pronunciation before building HTML.
 4. **Numbers** — write in Spanish words: `diez coma seis por ciento` (NOT `10.6%`). Only digits in code/UI mockups.
 
-**Always `afplay public/voice/<slug>/voice.mp3` BEFORE building HTML.** Script-edit cost << re-render cost.
+**Always listen to `public/voice/<slug>/voice.mp3` (`ffplay -nodisp -autoexit`, or `afplay` on macOS) BEFORE building HTML.** Script-edit cost << re-render cost.
 
 ## Captions shape
 
