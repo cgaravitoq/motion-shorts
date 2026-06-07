@@ -89,15 +89,16 @@ Audio settings (canonical):
 
 ```bash
 bun run audio examples/<slug>.txt --lang=es \
-  --speed=1.0 --pause-sentence=300 --pause-clause=0 \
+  --model=eleven_v3 \
+  --speed=1.04 \
   --out=public/voice/<slug>
 ```
 
-- `speed=1.0` -- natural pace. >=1.10 sounded "very fast" in user testing.
-- `pause-sentence=300ms` -- clean breath between `.!?`.
-- `pause-clause=0` -- KEY. Eliminates unnatural mid-sentence gaps at `:;--`.
+- `model=eleven_v3` -- expressive production default. Pause injection NEVER runs on v3 (`--pause-*` flags are ignored with a warning); hand-author 1-2 bracketed audio tags where they matter.
+- `speed=1.04` -- natural but a little tighter; keep ES narration in the conservative 1.0-1.08 band.
+- v2 fallback only (`--model=eleven_multilingual_v2`): add `--pause-sentence=300 --pause-clause=0`. EN narration uses the v2 voice at `--speed=1.1`.
 
-### TTS pronunciation gotchas (Alberto, `eleven_multilingual_v2`)
+### TTS pronunciation gotchas (peninsular ES)
 
 The model applies Castilian phonetics to English tech terms in Spanish. Rules:
 
@@ -110,7 +111,7 @@ The model applies Castilian phonetics to English tech terms in Spanish. Rules:
 3. **English compounds with no cognate** (`fine-tuning`, `embeddings`) -- leave as-is.
 4. **Numbers** -- write in Spanish words: `diez coma seis por ciento` (NOT `10.6%`).
 
-After `bun run audio`, run `afplay public/voice/<slug>/voice.mp3`. If a tech term is mispronounced, edit `examples/<slug>.txt` and regenerate. Iterate until clean BEFORE authoring the spec.
+After `bun run audio`, run `ffplay -nodisp -autoexit public/voice/<slug>/voice.mp3` (`afplay` on macOS). If a tech term is mispronounced, edit `examples/<slug>.txt` and regenerate. Iterate until clean BEFORE authoring the spec.
 
 ## Authoring the scene-spec
 
@@ -200,7 +201,7 @@ The assembler now owns the timeline, palette, captions, and typography, so these
 ## Final checklist
 
 - [ ] `examples/<slug>.txt` written, ES, target ~35s; user picked one of 3 script options (Gate 1)
-- [ ] `bun run audio` ran; `afplay` listened, no mispronunciations; user approved voice.mp3 (Gate 2)
+- [ ] `bun run audio` ran; playback listened (`ffplay`/`afplay`), no mispronunciations; user approved voice.mp3 (Gate 2)
 - [ ] `voice.mp3` + `captions.json` present under `src/episodes/<slug>/assets/`
 - [ ] Intent chosen; scene-types selected via `recommend_scene_types` / `scene:gallery`
 - [ ] `scene-spec.json` authored; slots match `get_scene_type` manifests (names + ranges)

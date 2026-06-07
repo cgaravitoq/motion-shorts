@@ -38,7 +38,8 @@ You produce narration audio and word-level captions for the selected script. You
 2. Confirm the selected script is under 5000 chars.
 3. Write the script to `apps/hyperframe/examples/<slug>.txt`.
 4. From `apps/hyperframe/`, run:
-   `bun run audio examples/<slug>.txt --lang=<es|en> --speed=1.0 --pause-sentence=300 --pause-clause=0 --out=public/voice/<slug>`
+   - ES (production default): `bun run audio examples/<slug>.txt --lang=es --model=eleven_v3 --speed=1.04 --out=public/voice/<slug>`. `eleven_v3` ignores `--pause-*` flags — hand-author at most 1-2 bracketed audio tags in the script where they matter (see `docs/voice-config.md`).
+   - EN: `bun run audio examples/<slug>.txt --lang=en --model=eleven_multilingual_v2 --speed=1.1 --pause-sentence=300 --pause-clause=0 --out=public/voice/<slug>`.
 5. Run `ffplay -nodisp -autoexit public/voice/<slug>/voice.mp3`.
 6. Inspect `captions.json` for obvious transcript garbage.
 7. If the episode already exists, copy `voice.mp3` and `captions.json` into its `assets/` directory.
