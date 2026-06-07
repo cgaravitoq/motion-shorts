@@ -3,9 +3,24 @@ import path from "node:path";
 import { validateSceneSpec } from "./scene-spec";
 
 const hubRoot = path.resolve(import.meta.dir, "../..");
+
+type FixtureScene = {
+  id: string;
+  type: string;
+  duration?: number;
+  slots?: Record<string, unknown>;
+};
+type FixtureSpec = {
+  slug: string;
+  lang: string;
+  width: number;
+  height: number;
+  scenes: [FixtureScene, FixtureScene, FixtureScene];
+};
+
 // Inline fixture against the TRACKED scene-type manifests (templates/scenes):
 // episodes under src/episodes are local working copies, never in git/CI.
-const realSpec = () => ({
+const realSpec = (): FixtureSpec => ({
   slug: "contract-fixture",
   lang: "es",
   width: 1080,

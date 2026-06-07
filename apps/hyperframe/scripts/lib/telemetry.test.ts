@@ -30,9 +30,11 @@ describe("createTimer", () => {
     await new Promise((r) => setTimeout(r, 5));
     timer.end("render");
     const durations = timer.durations();
-    expect(durations.materialise).toBeGreaterThan(0);
-    expect(durations.render).toBeGreaterThan(0);
-    expect(timer.totalMs()).toBeGreaterThanOrEqual(durations.materialise + durations.render);
+    const materialise = durations.materialise ?? 0;
+    const render = durations.render ?? 0;
+    expect(materialise).toBeGreaterThan(0);
+    expect(render).toBeGreaterThan(0);
+    expect(timer.totalMs()).toBeGreaterThanOrEqual(materialise + render);
   });
 
   it("ignores end without matching start", () => {
@@ -49,8 +51,9 @@ describe("collectAssetInventory", () => {
       const inv = collectAssetInventory(root, { topN: 3 });
       expect(inv.fileCount).toBe(3);
       expect(inv.totalBytes).toBe(2048 + 8 * 1024 + 2);
-      expect(inv.topFiles[0].path).toBe(path.join("assets", "voice.mp3"));
-      expect(inv.topFiles[0].bytes).toBe(8 * 1024);
+      const largest = inv.topFiles[0];
+      expect(largest?.path).toBe(path.join("assets", "voice.mp3"));
+      expect(largest?.bytes).toBe(8 * 1024);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -120,17 +123,17 @@ describe("appendLedger", () => {
         inventory: { fileCount: 0, totalBytes: 0, topFiles: [] },
         uploaded: true,
       });
-      appendLedger(ledgerPath, recordA);
-      appendLedger(ledgerPath, recordB);
+      appendLedger(ledgerPath, recordA as unknown as Record<string, unknown>);
+      appendLedger(ledgerPath, recordB as unknown as Record<string, unknown>);
       const raw = await readFile(ledgerPath, "utf8");
       const lines = raw.trim().split("\n");
       expect(lines).toHaveLength(2);
-      const parsedA = JSON.parse(lines[0]);
+      const parsedA = JSON.parse(lines[0] ?? "");
       expect(parsedA.slug).toBe("a");
       expect(parsedA.stages.materialise).toBe(1100);
       expect(parsedA.assets.topFiles[0].bytes).toBe(100);
       expect(parsedA.uploaded).toBe(false);
-      const parsedB = JSON.parse(lines[1]);
+      const parsedB = JSON.parse(lines[1] ?? "");
       expect(parsedB.slug).toBe("b");
       expect(parsedB.uploaded).toBe(true);
     } finally {

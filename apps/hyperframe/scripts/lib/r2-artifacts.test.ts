@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type { FetchLike } from "@cgaravitoq/spec";
 import {
   assertR2Config,
   collectEpisodeArtifacts,
@@ -30,15 +31,15 @@ const gatewayEnv = {
   R2_SIGNED_URL_TTL_SECONDS: "900",
 };
 
-const keyFromUrl = (url) => {
+const keyFromUrl = (url: string) => {
   const parsed = new URL(url);
   return decodeURIComponent(parsed.pathname.replace(/^\/bucket-name\//, ""));
 };
 
 // Models real R2 semantics: PUT stores per key, GET on a missing key is a 404.
 const createS3Store = () => {
-  const store = new Map();
-  const fetchImpl = async (url, init = {}) => {
+  const store = new Map<string, Buffer>();
+  const fetchImpl: FetchLike = async (url, init = {}) => {
     const key = keyFromUrl(url);
     if (init.method === "PUT") {
       store.set(key, Buffer.from(await new Response(init.body).arrayBuffer()));
@@ -47,14 +48,14 @@ const createS3Store = () => {
     const body = store.get(key);
     return body === undefined
       ? new Response(null, { status: 404 })
-      : new Response(body, { status: 200 });
+      : new Response(body as Uint8Array<ArrayBuffer>, { status: 200 });
   };
   return { store, fetchImpl };
 };
 
-const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 
-const writeAssetsManifest = async ({ root, object }) => {
+const writeAssetsManifest = async ({ root, object }: { root: string; object: unknown }) => {
   const manifestPath = path.join(root, "src/episodes/demo-short/assets.remote.json");
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeFile(
@@ -302,9 +303,9 @@ describe("r2 artifact publishing", () => {
       "motion-shorts/episodes/demo-short/final/source/scene-spec.json",
     ]);
     const spec = source.find((artifact) => artifact.localPath.endsWith("scene-spec.json"));
-    expect(spec.relPath).toBe("src/episodes/demo-short/scene-spec.json");
+    expect(spec?.relPath).toBe("src/episodes/demo-short/scene-spec.json");
     const script = source.find((artifact) => artifact.localPath.endsWith("demo-short.txt"));
-    expect(script.relPath).toBe("examples/demo-short.txt");
+    expect(script?.relPath).toBe("examples/demo-short.txt");
 
     await rm(root, { recursive: true, force: true });
   });
@@ -339,14 +340,14 @@ describe("r2 artifact publishing", () => {
     );
     expect(renderManifest.provider).toBe("cloudflare-r2");
     expect(renderManifest.objects[0].sha256).toMatch(/^[a-f0-9]{64}$/);
-    expect(assetsManifest.objects.map((object) => object.key).sort()).toEqual([
+    expect(assetsManifest.objects.map((object: { key: string }) => object.key).sort()).toEqual([
       "motion-shorts/episodes/demo-short/final/audio/captions.json",
       "motion-shorts/episodes/demo-short/final/audio/voice.mp3",
       "motion-shorts/episodes/demo-short/final/fonts/font.woff2",
     ]);
     const fontUpload = result.uploaded.find((item) => item.localPath.endsWith("font.woff2"));
-    expect(fontUpload.category).toBe("fonts");
-    expect(fontUpload.contentType).toBe("font/woff2");
+    expect(fontUpload?.category).toBe("fonts");
+    expect(fontUpload?.contentType).toBe("font/woff2");
     expect(await readFile(renderPath, "utf8")).toBe("video-bytes");
     expect(store.has("motion-shorts/episodes/demo-short/final/manifests/render.remote.json")).toBe(
       true,
@@ -354,7 +355,7 @@ describe("r2 artifact publishing", () => {
     expect(store.has("motion-shorts/episodes/demo-short/final/manifests/source.remote.json")).toBe(
       true,
     );
-    const index = JSON.parse(store.get("motion-shorts/index.json").toString("utf8"));
+    const index = JSON.parse(store.get("motion-shorts/index.json")?.toString("utf8") ?? "{}");
     expect(index.episodes["demo-short"].finalRunId).toBe("run-1");
 
     await rm(root, { recursive: true, force: true });
@@ -370,7 +371,7 @@ describe("r2 artifact publishing", () => {
     await writeFile(path.join(assetsDir, "voice.mp3"), "audio-bytes");
     await writeFile(path.join(assetsDir, "captions.json"), "[]");
     const { store, fetchImpl: s3Fetch } = createS3Store();
-    const fetchImpl = async (url, init) => {
+    const fetchImpl: FetchLike = async (url, init) => {
       if (init?.method === "PUT" && url.includes("voice.mp3")) {
         return new Response(null, { status: 500, statusText: "Internal Server Error" });
       }
@@ -404,7 +405,7 @@ describe("r2 artifact publishing", () => {
     await mkdir(path.join(episodeDir, "assets"), { recursive: true });
     await writeFile(renderPath, "video-bytes");
     const { store, fetchImpl: s3Fetch } = createS3Store();
-    const fetchImpl = async (url, init) => {
+    const fetchImpl: FetchLike = async (url, init) => {
       if (init?.method === "PUT" && url.includes("/manifests/assets.remote.json")) {
         return new Response(null, { status: 503, statusText: "Service Unavailable" });
       }
@@ -471,7 +472,7 @@ describe("r2 artifact publishing", () => {
       });
     }
 
-    const index = JSON.parse(store.get("motion-shorts/index.json").toString("utf8"));
+    const index = JSON.parse(store.get("motion-shorts/index.json")?.toString("utf8") ?? "{}");
     expect(Object.keys(index.episodes).sort()).toEqual(["short-a", "short-b"]);
     expect(index.episodes["short-a"].finalRunId).toBe("run-short-a");
     expect(index.episodes["short-b"].finalRunId).toBe("run-short-b");
@@ -512,7 +513,7 @@ describe("r2 artifact publishing", () => {
     const assetsManifest = JSON.parse(
       await readFile(path.join(episodeDir, "assets.remote.json"), "utf8"),
     );
-    expect(assetsManifest.objects.map((object) => object.key)).toEqual([
+    expect(assetsManifest.objects.map((object: { key: string }) => object.key)).toEqual([
       "motion-shorts/episodes/demo-short/final/audio/voice.mp3",
     ]);
 
@@ -546,10 +547,11 @@ describe("r2 artifact publishing", () => {
     const root = await mkdtemp(path.join(tmpdir(), "r2-gateway-"));
     const filePath = path.join(root, "clip.mp4");
     await writeFile(filePath, "gateway-video");
-    const store = new Map();
-    const calls = [];
-    const fetchImpl = async (url, init) => {
-      calls.push({ url, method: init.method, token: init.headers["x-upload-token"] });
+    const store = new Map<string, Buffer>();
+    const calls: Array<{ url: string; method: string | undefined; token: string | undefined }> = [];
+    const fetchImpl: FetchLike = async (url, init = {}) => {
+      const headers = init.headers as Record<string, string> | undefined;
+      calls.push({ url, method: init.method, token: headers?.["x-upload-token"] });
       const key = decodeURIComponent(new URL(url).pathname.replace(/^\/objects\//, ""));
       if (init.method === "PUT") {
         store.set(key, Buffer.from(await new Response(init.body).arrayBuffer()));
@@ -558,7 +560,7 @@ describe("r2 artifact publishing", () => {
       const body = store.get(key);
       return body === undefined
         ? new Response(null, { status: 404 })
-        : new Response(body, { status: 200 });
+        : new Response(body as Uint8Array<ArrayBuffer>, { status: 200 });
     };
 
     const config = assertR2Config({
@@ -580,8 +582,8 @@ describe("r2 artifact publishing", () => {
     });
 
     expect(config.uploadGatewayUrl).toBe("https://upload.example.com");
-    expect(result.uploaded[0].bytes).toBe(13);
-    expect(calls[0].url).toContain(
+    expect(result.uploaded[0]?.bytes).toBe(13);
+    expect(calls[0]?.url).toContain(
       "/objects/motion-shorts/episodes/demo-short/final/renders/clip.mp4",
     );
     expect(calls.every((call) => call.token === "secret-token")).toBe(true);
@@ -725,9 +727,10 @@ describe("r2 artifact publishing", () => {
         signedUrlTtlSeconds: 900,
       },
     });
-    const calls = [];
-    const fetchImpl = async (url, init) => {
-      calls.push({ url, method: init.method, token: init.headers["x-upload-token"] });
+    const calls: Array<{ url: string; method: string | undefined; token: string | undefined }> = [];
+    const fetchImpl: FetchLike = async (url, init = {}) => {
+      const headers = init.headers as Record<string, string> | undefined;
+      calls.push({ url, method: init.method, token: headers?.["x-upload-token"] });
       return new Response(bytes, { status: 200 });
     };
 

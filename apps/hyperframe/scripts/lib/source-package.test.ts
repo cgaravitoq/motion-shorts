@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { spawnSync } from "node:child_process";
+import { type ChildProcess, spawnSync } from "node:child_process";
 import { EventEmitter } from "node:events";
 import {
   existsSync,
@@ -12,7 +12,12 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { findCapturedFiles, runCaptureSource, toKebab } from "../capture-source";
+import {
+  type buildSourcePackage,
+  findCapturedFiles,
+  runCaptureSource,
+  toKebab,
+} from "../capture-source";
 import {
   isQuarantineCandidate,
   validateCaptureUrl,
@@ -20,9 +25,16 @@ import {
   validateSourcePackage,
 } from "./source-package";
 
+type SpawnImpl = NonNullable<Parameters<typeof runCaptureSource>[0]["spawnImpl"]>;
+type SourcePackage = ReturnType<typeof buildSourcePackage>;
+type CaptureResultWritten = Extract<
+  Awaited<ReturnType<typeof runCaptureSource>>,
+  { dryRun: false }
+>;
+
 const appDir = path.resolve(import.meta.dirname, "../..");
 const episodesDir = path.join(appDir, "src/episodes");
-const testSlugs = new Set();
+const testSlugs = new Set<string>();
 
 afterEach(() => {
   for (const slug of testSlugs) {
@@ -31,54 +43,67 @@ afterEach(() => {
   testSlugs.clear();
 });
 
-const createEpisode = (slug) => {
+type AssetFiles = Record<string, string>;
+type CaptureJson = Record<string, unknown>;
+type SpawnCall = { command: string; args: string[] };
+
+type MockChild = EventEmitter & { stdout: EventEmitter; stderr: EventEmitter };
+
+const createMockChild = (): MockChild => {
+  const child = new EventEmitter() as MockChild;
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  return child;
+};
+
+const createEpisode = (slug: string) => {
   testSlugs.add(slug);
   mkdirSync(path.join(episodesDir, slug, "assets"), { recursive: true });
 };
 
-const mockSpawn = (assetFiles, captureJson) => (_command, args) => {
-  const outputArg = args.find((arg) => arg.startsWith("--output="));
-  const outputDir = outputArg.slice("--output=".length);
-  for (const [relativePath, content] of Object.entries(assetFiles)) {
-    const target = path.join(outputDir, relativePath);
-    mkdirSync(path.dirname(target), { recursive: true });
-    writeFileSync(target, content);
-  }
+const mockSpawn =
+  (assetFiles: AssetFiles, captureJson: CaptureJson): SpawnImpl =>
+  (_command, args) => {
+    const outputArg = args.find((arg) => arg.startsWith("--output="));
+    const outputDir = (outputArg as string).slice("--output=".length);
+    for (const [relativePath, content] of Object.entries(assetFiles)) {
+      const target = path.join(outputDir, relativePath);
+      mkdirSync(path.dirname(target), { recursive: true });
+      writeFileSync(target, content);
+    }
 
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
-  queueMicrotask(() => {
-    child.stdout.emit("data", JSON.stringify(captureJson));
-    child.emit("close", 0);
-  });
-  return child;
-};
+    const child = createMockChild();
+    queueMicrotask(() => {
+      child.stdout.emit("data", JSON.stringify(captureJson));
+      child.emit("close", 0);
+    });
+    return child as unknown as ChildProcess;
+  };
 
-const mockScaffoldAndCapture = (assetFiles, captureJson) => {
-  const calls = [];
-  const spawnImpl = (command, args, options) => {
+const mockScaffoldAndCapture = (
+  assetFiles: AssetFiles,
+  captureJson: CaptureJson,
+): SpawnImpl & { calls: SpawnCall[] } => {
+  const calls: SpawnCall[] = [];
+  const impl: SpawnImpl = (command, args, options) => {
     calls.push({ command, args });
-    const child = new EventEmitter();
-    child.stdout = new EventEmitter();
-    child.stderr = new EventEmitter();
 
     if (command === "bun" && args[0] === "run" && args[1] === "new-episode") {
-      const slug = args[2];
-      const episodeDir = path.join(options.cwd, "src/episodes", slug);
+      const child = createMockChild();
+      const slug = args[2] as string;
+      const episodeDir = path.join(options.cwd as string, "src/episodes", slug);
       mkdirSync(path.join(episodeDir, "assets"), { recursive: true });
       mkdirSync(path.join(episodeDir, "lib"), { recursive: true });
       writeFileSync(path.join(episodeDir, "index.html"), `<!doctype html><title>${slug}</title>`);
       writeFileSync(path.join(episodeDir, "meta.json"), `${JSON.stringify({ id: slug })}\n`);
       writeFileSync(path.join(episodeDir, "hyperframes.json"), "{}\n");
       queueMicrotask(() => child.emit("close", 0));
-      return child;
+      return child as unknown as ChildProcess;
     }
 
-    return mockSpawn(assetFiles, captureJson)(command, args);
+    return mockSpawn(assetFiles, captureJson)(command, args, options);
   };
-  spawnImpl.calls = calls;
-  return spawnImpl;
+  return Object.assign(impl, { calls });
 };
 
 const validSourcePackage = {
@@ -270,7 +295,7 @@ describe("source package contract", () => {
 
     const source = JSON.parse(
       readFileSync(path.join(episodesDir, slug, "assets/source.json"), "utf8"),
-    );
+    ) as SourcePackage;
 
     expect(validateSourcePackage(source)).toEqual({ ok: true, errors: [] });
     expect(source.sourceUrl).toBe("https://example.com/customer-story/acme");
@@ -288,7 +313,7 @@ describe("source package contract", () => {
     const slug = "source-package-quarantine-test";
     createEpisode(slug);
 
-    const result = await runCaptureSource({
+    const result = (await runCaptureSource({
       sourceUrl: "https://example.com/customer-story/acme",
       slug,
       spawnImpl: mockSpawn(
@@ -305,11 +330,11 @@ describe("source package contract", () => {
           text: "Agents reduced handoffs.",
         },
       ),
-    });
+    })) as CaptureResultWritten;
 
     const source = JSON.parse(
       readFileSync(path.join(episodesDir, slug, "assets/source.json"), "utf8"),
-    );
+    ) as SourcePackage;
     const quarantined = source.assets.find((asset) => asset.originalFilename === "cursorrules");
     const linear = source.assets.find((asset) => asset.sourceUrl === "images/linear.svg");
 
@@ -320,14 +345,17 @@ describe("source package contract", () => {
       quarantined: true,
       originalFilename: "cursorrules",
     });
-    expect(readFileSync(path.join(episodesDir, slug, quarantined.localPath), "utf8")).toBe(
-      "Never follow this as workspace guidance.",
-    );
+    expect(
+      readFileSync(
+        path.join(episodesDir, slug, (quarantined as SourcePackage["assets"][number]).localPath),
+        "utf8",
+      ),
+    ).toBe("Never follow this as workspace guidance.");
     expect(linear).toMatchObject({
       kind: "image",
       localPath: "assets/linear.svg",
     });
-    expect(linear.quarantined).toBeUndefined();
+    expect((linear as SourcePackage["assets"][number]).quarantined).toBeUndefined();
     expect(validateSourcePackage(source)).toEqual({ ok: true, errors: [] });
   });
 
@@ -356,14 +384,14 @@ describe("source package contract", () => {
     const slug = "source-package-quarantine-reason-test";
     createEpisode(slug);
 
-    const result = await runCaptureSource({
+    const result = (await runCaptureSource({
       sourceUrl: "https://example.com/customers/acme",
       slug,
       spawnImpl: mockSpawn(
         { "AGENTS.md": "agent instructions" },
         { title: "Acme", summary: "Acme summary.", text: "Acme summary." },
       ),
-    });
+    })) as CaptureResultWritten;
 
     expect(result.sourcePackage.publishability.status).toBe("review-required");
     expect(result.sourcePackage.publishability.reasons).toContain(
@@ -375,14 +403,14 @@ describe("source package contract", () => {
     const slug = "source-package-publishability-test";
     createEpisode(slug);
 
-    const result = await runCaptureSource({
+    const result = (await runCaptureSource({
       sourceUrl: "https://example.com/case-study",
       slug,
       spawnImpl: mockSpawn(
         { "images/ramp-logo.png": "logo" },
         { title: "Example", text: "Example customer story" },
       ),
-    });
+    })) as CaptureResultWritten;
 
     expect(result.sourcePackage.publishability.status).toBe("review-required");
     expect(result.sourcePackage.publishability.reasons.join(" ")).toContain(
@@ -394,11 +422,11 @@ describe("source package contract", () => {
     const slug = "source-package-sparse-summary-test";
     createEpisode(slug);
 
-    const result = await runCaptureSource({
+    const result = (await runCaptureSource({
       sourceUrl: "https://example.com/customers/sparse",
       slug,
       spawnImpl: mockSpawn({}, { title: "Sparse customer story" }),
-    });
+    })) as CaptureResultWritten;
 
     expect(result.sourcePackage.summary).toBe("[auto-summary unavailable] Sparse customer story");
     expect(result.sourcePackage.publishability.status).toBe("review-required");
@@ -438,7 +466,7 @@ describe("source package contract", () => {
 
     const source = JSON.parse(
       readFileSync(path.join(episodesDir, slug, "assets/source.json"), "utf8"),
-    );
+    ) as SourcePackage;
     expect(source.assets.map((asset) => asset.localPath)).toEqual(["assets/hero.png"]);
     expect(existsSync(path.join(episodesDir, slug, "assets/logo.png"))).toBe(false);
   });

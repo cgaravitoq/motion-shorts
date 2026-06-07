@@ -6,28 +6,52 @@ import vm from "node:vm";
 const helpersPath = path.resolve(import.meta.dirname, "../timeline-helpers.js");
 const helpersSource = readFileSync(helpersPath, "utf8");
 
+type FitTextOpts = { baseFontSize?: number; minFontSize?: number; maxWidth?: number };
+type FakeElement = {
+  id: string;
+  className: string;
+  tagName: string;
+  textContent: string;
+  style: { fontSize: string };
+  parentElement: { clientWidth: number };
+  clientWidth: number;
+  scrollWidth: number;
+};
+type HfNamespace = { fitText: (el: FakeElement, opts?: FitTextOpts) => void };
+type FakeWindow = { gsap: { timeline: () => Record<string, never> }; __hf?: HfNamespace };
+
 // Loads timeline-helpers.js inside a vm context with stubs for the DOM globals
 // it touches. Returns the `__hf` namespace plus instrumentation hooks.
-const loadHelpers = ({ scrollWidthFor }) => {
-  const warnings = [];
-  const fakeWindow = {
+const loadHelpers = ({ scrollWidthFor }: { scrollWidthFor?: () => number }) => {
+  const warnings: string[] = [];
+  const fakeWindow: FakeWindow = {
     gsap: { timeline: () => ({}) },
   };
   const context = {
     window: fakeWindow,
     document: {},
     getComputedStyle: () => ({ fontSize: "48px", fontFamily: "sans", fontWeight: "400" }),
-    console: { ...console, warn: (...args) => warnings.push(args.join(" ")), error: console.error },
+    console: {
+      ...console,
+      warn: (...args: unknown[]) => warnings.push(args.join(" ")),
+      error: console.error,
+    },
+    // Mirror browser semantics: `global` is the window object in the IIFE.
+    global: fakeWindow,
   };
   vm.createContext(context);
-  // Mirror browser semantics: `global` is the window object in the IIFE.
-  context.global = fakeWindow;
   vm.runInContext(helpersSource, context);
-  return { hf: fakeWindow.__hf, warnings, scrollWidthFor };
+  return { hf: fakeWindow.__hf as HfNamespace, warnings, scrollWidthFor };
 };
 
-const makeElement = ({ text, scrollWidth }) => {
-  const el = {
+const makeElement = ({
+  text,
+  scrollWidth,
+}: {
+  text: string;
+  scrollWidth: (el: FakeElement) => number;
+}) => {
+  const el: FakeElement = {
     id: "fit-target",
     className: "",
     tagName: "DIV",
@@ -35,6 +59,7 @@ const makeElement = ({ text, scrollWidth }) => {
     style: { fontSize: "48px" },
     parentElement: { clientWidth: 400 },
     clientWidth: 400,
+    scrollWidth: 0,
   };
   Object.defineProperty(el, "scrollWidth", {
     get: () => scrollWidth(el),

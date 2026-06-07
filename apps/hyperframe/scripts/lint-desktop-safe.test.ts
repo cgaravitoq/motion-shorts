@@ -1,31 +1,37 @@
 import { describe, expect, it } from "bun:test";
 import { lintDesktopHtml } from "./lint-desktop-safe";
 
-const wrap = (stageAttrs, body) => `<!doctype html>
+const wrap = (stageAttrs: string, body: string) => `<!doctype html>
 <html><body>
 <div data-composition-id="test"${stageAttrs}>
 ${body}
 </div>
 </body></html>`;
 
-const validStage = ' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="30" data-duration="5"';
+const validStage =
+  ' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="30" data-duration="5"';
 
 describe("lintDesktopHtml — stage dimensions", () => {
   it("passes a clean 1920x1080 stage with no critical elements", () => {
     expect(lintDesktopHtml(wrap(validStage, ""))).toEqual([]);
   });
 
-
   it("passes a clean stage at 60 fps", () => {
     const v = lintDesktopHtml(
-      wrap(' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="60" data-duration="5"', ""),
+      wrap(
+        ' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="60" data-duration="5"',
+        "",
+      ),
     );
     expect(v).toEqual([]);
   });
 
   it("flags a stage at 24 fps", () => {
     const v = lintDesktopHtml(
-      wrap(' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="24" data-duration="5"', ""),
+      wrap(
+        ' data-format="desktop-1080p" data-width="1920" data-height="1080" data-fps="24" data-duration="5"',
+        "",
+      ),
     );
     expect(v.some((x) => x.ruleId === "stage-dimensions" && /30, 60/.test(x.message))).toBe(true);
   });
@@ -52,7 +58,7 @@ describe("lintDesktopHtml — stage dimensions", () => {
   it("flags a missing stage element entirely", () => {
     const v = lintDesktopHtml("<!doctype html><html><body><p>nope</p></body></html>");
     expect(v).toHaveLength(1);
-    expect(v[0].ruleId).toBe("stage-dimensions");
+    expect(v[0]?.ruleId).toBe("stage-dimensions");
   });
 });
 
@@ -111,10 +117,7 @@ describe("lintDesktopHtml — YouTube dead zones", () => {
 
   it("does NOT flag a critical element marked without inline coordinates (skip rule)", () => {
     const v = lintDesktopHtml(
-      wrap(
-        validStage,
-        '<h1 class="headline" data-critical="true">No inline coords</h1>',
-      ),
+      wrap(validStage, '<h1 class="headline" data-critical="true">No inline coords</h1>'),
     );
     expect(v).toEqual([]);
   });
@@ -182,7 +185,9 @@ describe("lintDesktopHtml — lower-third collision", () => {
         '<h2 id="headline" class="headline" data-track-index="5" style="position:absolute; top:900px; left:200px; height:200px; font-size:48px;">Hidden in lower third</h2>',
       ),
     );
-    expect(v.some((x) => x.ruleId === "lower-third-collision" && x.severity === "warning")).toBe(true);
+    expect(v.some((x) => x.ruleId === "lower-third-collision" && x.severity === "warning")).toBe(
+      true,
+    );
   });
 });
 

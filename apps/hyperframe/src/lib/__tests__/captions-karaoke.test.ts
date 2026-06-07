@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { describe, expect, it, mock } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
@@ -6,9 +6,27 @@ import vm from "node:vm";
 const SOURCE_PATH = path.resolve(import.meta.dir, "../captions-karaoke.js");
 const SOURCE = readFileSync(SOURCE_PATH, "utf8");
 
+type CaptionInput = {
+  text?: unknown;
+  start?: unknown;
+  end?: unknown;
+  confidence?: unknown;
+};
+
+type CaptionEntry = {
+  text: string;
+  start: number;
+  end: number;
+  confidence?: number;
+};
+
+type NormalizeFn = (captions: readonly CaptionInput[]) => CaptionEntry[];
+
+type FakeWindow = { __hf: { normalizeCaptions: NormalizeFn } };
+
 const loadNormalize = () => {
-  const fakeWindow = {};
-  const warn = mock(() => {});
+  const fakeWindow = {} as FakeWindow;
+  const warn = mock((..._args: unknown[]) => {});
   const sandbox = { window: fakeWindow, console: { warn, error: () => {} } };
   vm.createContext(sandbox);
   vm.runInContext(SOURCE, sandbox);
@@ -16,55 +34,49 @@ const loadNormalize = () => {
 };
 
 describe("captions-karaoke normalize()", () => {
-  let normalize;
-  let warn;
-
-  beforeEach(() => {
-    ({ normalize, warn } = loadNormalize());
-  });
-
-  afterEach(() => {
-    normalize = undefined;
-    warn = undefined;
-  });
-
   it("keeps valid entries with start < end", () => {
+    const { normalize, warn } = loadNormalize();
     const result = normalize([{ text: "hello", start: 0, end: 0.5 }]);
     expect(result).toEqual([{ text: "hello", start: 0, end: 0.5 }]);
     expect(warn).not.toHaveBeenCalled();
   });
 
   it("drops entries with reversed timestamps (start > end) and warns with the original entry", () => {
+    const { normalize, warn } = loadNormalize();
     const bad = { text: "oops", start: 1.2, end: 0.4 };
     const result = normalize([bad]);
     expect(result).toEqual([]);
     expect(warn).toHaveBeenCalledTimes(1);
-    const [message, payload] = warn.mock.calls[0];
+    const [message, payload] = warn.mock.calls[0] ?? [];
     expect(message).toContain("reversed or zero-length");
     expect(payload).toBe(bad);
   });
 
   it("drops zero-length entries (start === end) and warns", () => {
+    const { normalize, warn } = loadNormalize();
     const bad = { text: "zero", start: 1, end: 1 };
     const result = normalize([bad]);
     expect(result).toEqual([]);
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][1]).toBe(bad);
+    expect(warn.mock.calls[0]?.[1]).toBe(bad);
   });
 
   it("drops entries missing start without warning", () => {
+    const { normalize, warn } = loadNormalize();
     const result = normalize([{ text: "no-start", end: 0.5 }]);
     expect(result).toEqual([]);
     expect(warn).not.toHaveBeenCalled();
   });
 
   it("drops entries missing end without warning", () => {
+    const { normalize, warn } = loadNormalize();
     const result = normalize([{ text: "no-end", start: 0.1 }]);
     expect(result).toEqual([]);
     expect(warn).not.toHaveBeenCalled();
   });
 
   it("filters mixed input, keeping only well-formed entries", () => {
+    const { normalize, warn } = loadNormalize();
     const result = normalize([
       { text: "ok", start: 0, end: 0.3 },
       { text: "reversed", start: 1, end: 0.9 },

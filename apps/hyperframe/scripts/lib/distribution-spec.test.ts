@@ -21,7 +21,25 @@ const copy = {
   },
 };
 
-const validDist = (overrides = {}) =>
+interface PlatformEntry<Copy> {
+  status: string;
+  es: Copy;
+  en?: Copy;
+}
+
+interface Dist {
+  slug: string;
+  renderRef: { sha256: string; key?: string } | null;
+  platforms: {
+    youtube: PlatformEntry<{ title: string; description: string }>;
+    instagram: PlatformEntry<{ caption: string }>;
+    tiktok: PlatformEntry<{ caption: string }>;
+    linkedin: PlatformEntry<{ post: string }>;
+    facebook?: PlatformEntry<{ caption: string }>;
+  };
+}
+
+const validDist = (overrides: Partial<Dist> = {}): Dist =>
   structuredClone({
     slug: "demo-episode",
     renderRef: {

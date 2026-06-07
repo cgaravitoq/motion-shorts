@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { extractInlineScripts, lintHtml, stripComments } from "./lint-seek-safe";
 
-const wrap = (script) => `<!doctype html>
+const wrap = (script: string) => `<!doctype html>
 <html><body>
 <div data-composition-id="test" data-duration="5" data-width="1080" data-height="1920"></div>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
@@ -24,7 +24,7 @@ describe("extractInlineScripts", () => {
     const html = wrap(validBaseline);
     const blocks = extractInlineScripts(html);
     expect(blocks).toHaveLength(1);
-    expect(blocks[0].content).toContain("gsap.timeline");
+    expect(blocks[0]?.content).toContain("gsap.timeline");
   });
 });
 
@@ -124,7 +124,7 @@ tl.to("#a", { autoAlpha: 1, duration: 0.5, repeat: 3 }, 0);
     );
     const repeat = result.find((v) => v.ruleId === "repeat-finite");
     expect(repeat).toBeDefined();
-    expect(repeat.severity).toBe("warning");
+    expect(repeat?.severity).toBe("warning");
   });
 
   it("does NOT flag repeat: 0", () => {
@@ -212,6 +212,6 @@ window.__timelines["x"] = tl;
     const result = lintHtml(html);
     const v = result.find((x) => x.ruleId === "seek-callback");
     expect(v).toBeDefined();
-    expect(v.line).toBe(5);
+    expect(v?.line).toBe(5);
   });
 });

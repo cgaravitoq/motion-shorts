@@ -2,14 +2,22 @@ import { describe, expect, it } from "bun:test";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { parseCaptionWords, resolveEpisodeContext } from "./episode-context";
+import { type CaptionWord, parseCaptionWords, resolveEpisodeContext } from "./episode-context";
 
 const WORDS = [
   { text: "Hello", start: 0.1, end: 0.4, confidence: 1 },
   { text: " world", start: 0.5, end: 0.9, confidence: 1 },
 ];
 
-const setupEpisode = async ({ captions, withRender = true } = {}) => {
+type CaptionsFixture = CaptionWord[] | { words: CaptionWord[] };
+
+const setupEpisode = async ({
+  captions,
+  withRender = true,
+}: {
+  captions?: CaptionsFixture;
+  withRender?: boolean;
+} = {}) => {
   const appRoot = await mkdtemp(path.join(tmpdir(), "episode-context-"));
   const episodeDir = path.join(appRoot, "src/episodes/demo-ep");
   await mkdir(path.join(episodeDir, "assets"), { recursive: true });
