@@ -1,0 +1,17 @@
+{
+  "id": "statement-lower-third@1",
+  "type": "statement-lower-third",
+  "version": 1,
+  "label": "Statement lower-third",
+  "description": "Documentary lower-third: a large kinetic statement anchored to the lower-left over an optional full-bleed dimmed visual, with an optional attribution line below it. The statement is the primary object; the image is a scrimmed background. Statement clip-reveals up from below; attribution follows.",
+  "builder": "build_statementLowerThird",
+  "classPrefix": "slt",
+  "defaultDuration": 7,
+  "intentTags": ["informative", "social", "brand"],
+  "slots": {
+    "statement": { "kind": "richText", "required": true },
+    "attribution": { "kind": "text", "required": false, "default": "" },
+    "image": { "kind": "image", "required": false, "default": "" }
+  },
+  "validation": []
+}

@@ -6,14 +6,39 @@
   "description": "A GitHub-style contribution grid: 7 rows (days of the week) by N columns (weeks). Each cell is a small rounded square tinted by an intensity level 0-4 (0 = empty panel, 1-4 = increasing accent tint). Cells pop in on a diagonal left-to-right sweep. Optional eyebrow + title above, an optional contextual caption and a highlighted badge below, plus a less->more legend. The grid IS the scene; cell size adapts to the column count so it stays inside the 9:16 safe band.",
   "builder": "build_contrib_heatmap",
   "classPrefix": "ch",
+  "layout": "centered",
   "defaultDuration": 8,
-  "intentTags": ["data", "informative", "brand", "social"],
+  "intentTags": [
+    "data",
+    "informative",
+    "brand",
+    "social"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
-    "data": { "kind": "text", "required": true },
-    "caption": { "kind": "text", "required": false, "default": "" },
-    "highlight": { "kind": "text", "required": false, "default": "" }
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
+    "data": {
+      "kind": "text",
+      "required": true
+    },
+    "caption": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "highlight": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    }
   },
   "validation": [
     "section #scene-<id> present",

@@ -6,18 +6,38 @@
   "description": "A workflow shown as a vertical sequence of 2-6 connected step nodes. Each node has an index badge, a label, and an optional sub-line; thin connectors draw between consecutive nodes. Step count is a parameter; the rail and stagger adapt automatically.",
   "builder": "build_flow",
   "classPrefix": "fl",
+  "layout": "centered",
   "defaultDuration": 8,
-  "intentTags": ["workflow", "informative", "data"],
+  "intentTags": [
+    "workflow",
+    "informative",
+    "data"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
     "steps": {
       "kind": "repeat",
       "min": 2,
       "max": 6,
       "item": {
-        "label": { "kind": "text", "required": true },
-        "detail": { "kind": "text", "required": false, "default": "" }
+        "label": {
+          "kind": "text",
+          "required": true
+        },
+        "detail": {
+          "kind": "text",
+          "required": false,
+          "default": ""
+        }
       }
     }
   },

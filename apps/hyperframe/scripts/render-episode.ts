@@ -368,9 +368,9 @@ const main = async (): Promise<void> => {
   if (!fs.existsSync(indexPath)) {
     const hint =
       variant === "desktop-1080p" || variant === "desktop-4k"
-        ? " Scaffold one with `bun run new:episode <slug> --with-desktop` or copy templates/desktop-1080p.html (see docs/formats.md)."
+        ? " Generate it with `bun run assemble <slug> --format=desktop` (see docs/formats.md)."
         : variant === "square-1080"
-          ? " Scaffold one with `bun run new:episode <slug> --with-square` or copy templates/square-1080.html (see docs/formats.md)."
+          ? " The square variant has no assembler support yet (see docs/formats.md)."
         : "";
     console.error(`render-episode: missing required file ${indexPath} for variant=${variant}.${hint}`);
     process.exit(1);

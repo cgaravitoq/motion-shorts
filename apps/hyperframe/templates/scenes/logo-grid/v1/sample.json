@@ -1,0 +1,14 @@
+{
+  "eyebrow": "Quién ya lo usa",
+  "title": "Equipos que <strong>confían</strong> en el flujo",
+  "items": [
+    { "label": "Northwind" },
+    { "label": "Acme Labs" },
+    { "label": "Brightside" },
+    { "label": "Contoso" },
+    { "label": "Globex" },
+    { "label": "Initech" },
+    { "label": "Umbra" },
+    { "label": "Vertex" }
+  ]
+}

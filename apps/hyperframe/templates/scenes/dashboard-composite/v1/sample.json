@@ -1,0 +1,10 @@
+{
+  "eyebrow": "Panel del trimestre",
+  "title": "Cuatro métricas, <strong>una vista</strong>",
+  "tiles": [
+    { "label": "Ingresos recurrentes", "value": "$48.2K", "pct": "82", "delta": "+12%" },
+    { "label": "Usuarios activos", "value": "9,140", "pct": "64", "delta": "+8%" },
+    { "label": "Retención a 30 días", "value": "91%", "pct": "91", "delta": "+3 pts" },
+    { "label": "Tiempo de carga", "value": "0.8s", "pct": "38", "delta": "-22%" }
+  ]
+}

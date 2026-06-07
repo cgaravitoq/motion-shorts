@@ -58,6 +58,8 @@ export interface SceneMapEntry {
   mid: number;
 }
 
+export type EpisodeFormat = "short" | "desktop";
+
 export interface AssembledEpisode {
   html: string;
   scenes: SceneMapEntry[];
@@ -66,7 +68,10 @@ export interface AssembledEpisode {
   warnings: string[];
 }
 
-export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string } = {}): AssembledEpisode {
+export function assembleEpisode(
+  input: unknown,
+  { hubRoot, format = "short" }: { hubRoot?: string; format?: EpisodeFormat } = {},
+): AssembledEpisode {
   const warnings: string[] = [];
   const decoded = decodeSceneSpec(input);
   if (Result.isFailure(decoded)) {
@@ -77,8 +82,9 @@ export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string 
   const spec = input as SceneSpec;
   const slug = spec.slug;
 
-  const width = spec.width ?? 1080;
-  const height = spec.height ?? 1920;
+  const desktop = format === "desktop";
+  const width = desktop ? 1920 : (spec.width ?? 1080);
+  const height = desktop ? 1080 : (spec.height ?? 1920);
   const lang = spec.lang ?? "es";
   const accent = spec.palette?.accent ?? DEFAULT_ACCENT;
   const accent2 = spec.palette?.accent2 ?? DEFAULT_ACCENT2;
@@ -119,7 +125,8 @@ export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string 
   const sections = scenes
     .map((sc) => {
       const inner = indent(sc.html.trimEnd(), 8);
-      return `      <section id="scene-${sc.id}" class="scene clip" data-start="${sc.windowStart}" data-duration="${sc.windowDuration}" data-track-index="${sc.track}" style="position:absolute; inset:0;">\n${inner}\n      </section>`;
+      const layoutAttr = desktop ? ` data-layout="${sc.manifest.layout ?? "top-left"}"` : "";
+      return `      <section id="scene-${sc.id}" class="scene clip" data-start="${sc.windowStart}" data-duration="${sc.windowDuration}" data-track-index="${sc.track}"${layoutAttr} style="position:absolute; inset:0;">\n${inner}\n      </section>`;
     })
     .join("\n");
 
@@ -132,6 +139,9 @@ export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string 
     if (seen.has(key)) continue;
     seen.add(key);
     cssBlocks.push(`/* scene-type: ${key} */\n${sc.css.trim()}`);
+    if (desktop && sc.cssDesktop) {
+      cssBlocks.push(`/* scene-type: ${key} (desktop) */\n${sc.cssDesktop.trim()}`);
+    }
     builderBlocks.push(sc.timeline.trim());
   }
 
@@ -179,10 +189,11 @@ export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string 
     prev = sc;
   }
 
+  const karaokeOpts = desktop ? "{ maxChars: 40, maxTokens: 7 }" : "{ maxChars: 28, maxTokens: 5 }";
   lines.push(
     `const captionsData = JSON.parse(document.getElementById("captions-data").textContent || "[]");`,
     `if (captionsData.length > 0 && window.__hf && window.__hf.karaoke) {`,
-    `  window.__hf.karaoke(tl, "#captions", captionsData, { maxChars: 28, maxTokens: 5 });`,
+    `  window.__hf.karaoke(tl, "#captions", captionsData, ${karaokeOpts});`,
     `}`,
     `window.__timelines = window.__timelines || {};`,
     `window.__timelines["${slug}"] = tl;`,
@@ -191,6 +202,9 @@ export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string 
 
   // fill shell
   let shellCss = fs.readFileSync(path.join(shellDir(hubRoot), "shell.css"), "utf8");
+  if (desktop) {
+    shellCss += `\n\n${fs.readFileSync(path.join(shellDir(hubRoot), "shell.desktop.css"), "utf8")}`;
+  }
   shellCss = shellCss
     .replaceAll("__ACCENT__", accent)
     .replaceAll("__ACCENT2__", accent2)
@@ -199,6 +213,7 @@ export function assembleEpisode(input: unknown, { hubRoot }: { hubRoot?: string 
 
   let shell = fs.readFileSync(path.join(shellDir(hubRoot), "shell.html.tmpl"), "utf8");
   shell = shell
+    .replaceAll("__FORMAT_ATTR__", desktop ? ' data-format="desktop-1080p"' : "")
     .replaceAll("__SHELL_CSS__", indent(shellCss.trim(), 6))
     .replaceAll("__SCENE_CSS__", indent(cssBlocks.join("\n\n"), 6))
     .replaceAll("__SCENES__", sections)

@@ -6,19 +6,44 @@
   "description": "A terminal-style window (the window is the scene object) with a title bar of three traffic-light dots and an optional filename, plus 1-12 syntax-tinted code lines. Optional eyebrow and title above the window. Lines reveal with a typing-like stagger.",
   "builder": "build_code",
   "classPrefix": "cd",
+  "layout": "centered",
   "defaultDuration": 7,
-  "intentTags": ["informative", "workflow", "data", "vfx"],
+  "intentTags": [
+    "informative",
+    "workflow",
+    "data",
+    "vfx"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
-    "filename": { "kind": "text", "required": false, "default": "" },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
+    "filename": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
     "lines": {
       "kind": "repeat",
       "min": 1,
       "max": 12,
       "item": {
-        "text": { "kind": "text", "required": true },
-        "kind": { "kind": "text", "required": false, "default": "plain" }
+        "text": {
+          "kind": "text",
+          "required": true
+        },
+        "kind": {
+          "kind": "text",
+          "required": false,
+          "default": "plain"
+        }
       }
     }
   },

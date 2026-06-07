@@ -1,20 +1,17 @@
 .fl-title { margin: 0; }
-.fl-rail { counter-reset: fl-step; list-style: none; margin: 64px 0 0; padding: 0; display: flex; flex-direction: column; }
+.fl-rail { counter-reset: fl-step; list-style: none; margin: 64px 0 0; padding: 0; position: relative; display: flex; flex-direction: column; }
 .fl-rail[data-count="2"] { gap: 64px; }
 .fl-rail[data-count="3"] { gap: 56px; }
 .fl-rail[data-count="4"] { gap: 48px; }
 .fl-rail[data-count="5"] { gap: 38px; }
 .fl-rail[data-count="6"] { gap: 30px; }
 
-.fl-step { counter-increment: fl-step; position: relative; display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 30px; }
+.fl-step { counter-increment: fl-step; position: relative; z-index: 1; display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 30px; }
 
-.fl-step__connector { position: absolute; left: 45px; width: 4px; bottom: calc(100% + 4px); height: var(--fl-gap, 56px); border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--source-accent) 70%, transparent), var(--source-accent)); transform-origin: 50% 0%; }
-.fl-step:first-child .fl-step__connector { display: none; }
-.fl-rail[data-count="2"] .fl-step__connector { --fl-gap: 64px; }
-.fl-rail[data-count="3"] .fl-step__connector { --fl-gap: 56px; }
-.fl-rail[data-count="4"] .fl-step__connector { --fl-gap: 48px; }
-.fl-rail[data-count="5"] .fl-step__connector { --fl-gap: 38px; }
-.fl-rail[data-count="6"] .fl-step__connector { --fl-gap: 30px; }
+/* Single vertical spine through the badge column (badge 92px -> center x = 46px;
+   first/last badge centers sit 46px from rail top/bottom). Replaces per-gap stubs;
+   drawn once by build_flow via scaleY from the top (transform-origin matches). */
+.fl-spine { position: absolute; left: 43.5px; top: 46px; bottom: 46px; width: 5px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--source-accent) 70%, transparent), var(--source-accent)); transform-origin: 50% 0%; z-index: 0; }
 
 .fl-step__badge { box-sizing: border-box; width: 92px; height: 92px; display: grid; place-items: center; border-radius: 26px; border: 1px solid var(--line); background: var(--panel); color: var(--paper); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 40px; font-weight: 700; box-shadow: 0 18px 60px rgba(0,0,0,0.32); }
 .fl-step__badge::after { content: counter(fl-step); }

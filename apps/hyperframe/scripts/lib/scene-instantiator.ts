@@ -5,6 +5,7 @@
  *   manifest.json   typed slot declarations (text | richText | repeat)
  *   fragment.html   inner DOM with __SLOT__ tokens and <!-- repeat:NAME --> blocks
  *   styles.css      class-based styles (shared across instances of this type)
+ *   styles.desktop.css  optional 16:9 overrides, emitted only by desktop builds
  *   timeline.js     build_<builder>(tl, t, s, p) entrance choreography
  *
  * Token rules (deterministic, so identical params => identical bytes):
@@ -48,6 +49,18 @@ export function assertSafeHtml(value: unknown, field: string): string {
   return text;
 }
 
+// Image slots bind a path relative to the episode dir (e.g. assets/generated/x.png).
+export function assertSafeImagePath(value: unknown, field: string): string {
+  const text = String(value);
+  if (text === "") return text;
+  if (text.startsWith("/") || text.includes("..") || text.includes("://")) {
+    throw new Error(
+      `slot "${field}": image must be a relative path inside the episode dir (got "${text}")`,
+    );
+  }
+  return text;
+}
+
 const tokenize = (name: string): string =>
   name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toUpperCase();
 
@@ -56,6 +69,7 @@ export interface ResolvedSceneType {
   manifest: SceneTypeManifest;
   fragment: string;
   styles: string;
+  stylesDesktop: string | null;
   timeline: string;
 }
 
@@ -74,11 +88,13 @@ export function resolveSceneType(type: string, version = 1, hubRoot?: string): R
   if (!fs.existsSync(dir)) {
     throw new Error(`unknown scene-type "${type}@${version}" (looked in ${path.relative(process.cwd(), dir)})`);
   }
+  const desktopCssPath = path.join(dir, "styles.desktop.css");
   return {
     dir,
     manifest: readValidatedManifest(path.join(dir, "manifest.json"), type, version),
     fragment: fs.readFileSync(path.join(dir, "fragment.html"), "utf8"),
     styles: fs.readFileSync(path.join(dir, "styles.css"), "utf8"),
+    stylesDesktop: fs.existsSync(desktopCssPath) ? fs.readFileSync(desktopCssPath, "utf8") : null,
     timeline: fs.readFileSync(path.join(dir, "timeline.js"), "utf8"),
   };
 }
@@ -147,6 +163,7 @@ function renderRepeat(
 export interface InstantiatedScene {
   html: string;
   css: string;
+  cssDesktop: string | null;
   timeline: string;
   manifest: SceneTypeManifest;
 }
@@ -180,9 +197,14 @@ export function instantiateScene(args: {
         if (def.required) throw new Error(`scene-type "${type}" missing required slot "${name}"`);
         raw = def.default ?? "";
       }
-      const value = def.kind === "richText" ? assertSafeHtml(raw, name) : escapeHtml(raw);
+      const value =
+        def.kind === "richText"
+          ? assertSafeHtml(raw, name)
+          : def.kind === "image"
+            ? escapeHtml(assertSafeImagePath(raw, name))
+            : escapeHtml(raw);
       html = html.replaceAll(`__${tokenize(name)}__`, value);
     }
   }
-  return { html, css: resolved.styles, timeline: resolved.timeline, manifest };
+  return { html, css: resolved.styles, cssDesktop: resolved.stylesDesktop, timeline: resolved.timeline, manifest };
 }

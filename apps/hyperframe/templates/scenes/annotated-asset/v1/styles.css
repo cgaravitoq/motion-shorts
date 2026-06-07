@@ -1,0 +1,65 @@
+.ax-title { margin: 0; }
+.ax-title:empty { display: none; }
+.ax-eyebrow:empty { display: none; }
+
+.ax-frame {
+  position: relative;
+  counter-reset: ax-pin;
+  margin: var(--title-block-gap) 0 0;
+  align-self: center;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--panel);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.32);
+  overflow: hidden;
+}
+.ax-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 1000px;
+  object-fit: cover;
+}
+.ax-image[src=""] { display: none; }
+/* When the image is absent the frame keeps a usable canvas for the pins. */
+.ax-frame:has(.ax-image[src=""]) {
+  min-height: 760px;
+  background: color-mix(in srgb, var(--source-accent) 7%, var(--panel));
+}
+
+.ax-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  white-space: nowrap;
+}
+.ax-pin__dot {
+  counter-increment: ax-pin;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--source-accent-2);
+  color: var(--ink);
+  font-family: "Berkeley Mono", "JetBrains Mono", monospace;
+  font-size: 30px;
+  font-weight: 800;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--source-accent-2) 26%, transparent), 0 14px 30px rgba(0,0,0,0.45);
+}
+.ax-pin__dot::before { content: counter(ax-pin); }
+.ax-pin__chip {
+  padding: 12px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(8, 9, 10, 0.82);
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 640;
+  color: var(--paper);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+}

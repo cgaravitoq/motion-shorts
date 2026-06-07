@@ -1,0 +1,16 @@
+/* outro desktop-1080p (16:9) overrides — appended AFTER styles.css in desktop builds only.
+   CENTERED-HERO-EXEMPT: .brand-outro is absolute inset:0 (never in the .scene-pad grid,
+   never needs a full-width component). It covers every pixel of 1920x1080, so the v4
+   frame-fill law does not apply — whitespace here is the intentional dark vignette.
+   Desktop scale anchors the larger frame: mark 580px, name 92px, lockup 728x405, and a
+   900px aura so the surrounding dark field reads as a deliberate radial vignette. */
+.brand-outro__lockup { width: 728px; height: 405px; margin-bottom: 34px; }
+.brand-outro__aura {
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--source-accent-2) 16%, transparent), transparent 62%);
+}
+.brand-outro__mark { width: 580px; }
+.brand-outro__name { font-size: 92px; }
+.brand-outro__tagline { margin: 28px 0 0; max-width: 960px; font-size: 34px; }
+.brand-outro__source { margin: 42px 0 0; font-size: 24px; }

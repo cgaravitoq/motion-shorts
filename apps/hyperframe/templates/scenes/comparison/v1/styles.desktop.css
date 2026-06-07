@@ -1,0 +1,73 @@
+/* comparison desktop-1080p (16:9) overrides — appended AFTER styles.css AND
+   shell.desktop.css in desktop builds only. v4 FRAME-FILL / landing-hero:
+   centered eyebrow chip + centered title as ONE header block spanning the full
+   header width (cols 1/13), then the A|VS|B comparison spans the FULL band
+   (cols 1/13). The internal 1fr auto 1fr grid is preserved; both panels stretch
+   to an equal ~560px min-height so the row fills the band as one deliberate
+   object — no asymmetric left-anchored void. The shell master switch already
+   centers .scene-pad children and turns .cmp-eyebrow into the pill chip. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.cmp {
+  grid-template-rows: auto auto 1fr;
+  align-content: center;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-eyebrow {
+  grid-column: 1 / 13;
+  grid-row: 1;
+  align-self: end;
+  justify-self: center;
+  text-align: center;
+  margin: 0;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-title {
+  grid-column: 1 / 13;
+  grid-row: 2;
+  justify-self: center;
+  text-align: center;
+  max-width: var(--header-max);
+  margin: 0;
+  font-size: 64px;
+}
+
+/* Comparison row: primary visual, full usable width, centred in its band.
+   1fr auto 1fr keeps the A | VS | B identity; equal-stretch panels fill the
+   row so a longer point list never makes one panel taller than its sibling. */
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-grid {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  width: 100%;
+  align-self: center;
+  align-items: stretch;
+  grid-template-columns: 1fr auto 1fr;
+  column-gap: 48px;
+  margin-top: var(--title-block-gap);
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-col {
+  min-height: 560px;
+  padding: 52px 48px;
+  border-radius: 32px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-col__title {
+  margin: 0 0 32px;
+  font-size: 54px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-list { gap: 24px; }
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-point__text {
+  font-size: 34px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-divider {
+  align-self: stretch;
+}
+
+#ep-stage[data-format="desktop-1080p"] .cmp .cmp-divider__vs {
+  width: 108px;
+  height: 108px;
+  font-size: 38px;
+}

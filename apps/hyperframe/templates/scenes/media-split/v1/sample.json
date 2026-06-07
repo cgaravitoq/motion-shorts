@@ -1,0 +1,12 @@
+{
+  "eyebrow": "El producto",
+  "title": "Captura real, <strong>copy de producto</strong>",
+  "image": "assets/generated/placeholder-asset.png",
+  "mediaSide": "right",
+  "points": [
+    { "text": "Pega la captura del producto sin reencuadrarla." },
+    { "text": "El copy queda anclado a la izquierda, legible y jerárquico." },
+    { "text": "La imagen es el objeto principal, nunca un card dentro de otro." },
+    { "text": "mediaSide=left espeja columnas para variar el ritmo." }
+  ]
+}

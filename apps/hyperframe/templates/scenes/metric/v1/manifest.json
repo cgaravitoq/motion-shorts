@@ -6,19 +6,43 @@
   "description": "A KPI panel with 1-4 stat cards in an adaptive grid. Each card shows a big value, a label, and an optional delta/trend line. Optional eyebrow and title above. Card count is a parameter; grid layout and stagger adapt automatically.",
   "builder": "build_metric",
   "classPrefix": "mt",
+  "layout": "centered",
   "defaultDuration": 7,
-  "intentTags": ["data", "informative", "workflow", "brand"],
+  "intentTags": [
+    "data",
+    "informative",
+    "workflow",
+    "brand"
+  ],
   "slots": {
-    "eyebrow": { "kind": "text", "required": false, "default": "" },
-    "title": { "kind": "richText", "required": false, "default": "" },
+    "eyebrow": {
+      "kind": "text",
+      "required": false,
+      "default": ""
+    },
+    "title": {
+      "kind": "richText",
+      "required": false,
+      "default": ""
+    },
     "stats": {
       "kind": "repeat",
       "min": 1,
       "max": 4,
       "item": {
-        "value": { "kind": "text", "required": true },
-        "label": { "kind": "text", "required": true },
-        "delta": { "kind": "text", "required": false, "default": "" }
+        "value": {
+          "kind": "text",
+          "required": true
+        },
+        "label": {
+          "kind": "text",
+          "required": true
+        },
+        "delta": {
+          "kind": "text",
+          "required": false,
+          "default": ""
+        }
       }
     }
   },

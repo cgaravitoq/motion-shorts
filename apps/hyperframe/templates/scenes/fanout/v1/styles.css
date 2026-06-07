@@ -2,14 +2,28 @@
 .fo-title:empty { display: none; }
 .fo-eyebrow:empty { display: none; }
 
-.fo-graph { margin: var(--title-block-gap) auto 0; width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
+/* Portrait (9:16) vertical orchestration graph. Box is 912x600 in EXACT sync
+   with the builder portrait constants + the wires viewBox (timeline.js portrait
+   branch: W=912, H=600, ROOT_X=456, SRC_BOTTOM=118, WRK_TOP=248, WRK_BOTTOM=352,
+   SYN_TOP=482, ELBOW_OUT=183, ELBOW_IN=417). Nodes are absolutely positioned at
+   builder-computed centers so the SVG wires touch every chip edge — do not move
+   a node without updating the matching constant in timeline.js. */
+.fo-graph { position: relative; width: 912px; height: 600px; margin: var(--title-block-gap) auto 0; }
 
-.fo-row { display: flex; justify-content: center; width: 100%; }
-.fo-row--workers { gap: 28px; flex-wrap: wrap; align-items: stretch; }
-.fo-graph[data-count="5"] .fo-row--workers,
-.fo-graph[data-count="6"] .fo-row--workers { gap: 22px; }
+.fo-wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
+.fo-wire { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.fo-wire--out { stroke: var(--source-accent); }
+.fo-wire--in { stroke: var(--source-accent-2); }
 
-.fo-node { box-sizing: border-box; display: flex; align-items: center; gap: 18px; padding: 26px 34px; border: 1px solid var(--line); border-radius: 22px; background: var(--panel); box-shadow: 0 22px 70px rgba(0,0,0,0.3); }
+.fo-row { position: absolute; z-index: 1; }
+.fo-row--source { top: 64px; left: 456px; transform: translate(-50%, -50%); }
+.fo-row--synth { top: 536px; left: 456px; transform: translate(-50%, -50%); }
+.fo-row--workers { top: 300px; left: 0; width: 912px; height: 0; }
+
+/* workers are placed at builder-computed center-X via inline left (translate -50%,-50%) */
+.fo-row--workers .fo-node--worker { position: absolute; top: 0; }
+
+.fo-node { box-sizing: border-box; display: flex; align-items: center; gap: 18px; padding: 26px 34px; border: 1px solid var(--line); border-radius: 22px; background: var(--panel); box-shadow: 0 22px 70px rgba(0,0,0,0.3); white-space: nowrap; }
 .fo-node__dot { flex: none; width: 18px; height: 18px; border-radius: 999px; background: var(--source-accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--source-accent) 22%, transparent); }
 .fo-node__label { font-size: 40px; line-height: 1.05; font-weight: 740; color: var(--paper); letter-spacing: 0; white-space: nowrap; }
 
@@ -19,17 +33,3 @@
 .fo-node--worker .fo-node__dot { width: 14px; height: 14px; background: var(--source-accent-2); box-shadow: 0 0 0 5px color-mix(in srgb, var(--source-accent-2) 22%, transparent); }
 .fo-node--synth { padding: 28px 40px; border-color: color-mix(in srgb, var(--source-accent-2) 55%, var(--line)); background: color-mix(in srgb, var(--source-accent-2) 8%, var(--panel)); }
 .fo-node--synth .fo-node__dot { background: var(--source-accent-2); box-shadow: 0 0 0 7px color-mix(in srgb, var(--source-accent-2) 24%, transparent); }
-
-.fo-links { display: flex; justify-content: center; gap: 28px; flex-wrap: nowrap; width: 100%; height: 150px; }
-/* with 2 workers the default gap parks both connectors at the centre, far from the node centres */
-.fo-graph[data-count="2"] .fo-links { gap: 300px; }
-.fo-graph[data-count="5"] .fo-links,
-.fo-graph[data-count="6"] .fo-links { gap: 22px; height: 120px; }
-.fo-link { flex: none; width: 4px; height: 100%; border-radius: 999px; }
-.fo-link--out { background: linear-gradient(180deg, var(--source-accent), color-mix(in srgb, var(--source-accent) 45%, transparent)); transform-origin: 50% 0%; }
-.fo-link--in { background: linear-gradient(180deg, color-mix(in srgb, var(--source-accent-2) 45%, transparent), var(--source-accent-2)); transform-origin: 50% 100%; }
-
-.fo-graph[data-count="2"] .fo-link:nth-child(n + 3),
-.fo-graph[data-count="3"] .fo-link:nth-child(n + 4),
-.fo-graph[data-count="4"] .fo-link:nth-child(n + 5),
-.fo-graph[data-count="5"] .fo-link:nth-child(n + 6) { display: none !important; }

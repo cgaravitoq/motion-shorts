@@ -1,0 +1,83 @@
+/* media-split desktop-1080p (16:9) — appended AFTER styles.css AND
+   shell.desktop.css in desktop builds only. .scene-pad is the 12-col grid; this
+   is an asset-led 70/30 split. Default (data-side="right"): the copy block
+   (eyebrow + title + bullets) anchors left in cols 1/7, the image owns cols 7/13
+   and justifies to the frame edge as the primary visual. data-side="left"
+   mirrors the columns. The image keeps presence (max-height ~640px, contain,
+   rounded, subtle border + shadow) and is never double-wrapped. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.ms- {
+  grid-template-rows: 1fr;
+  align-content: center;
+  align-items: center;
+}
+
+/* Copy block: its three rows (eyebrow/title/bullets) stack inside an inner grid
+   so display:contents is dropped on desktop in favour of a real grid cell. */
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-copy {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / 7;
+  grid-row: 1;
+  align-self: center;
+}
+
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-eyebrow {
+  margin: 0 0 24px;
+  opacity: var(--layer-context);
+}
+
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-title {
+  margin: 0;
+  font-size: 72px;
+  opacity: var(--layer-primary);
+}
+
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-points {
+  margin: 40px 0 0;
+  gap: 24px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-point__text {
+  font-size: 30px;
+  opacity: var(--layer-primary);
+}
+
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-point__mark {
+  opacity: var(--layer-structure);
+}
+
+/* Image: primary asset, right column, justified to the frame edge. */
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-media {
+  grid-column: 7 / 13;
+  grid-row: 1;
+  margin: 0;
+  align-self: center;
+  justify-self: end;
+  opacity: var(--layer-primary);
+}
+
+#ep-stage[data-format="desktop-1080p"] .ms- .ms-media__img {
+  width: 100%;
+  max-height: 640px;
+  object-fit: contain;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  box-shadow: 0 32px 110px rgba(0, 0, 0, 0.4);
+}
+
+/* Mirrored layout: copy right, image left. */
+#ep-stage[data-format="desktop-1080p"] .scene-pad.ms-[data-side="left"] .ms-copy {
+  grid-column: 7 / 13;
+}
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.ms-[data-side="left"] .ms-media {
+  grid-column: 1 / 7;
+  justify-self: start;
+}
+
+/* Image absent: copy block reclaims the full usable width and stays readable. */
+#ep-stage[data-format="desktop-1080p"] .scene-pad.ms-:has(.ms-media__img[src=""]) .ms-copy,
+#ep-stage[data-format="desktop-1080p"] .scene-pad.ms-[data-side="left"]:has(.ms-media__img[src=""]) .ms-copy {
+  grid-column: 1 / 11;
+}

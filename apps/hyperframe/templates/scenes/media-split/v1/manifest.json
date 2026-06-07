@@ -1,0 +1,26 @@
+{
+  "id": "media-split@1",
+  "type": "media-split",
+  "version": 1,
+  "label": "Media split (copy + screenshot)",
+  "description": "Real product copy paired with a screenshot or image. A title and 2-4 marked bullet points sit on one side; the image is the primary asset on the other side (70/30 desktop, full-width mid-band on portrait). mediaSide flips the columns left/right. The image carries presence (rounded, bordered, soft shadow) and is never double-framed.",
+  "builder": "build_mediaSplit",
+  "classPrefix": "ms-",
+  "defaultDuration": 7.5,
+  "intentTags": ["informative", "social", "brand", "workflow"],
+  "slots": {
+    "eyebrow": { "kind": "text", "required": false, "default": "" },
+    "title": { "kind": "richText", "required": true },
+    "image": { "kind": "image", "required": true },
+    "mediaSide": { "kind": "text", "required": false, "default": "right" },
+    "points": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 4,
+      "item": {
+        "text": { "kind": "text", "required": true }
+      }
+    }
+  },
+  "validation": []
+}

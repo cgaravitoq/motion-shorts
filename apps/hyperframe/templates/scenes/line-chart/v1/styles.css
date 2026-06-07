@@ -21,6 +21,11 @@
 .lc-dot--1 { fill: var(--source-accent-2); }
 .lc-dot--2 { fill: color-mix(in srgb, var(--paper) 72%, transparent); }
 
+.lc-endlabel { font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-weight: 700; text-anchor: start; dominant-baseline: middle; }
+.lc-endlabel--0 { fill: var(--source-accent); }
+.lc-endlabel--1 { fill: var(--source-accent-2); }
+.lc-endlabel--2 { fill: color-mix(in srgb, var(--paper) 72%, transparent); }
+
 .lc-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 40px; }
 .lc-figure[data-count="1"] .lc-legend { display: none; }
 .lc-legend__item { display: flex; align-items: center; gap: 16px; }

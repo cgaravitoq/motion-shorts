@@ -9,7 +9,7 @@ scene-spec.json  ──(assembler)──>  index.html  ──(render)──>  mp
 
 `index.html` is **generated**. Never edit it by hand; edit the spec and re-run `bun run assemble <slug>`.
 
-This doc is the **scene-type authoring reference**: the shell, the 17 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
+This doc is the **scene-type authoring reference**: the shell, the 24 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
 
 ## Layout
 
@@ -21,6 +21,8 @@ templates/
     shell.css                   design tokens, background layers, scene
                                 container, shared typography roles, captions,
                                 brand-corner watermark
+    shell.desktop.css           16:9 token overrides, appended only by
+                                `assemble --format=desktop`
     shell.html.tmpl             document skeleton: head, GSAP cdn, bg/audio/
                                 captions tracks, the single paused timeline,
                                 __SLOT__ tokens filled by the assembler
@@ -28,6 +30,8 @@ templates/
     manifest.json               typed slot schema + builder + metadata
     fragment.html               inner DOM with __SLOT__ tokens / repeat blocks
     styles.css                  class-scoped CSS for this type
+    styles.desktop.css          optional 16:9 overrides, appended after
+                                styles.css only in desktop builds
     timeline.js                 build_<x>(tl, t, s, p) entrance choreography
     sample.json                 example params (used by scene:gallery)
 ```
@@ -47,9 +51,9 @@ The build engine is `apps/hyperframe/scripts/lib/`:
 | `scene-spec.ts` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
 | `scene-router.ts` | intent → recommended scene-type skeleton + typed summaries |
 
-## The 17 scene-types
+## The 24 scene-types
 
-These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count.
+These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count. The last seven (`media-split` through `before-after`) are the desktop-first component library — asset-led layouts born for 16:9 that also carry a portrait layout.
 
 | Type | Purpose | Default dur (s) | Repeatable slot (range) | Other slots |
 |------|---------|:---------------:|-------------------------|-------------|
@@ -69,6 +73,13 @@ These are the only building blocks. `hook` opens; `outro` is the pinned brand si
 | `line-chart` | Time-series line chart, 1-3 series | 8 | `series` **1-3** (`label*`, `values*`) | `title?` (rich), `eyebrow?`, `unit?`, `xLabels?` |
 | `contrib-heatmap` | GitHub-style contribution heatmap | 8 | — | `data*`, `caption?`, `highlight?`, `title?` (rich), `eyebrow?` |
 | `decision-tree` | Conditional decision tree (IF/THEN branching) | 8 | `branches` **2-3** (`label*`, `result*`, `tone?`) | `question*`, `title?` (rich), `eyebrow?` |
+| `media-split` | Copy + screenshot/image split (the desktop workhorse) | 7.5 | `points` **2-4** (`text*`) | `title*` (rich), `eyebrow?`, `image*`, `mediaSide?` (left\|right) |
+| `annotated-asset` | Screenshot/diagram with numbered callout pins | 8 | `callouts` **2-5** (`label*`, `x*`, `y*` — percent coords) | `title?` (rich), `eyebrow?`, `image*` |
+| `code-output` | Code window + its rendered result, side by side | 8 | `lines` **2-10** (`code?`) + `outputLines` **1-6** (`text?`) | `filename*`, `outputLabel?`, `title?` (rich), `eyebrow?` |
+| `dashboard-composite` | Multi-panel KPI dashboard with mini progress bars | 8 | `tiles` **3-4** (`label*`, `value*`, `pct*`, `delta?`) | `title*` (rich), `eyebrow?` |
+| `statement-lower-third` | Large statement anchored to the lower third | 7 | — | `statement*` (rich), `attribution?`, `image?` (full-bleed bg) |
+| `logo-grid` | Social-proof band of name chips/wordmarks | 7 | `items` **3-8** (`label*`) | `title?` (rich), `eyebrow?` |
+| `before-after` | Two images with a vertical wipe reveal | 7 | — | `imageBefore*`, `imageAfter*`, `labelBefore?`, `labelAfter?`, `title?` (rich), `eyebrow?` |
 | `outro` | Pinned brand sign-off (track 7, last) | 5.5 | — | `source?` |
 
 `*` = required, `?` = optional. "(rich)" slots accept inline HTML (`<strong>`, `<em>`, `<br>`); everything else is escaped as plain text. The same `*`/`?`/`[min-max]` summary is what `recommend_scene_types` and `scene:check` print.
@@ -132,6 +143,7 @@ Rules:
 - **No `repeat: -1`, `Math.random`, `Date.now`, or async.** Determinism is enforced by lint.
 - If an element animates **to** visible or needs a hidden initial state (drawing connectors, blurred-in text), **hide it at literal time `0` first** with `tl.set(s(...), {...}, 0)` so it materialises correctly at any seek position. See `flow/v1/timeline.js` (connectors) and `outro/v1/timeline.js` (text + watermark fade) for the pattern.
 - The assembler already reveals/hides the `<section>` via the generic crossfade. Your builder only animates the scene's **own content**.
+- **Format branching**: when the 16:9 desktop layout needs a different draw axis or geometry (e.g. a connector drawing `scaleX` instead of `scaleY`), branch on the stage attribute as the first statement of the builder: `const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";`. The portrait branch must keep today's exact values; CSS-only differences belong in `styles.desktop.css`, not the builder.
 
 ## Token rules (fragment.html → params)
 
@@ -154,7 +166,7 @@ A repeat block is delimited by HTML comments and rendered once per item:
 <!-- /repeat:cards -->
 ```
 
-`richText` slots are sanitized (no `<script>`/`<style>`/`<iframe>`/… tags, no `on*=` handlers) but otherwise pass through; all other slots are HTML-escaped.
+`richText` slots are sanitized (no `<script>`/`<style>`/`<iframe>`/… tags, no `on*=` handlers) but otherwise pass through; all other slots are HTML-escaped. `image` slots bind a path **relative to the episode dir** (typically `assets/generated/<name>.png`, see the generated-raster-assets skill) — absolute paths, `..` and URLs are rejected at instantiation.
 
 ## Adding a new scene-type
 
@@ -166,7 +178,9 @@ Create `templates/scenes/<type>/v1/` with these five files:
 4. **`timeline.js`** — the `build_<x>(tl, t, s, p)` function matching `manifest.builder`. Follow the builder contract above. `title-cards/v1/timeline.js` is the canonical reference (it documents the contract inline).
 5. **`sample.json`** — example params with every slot filled (repeat slots near their max), so `scene:gallery` can exercise the type.
 
-The assembler auto-discovers the type (no registration needed). After adding it, add it to a `scene-spec.json` and run `scene:check` + `assemble` + `scene:gallery` to verify it renders and stays within frame.
+Optionally add **`styles.desktop.css`** with the type's 16:9 overrides — the assembler appends it after `styles.css` only when assembling with `--format=desktop` (no `[data-format]` gating needed; reuse the base selectors at equal-or-higher specificity to override them). All 17 shipped types carry one.
+
+The assembler auto-discovers the type (no registration needed). After adding it, add it to a `scene-spec.json` and run `scene:check` + `assemble` + `scene:gallery` to verify it renders and stays within frame — and `scene-qa --format=desktop` if you shipped a desktop layout.
 
 ## Commands (CWD = `apps/hyperframe`)
 
@@ -174,8 +188,10 @@ The assembler auto-discovers the type (no registration needed). After adding it,
 bun run new:episode <slug> [--intent=informative|data|workflow|social|brand|vfx]
 # scaffold a starter scene-spec.json (seeded from the intent skeleton) + assemble index.html
 
-bun run assemble <slug>
-# regenerate index.html from scene-spec.json — run after EVERY spec edit
+bun run assemble <slug> [--format=desktop]
+# regenerate index.html (9:16) from scene-spec.json — run after EVERY spec edit
+# --format=desktop writes index.desktop.html (16:9) instead; each invocation
+# generates ONE format and never touches the other file
 
 bun run scene:check [<spec>...]
 # validate scene-spec(s) against scene-type manifests (no assembly)

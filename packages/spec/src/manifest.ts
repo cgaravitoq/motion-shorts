@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 import { exitToResult } from "./parse-error";
 
-export const ScalarSlotKind = Schema.Literals(["text", "richText"]);
+export const ScalarSlotKind = Schema.Literals(["text", "richText", "image"]);
 export type ScalarSlotKind = typeof ScalarSlotKind.Type;
 
 const NonNegativeInt = Schema.Number.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(0));
@@ -46,6 +46,9 @@ export const SceneTypeManifest = Schema.Struct({
   validation: Schema.Array(Schema.String),
   fixedTrack: Schema.optional(NonNegativeInt),
   role: Schema.optional(Schema.String),
+  // Desktop composition mode: "centered" scenes get the centered header +
+  // full-width component treatment in 16:9 builds. Portrait ignores it.
+  layout: Schema.optional(Schema.Literals(["top-left", "centered"])),
 });
 export type SceneTypeManifest = typeof SceneTypeManifest.Type;
 

@@ -1,0 +1,74 @@
+/* big-stat desktop-1080p (16:9) overrides — appended AFTER styles.css AND
+   shell.desktop.css. ALL-CENTERED hero: a single centered stack — small eyebrow
+   label on top (context layer), the giant value+suffix as the hero numeral, and a
+   centered context line below at --body-max. A soft radial glow in the accent hue
+   sits behind the numeral (CSS ::before, no new DOM) so the hero never reads as
+   bare text. The figure scales from its own centre (timeline transformOrigin
+   50% 50% on desktop), and the glow scales with it. */
+
+#ep-stage[data-format="desktop-1080p"] .scene-pad.bs {
+  grid-template-rows: 1fr auto auto auto 1fr;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-label {
+  grid-column: 1 / 13;
+  grid-row: 2;
+  justify-self: center;
+  align-self: end;
+  margin: 0;
+  max-width: var(--body-max);
+  opacity: var(--layer-context);
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-figure {
+  grid-column: 1 / 13;
+  grid-row: 3;
+  position: relative;
+  justify-self: center;
+  align-self: center;
+  align-items: baseline;
+  justify-content: center;
+  margin: var(--title-block-gap) 0 0;
+  gap: 12px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-figure::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: 920px;
+  height: 920px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--source-accent-2) 18%, transparent), transparent 62%);
+  pointer-events: none;
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-value {
+  position: relative;
+  z-index: 1;
+  font-size: 320px;
+  letter-spacing: -8px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-suffix {
+  position: relative;
+  z-index: 1;
+  font-size: 144px;
+  letter-spacing: -4px;
+}
+
+#ep-stage[data-format="desktop-1080p"] .bs-context {
+  grid-column: 1 / 13;
+  grid-row: 4;
+  justify-self: center;
+  align-self: start;
+  margin: var(--title-block-gap) 0 0;
+  max-width: var(--body-max);
+  text-align: center;
+}

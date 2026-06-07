@@ -1,0 +1,24 @@
+{
+  "eyebrow": "Código + resultado",
+  "title": "Lo que escribes y lo que <strong>renderiza</strong>",
+  "filename": "greet.ts",
+  "lines": [
+    { "code": "const names = [\"Ada\", \"Linus\", \"Grace\"];" },
+    { "code": "" },
+    { "code": "function greet(who: string) {" },
+    { "code": "  return `hola, ${who}!`;" },
+    { "code": "}" },
+    { "code": "" },
+    { "code": "for (const name of names) {" },
+    { "code": "  console.log(greet(name));" },
+    { "code": "}" }
+  ],
+  "outputLabel": "output",
+  "outputLines": [
+    { "text": "hola, Ada!" },
+    { "text": "hola, Linus!" },
+    { "text": "hola, Grace!" },
+    { "text": "" },
+    { "text": "Done in 0.04s." }
+  ]
+}
