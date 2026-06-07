@@ -10,7 +10,7 @@ permission:
     "bun run new:episode *": allow
     "bun run assemble *": allow
     "bun run scene:check *": allow
-    "bun run scripts/scene-qa.mjs *": allow
+    "bun run scripts/scene-qa.ts *": allow
     "bun run scene-qa *": allow
     "bun run render:episode *": allow
     "bun run audio *": allow
@@ -64,7 +64,7 @@ If the request is ambiguous, ask one concise question before delegating.
 4. Invoke `short-audio-producer` to generate voice and captions (`bun run audio ...`).
 5. **Gate 2 (audio)**: ask the user to approve `voice.mp3` after an audible check before any visual assembly.
 6. Invoke `short-composer` to validate the spec (`bun run scene:check`), assemble the monolithic `index.html` (`bun run assemble <slug>`), and lint it (`bunx hyperframes lint`). `index.html` is generated — never hand-edited.
-7. Invoke `short-qa` to run per-scene visual QA (`bun run scripts/scene-qa.mjs <slug>`): it re-assembles, captures one settled "final" frame per scene plus a `contact-sheet.jpg` grid, and runs `hyperframes inspect` for overflow/overlap (no full mp4).
+7. Invoke `short-qa` to run per-scene visual QA (`bun run scripts/scene-qa.ts <slug>`): it re-assembles, captures one settled "final" frame per scene plus a `contact-sheet.jpg` grid, and runs `hyperframes inspect` for overflow/overlap (no full mp4).
 8. **Gate 3 (per-scene visual, looped)**: show the contact sheet + inspect verdict in the chat (the user never opens folders) and have them approve/reject EACH scene. For every rejected scene, the visual-director edits that scene's slots, the composer re-assembles, and qa re-runs `scene-qa --scenes=<id>` for only the changed scenes. Repeat until all scenes are approved.
 9. **Gate 4 (final render)**: only after all scenes are approved, qa runs the final full render (`bun run render:episode <slug> --format=mp4`); ask the user to approve the mp4.
 10. **Gate 5 (distribution copy)**: load `generate-distribution-copy` to draft per-platform ES+EN copy into `distribution.json`, validate (`bun run copy:check`), voice-gate LinkedIn (`bun run copy:gate`), and collect per-platform approval.
