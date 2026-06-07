@@ -218,9 +218,13 @@ brand-corner crossfade, color palettes, TTS pronunciation gotchas) is in
 [`.agents/skills/canonical-short/SKILL.md`](./.agents/skills/canonical-short/SKILL.md).
 
 The brand wordmark and tagline default to `cgaravitoq` / `AI Engineering`
-in `templates/scenes/outro/v1/fragment.html` (so the demo episodes render
-unchanged). `.env.example` declares matching `BRAND_NAME` / `BRAND_TAGLINE`
-vars; to rebrand, edit the outro fragment text directly.
+(slot defaults in `templates/scenes/outro/v1/manifest.json`, so the demo
+episodes render unchanged). To rebrand, set `BRAND_NAME` / `BRAND_TAGLINE`
+env vars — `bun run new:episode` writes them into the outro's `wordmark` /
+`tagline` slots at scaffold time — or set those slots directly in any
+episode's `scene-spec.json`. The logo mark itself is the inline SVG in the
+outro fragment and the `#brand-corner` watermark in
+`templates/_shell/shell.html.tmpl`; replace both to fully rebrand.
 
 ## Layout
 

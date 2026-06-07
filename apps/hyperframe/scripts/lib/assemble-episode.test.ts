@@ -95,3 +95,26 @@ describe("assembleEpisode formats", () => {
     expect(desktop.html).toContain("{ maxChars: 40, maxTokens: 7 }");
   });
 });
+
+describe("outro brand slots", () => {
+  it("defaults to the cgaravitoq lockup when the slots are omitted", () => {
+    const { html } = assembleEpisode(realSpec(), { hubRoot });
+    expect(html).toContain('<h1 class="brand-outro__name">cgaravitoq</h1>');
+    expect(html).toContain('<p class="brand-outro__tagline">AI Engineering</p>');
+    expect(html).toContain("cgaravitoq logo");
+  });
+
+  it("renders a custom wordmark/tagline from the spec", () => {
+    const spec = realSpec();
+    const branded = {
+      ...spec,
+      scenes: spec.scenes.map((s) =>
+        s.type === "outro" ? { ...s, slots: { wordmark: "Acme Co", tagline: "Ship faster" } } : s,
+      ),
+    };
+    const { html } = assembleEpisode(branded, { hubRoot });
+    expect(html).toContain('<h1 class="brand-outro__name">Acme Co</h1>');
+    expect(html).toContain('<p class="brand-outro__tagline">Ship faster</p>');
+    expect(html).not.toContain("cgaravitoq</h1>");
+  });
+});

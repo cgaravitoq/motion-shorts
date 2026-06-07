@@ -11,6 +11,8 @@
   "role": "outro",
   "intentTags": ["informative", "workflow", "data", "social", "brand", "vfx"],
   "slots": {
+    "wordmark": { "kind": "text", "required": false, "default": "cgaravitoq" },
+    "tagline": { "kind": "text", "required": false, "default": "AI Engineering" },
     "source": { "kind": "text", "required": false, "default": "" }
   },
   "validation": [

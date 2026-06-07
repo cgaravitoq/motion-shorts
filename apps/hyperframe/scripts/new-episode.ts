@@ -14,6 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { assembleEpisode } from "./lib/assemble-episode";
+import { env } from "./lib/env";
 import { INTENTS, routeIntent } from "./lib/scene-router";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
@@ -87,12 +88,19 @@ const sampleFor = (type: string): Record<string, unknown> => {
     ? (JSON.parse(fs.readFileSync(samplePath, "utf8")) as Record<string, unknown>)
     : {};
 };
+// Brand lockup for the outro: BRAND_NAME/BRAND_TAGLINE override the manifest
+// defaults (cgaravitoq / AI Engineering) at scaffold time, keeping assemble pure.
+const brandSlots: Record<string, string> = {};
+if (env.brandName) brandSlots.wordmark = env.brandName;
+if (env.brandTagline) brandSlots.tagline = env.brandTagline;
+
 // Keep scene ids unique even if a type repeats in the skeleton.
 const counts: Record<string, number> = {};
 const scenes = skeleton.map((type) => {
   counts[type] = (counts[type] ?? 0) + 1;
   const id = (counts[type] as number) > 1 ? `${type}-${counts[type]}` : type;
-  return { id, type, slots: sampleFor(type) };
+  const slots = type === "outro" ? { ...sampleFor(type), ...brandSlots } : sampleFor(type);
+  return { id, type, slots };
 });
 
 const spec = {
