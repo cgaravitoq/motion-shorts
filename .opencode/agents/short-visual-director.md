@@ -30,10 +30,11 @@ You translate the approved script into a typed `scene-spec.json`. A short is a s
 
 ## Scene-types (the only building blocks)
 
-17 types. Each owns its content + entrance motion; the assembler owns everything universal (background, brand-corner, the single paused GSAP timeline + crossfades, track allocation, captions/audio). `outro` is the pinned brand sign-off and is ALWAYS the last scene. Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12, `progress-ring.rings` 1-3, `line-chart.series` 1-3, `decision-tree.branches` 2-3).
+24 types. Each owns its content + entrance motion; the assembler owns everything universal (background, brand-corner, the single paused GSAP timeline + crossfades, track allocation, captions/audio). `outro` is the pinned brand sign-off and is ALWAYS the last scene. Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12, `progress-ring.rings` 1-3, `line-chart.series` 1-3, `decision-tree.branches` 2-3).
 
-- **Visual-first (graphic — prefer these as the backbone):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `metric`/`big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window). They explain by being SEEN.
+- **Visual-first (graphic — prefer these as the backbone):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `metric`/`big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window), `progress-ring` (animated rings), `line-chart` (animated trend), `contrib-heatmap` (activity grid), `decision-tree` (branching choice), `social-card` (platform post card). They explain by being SEEN.
 - **Text-led (use sparingly — short copy only):** `hook` (opening statement), `title-cards` (labeled cards), `quote` (pull-quote).
+- **Desktop-first (asset-led, 16:9-first but carry a portrait layout):** `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`. Their image slots bind paths under the episode's `assets/`.
 - **Brand:** `outro` (pinned, always last).
 
 ## Visual-first by default
@@ -44,12 +45,13 @@ People retain what they SEE, and the narration + captions already carry the word
 - **Cap text scenes.** At most 1–2 text-led scenes per short (`title-cards`/`quote`), plus the `hook`. Never two text-led scenes back to back.
 - **Trim on-screen copy.** Short titles; card/step/bar labels are 1–4 words; drop optional body lines when a label suffices. Don't restate the narration on screen.
 - **Never invent data.** Only use `bars`/`metric`/`big-stat` with real numbers from the script/source. For qualitative topics, lean on `fanout`/`flow`/`code` instead of fake charts.
+- **Never repeat a scene-type.** Each scene-type appears at most once per short — a repeat reads as filler; pick a different type that does the same visual job.
 
 ## Workflow
 
 1. Load `short-router` and classify the selected concept into exactly one intent (informative | data | workflow | social | brand | vfx).
 2. Pick scene-types, their order, and durations — applying **Visual-first by default** (above):
-   - `recommend_scene_types(intent)` (MCP), or `bun run scene:gallery` from `apps/hyperframe/` to browse all 17 types.
+   - `recommend_scene_types(intent)` (MCP), or `bun run scene:gallery` from `apps/hyperframe/` to browse all 24 types.
    - For each chosen type, `get_scene_type(<type>)` (MCP) or read `apps/hyperframe/templates/scenes/<type>/v1/manifest.json` to learn its exact slots + ranges.
 3. Decide whether `generated-raster-assets` is required (dense screenshots, product surfaces, handoff bundles, connector-heavy scenes).
 4. Write a COMPLETE `apps/hyperframe/src/episodes/<slug>/scene-spec.json`: structure (slug, lang, width/height, palette) + the scene list, mapping the approved-script copy into each scene-type's typed slots. End with the `outro` scene.
@@ -79,4 +81,4 @@ Validation: scene:check -- pass | fail
 Assembled: yes | no
 ```
 
-Keep the scene set minimal and the order tight. Don't double-frame self-framed visuals (terminals, app/browser windows, social cards, devices) -- this is mostly encoded in the scene-types (`code` and `social-card` are already self-framed), so just avoid layering an extra frame in copy/slots.
+Keep the scene set minimal and the order tight. Don't double-frame self-framed visuals (terminals, app/browser windows, social cards, devices) -- this is mostly encoded in the scene-types (`code`, `social-card`, `code-output`, `annotated-asset`, and `before-after` are already self-framed), so just avoid layering an extra frame in copy/slots.
