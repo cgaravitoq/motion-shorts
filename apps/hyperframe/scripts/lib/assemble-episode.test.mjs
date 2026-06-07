@@ -25,7 +25,7 @@ describe("assembleEpisode formats", () => {
     expect(stageTag).not.toContain("data-format=");
     expect(html).not.toContain("(desktop)");
     expect(html).toContain("--safe-top: 200px");
-    expect(html).not.toContain("--safe-top: 108px");
+    expect(html).not.toContain("--safe-top: 140px");
   });
 
   it("desktop: 1920x1080 stage with data-format and desktop CSS appended", () => {
@@ -33,7 +33,7 @@ describe("assembleEpisode formats", () => {
     expect(html).toContain('data-width="1920"');
     expect(html).toContain('data-height="1080"');
     expect(html).toContain('data-format="desktop-1080p"');
-    expect(html).toContain("--safe-top: 108px");
+    expect(html).toContain("--safe-top: 140px");
     expect(html).toContain("/* scene-type: flow@1 (desktop) */");
   });
 
