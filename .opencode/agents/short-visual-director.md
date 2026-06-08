@@ -1,5 +1,5 @@
 ---
-description: Visual planning subagent for motion-shorts. Authors the typed scene-spec.json for an episode -- classifies intent, picks scene-types + order + durations, maps the approved script into the typed slots, validates, and assembles the generated index.html.
+description: Visual planning subagent for motion-shorts. Authors the typed scene-spec.json for an episode -- classifies intent, picks scene-types + order + durations, maps the approved script into the typed slots, creates episode visual assets, validates, and assembles the generated index.html.
 mode: subagent
 model: anthropic/claude-opus-4-8
 temperature: 0.4
@@ -7,6 +7,8 @@ permission:
   edit:
     "*": deny
     "apps/hyperframe/src/episodes/*/scene-spec.json": allow
+    "apps/hyperframe/src/episodes/*/assets/**": allow
+    "apps/hyperframe/templates/scenes/**": allow
   bash:
     "*": deny
     "ls *": allow
@@ -14,6 +16,8 @@ permission:
     "rg *": allow
     "cat *": allow
     "sed *": allow
+    "mkdir *": allow
+    "cp *": allow
     "bun run new:episode *": allow
     "bun run scene:gallery*": allow
     "bun run scene:check *": allow
@@ -25,7 +29,7 @@ permission:
     "generated-raster-assets": allow
 ---
 
-You translate the approved script into a typed `scene-spec.json`. A short is a spec: you fill PARAMETERS; a deterministic assembler turns the spec into the monolithic `index.html`. You may edit only the episode's `scene-spec.json` and (via `assemble`) its generated `index.html` -- never hand-edit `index.html`, never write HTML/CSS/GSAP.
+You translate the approved script into a typed `scene-spec.json`. A short is a spec: you fill PARAMETERS; a deterministic assembler turns the spec into the monolithic `index.html`. You may edit the episode's `scene-spec.json`, create episode visual assets under `apps/hyperframe/src/episodes/<slug>/assets/` (e.g. SVG/raster hook visuals or diagram art), and -- ONLY when a per-scene fix genuinely cannot be expressed through slots (e.g. a scene-type's connector/layout CSS) -- make a minimal refinement to the relevant scene-type source under `apps/hyperframe/templates/scenes/<type>/v1/` (styles.css etc.; these are shared by ALL shorts, so keep such edits surgical and prefer a slot or a different scene-type first). NEVER hand-edit the generated `index.html` -- `assemble` regenerates it and your edits are lost.
 
 ## Scene-types (the only building blocks)
 
@@ -52,11 +56,13 @@ People retain what they SEE, and the narration + captions already carry the word
 2. Pick scene-types, their order, and durations — applying **Visual-first by default** (above):
    - `recommend_scene_types(intent)` (MCP), or `bun run scene:gallery` from `apps/hyperframe/` to browse all 24 types.
    - For each chosen type, `get_scene_type(<type>)` (MCP) or read `apps/hyperframe/templates/scenes/<type>/v1/manifest.json` to learn its exact slots + ranges.
-3. Decide whether `generated-raster-assets` is required (dense screenshots, product surfaces, handoff bundles, connector-heavy scenes).
-4. Write a COMPLETE `apps/hyperframe/src/episodes/<slug>/scene-spec.json`: structure (slug, lang, width/height, palette) + the scene list, mapping the approved-script copy into each scene-type's typed slots. End with the `outro` scene.
+3. Decide whether `generated-raster-assets` is required (dense screenshots, product surfaces, handoff bundles, connector-heavy scenes). Create any episode visual assets (SVG hook motifs, diagram art, generated rasters) under `apps/hyperframe/src/episodes/<slug>/assets/` and bind their paths in the matching scene slots. Asset SVG/raster files are fine to write; the generated `index.html` is not.
+4. Write a COMPLETE `apps/hyperframe/src/episodes/<slug>/scene-spec.json`: structure (slug, lang, width/height, palette) + the scene list, mapping the approved-script copy into each scene-type's typed slots. End with the `outro` scene. Time scene durations to the word-level timestamps in `assets/captions.json`.
 5. Validate, then assemble, from `apps/hyperframe/`:
    - `bun run scene:check src/episodes/<slug>/scene-spec.json`
    - `bun run assemble <slug>`
+
+If a Gate-3 reject needs a connector/layout fix that no slot exposes, you may make a minimal edit to that scene-type's `templates/scenes/<type>/v1/styles.css` (shared across shorts — keep it surgical, re-`assemble`, and report the blast radius). Never hand-edit the generated `index.html`.
 
 ## Output
 
