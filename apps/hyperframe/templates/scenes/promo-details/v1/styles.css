@@ -1,0 +1,115 @@
+/* promo-details — companion to the promo-* story-ad family (9:16, absolute
+   1080x1920 geometry). White frame; shell dark background layers and the
+   watermark are disabled whenever this type is present. */
+
+#ep-stage:has(.pdt) #bg-field {
+  background: var(--brand-paper, #fff);
+}
+#ep-stage:has(.pdt) #bg-grid,
+#ep-stage:has(.pdt) #bg-grain,
+#ep-stage:has(.pdt) #bg-vignette,
+#ep-stage:has(.pdt) #brand-corner {
+  display: none;
+}
+
+.scene-pad.pdt {
+  position: relative;
+  padding: 0;
+  background: var(--brand-paper, #fff);
+}
+
+.pdt-badge {
+  position: absolute;
+  left: 84px;
+  top: 129px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  background: var(--brand-paper, #fff);
+  border: 1px solid var(--brand-line, #e5e5e5);
+  border-radius: var(--brand-radius-chip, 40px);
+  box-shadow: var(--brand-shadow-badge, 0 4px 2px rgba(157, 155, 155, 0.05));
+}
+.pdt-badge-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand-ink, #000);
+}
+.pdt-badge-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-ink, #000);
+  white-space: nowrap;
+}
+
+.pdt-block {
+  position: absolute;
+  left: 84px;
+  right: 79px;
+  top: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 65px;
+}
+.pdt-logo {
+  width: 180px;
+  height: 42.2px;
+  display: block;
+}
+
+.pdt-title {
+  margin: 0;
+  width: 870px;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 130px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -3px;
+  color: var(--brand-ink, #000);
+}
+
+.pdt-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 28px;
+}
+.pdt-chip {
+  display: flex;
+  align-items: center;
+  padding: 28px 44px;
+  background: var(--brand-surface, #f4f4f4);
+  border: 1px solid var(--brand-line, #e5e5e5);
+  border-radius: var(--brand-radius-chip, 40px);
+}
+.pdt-chip-text {
+  margin: 0;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 45px;
+  font-weight: 400;
+  line-height: 1.17;
+  letter-spacing: 0.11px;
+  color: var(--brand-ink, #000);
+}
+
+.pdt-cta {
+  width: 360px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-ink, #000);
+  border-radius: var(--brand-radius-pill, 128px);
+}
+.pdt-cta-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--brand-ink-inverse, #fff);
+  white-space: nowrap;
+}

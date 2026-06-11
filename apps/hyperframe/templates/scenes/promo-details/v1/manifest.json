@@ -1,0 +1,26 @@
+{
+  "id": "promo-details@1",
+  "type": "promo-details",
+  "version": 1,
+  "label": "Promo details (info chips + CTA)",
+  "description": "Story-ad event recap on a white frame: a pill badge top-left, a brand logo, a display title, 2-4 soft gray info chips (date, time, format), and a solid pill CTA in dark-on-light. Matches the promo-* family geometry (1080x1920) so it slots between the other promo scenes.",
+  "builder": "build_promoDetails",
+  "classPrefix": "pdt",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "chips": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 4,
+      "item": {
+        "text": { "kind": "text", "required": true }
+      }
+    },
+    "cta": { "kind": "text", "required": true },
+    "logoImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

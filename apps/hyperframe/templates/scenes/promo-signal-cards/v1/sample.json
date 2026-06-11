@@ -1,0 +1,18 @@
+{
+  "id": "sample-signal-cards",
+  "type": "promo-signal-cards",
+  "duration": 4.5,
+  "slots": {
+    "badge": "5 señales de comunicación ineficiente",
+    "badgeIcon": "assets/figma/logo-icon-black.svg",
+    "title": "Los empleados repiten las mismas dudas una y otra vez",
+    "label": "Cómo mejorarlo:",
+    "body": "Explica una vez, de forma visual y clara, y deja el contenido accesible para todos.",
+    "cardImage": "assets/figma/card-folder-blank.png",
+    "items": [
+      { "text": "Curso de Herramientas" },
+      { "text": "Manual de operaciones" },
+      { "text": "PRL en oficina" }
+    ]
+  }
+}

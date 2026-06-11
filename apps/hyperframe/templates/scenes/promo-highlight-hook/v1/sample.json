@@ -1,0 +1,11 @@
+{
+  "id": "sample-highlight-hook",
+  "type": "promo-highlight-hook",
+  "duration": 4.5,
+  "slots": {
+    "logoImage": "assets/figma/logo-vidext-black.svg",
+    "title": "<em>5 señales</em> de que no estás comunicando bien a tu equipo",
+    "subtitle": "Y cómo puedes mejorarlo",
+    "artImage": "assets/figma/art-hook-canvas.png"
+  }
+}

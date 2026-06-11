@@ -1,0 +1,139 @@
+/* promo-card-speaker — story-ad replica (9:16, absolute 1080x1920 geometry
+   from the source design). White frame; shell dark background layers and the
+   watermark are disabled whenever this type is present. */
+
+#ep-stage:has(.pcs) #bg-field {
+  background: var(--brand-paper, #fff);
+}
+#ep-stage:has(.pcs) #bg-grid,
+#ep-stage:has(.pcs) #bg-grain,
+#ep-stage:has(.pcs) #bg-vignette,
+#ep-stage:has(.pcs) #brand-corner {
+  display: none;
+}
+
+.scene-pad.pcs {
+  position: relative;
+  padding: 0;
+  background: var(--brand-paper, #fff);
+}
+
+.pcs-badge {
+  position: absolute;
+  left: 62px;
+  top: 92px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  background: var(--brand-surface, #f4f4f4);
+  border: 1px solid var(--brand-line, #e5e5e5);
+  border-radius: var(--brand-radius-chip, 40px);
+  box-shadow: var(--brand-shadow-badge, 0 4px 2px rgba(157, 155, 155, 0.05));
+}
+.pcs-badge-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand-ink, #000);
+}
+.pcs-badge-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-ink, #000);
+  white-space: nowrap;
+}
+
+.pcs-speaker {
+  position: absolute;
+  left: 731px;
+  top: 128px;
+  transform: translateY(-50%);
+  color: var(--brand-ink, #000);
+}
+.pcs-speaker p {
+  margin: 0;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 32px;
+  line-height: normal;
+  white-space: nowrap;
+}
+.pcs-speaker-name {
+  font-weight: 500;
+}
+.pcs-speaker-role {
+  font-weight: 400;
+}
+
+.pcs-photo {
+  position: absolute;
+  left: 81px;
+  top: 236px;
+  width: 917px;
+  height: 848px;
+}
+
+.pcs-block {
+  position: absolute;
+  left: 81px;
+  right: 82px;
+  top: 1154px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 65px;
+}
+.pcs-logo {
+  width: 180px;
+  height: 42.2px;
+  display: block;
+}
+
+.pcs-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 46px;
+  color: var(--brand-ink, #000);
+}
+.pcs-title {
+  margin: 0;
+  width: 870px;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 130px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -3px;
+  color: var(--brand-ink, #000);
+}
+.pcs-body {
+  margin: 0;
+  width: 870px;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 45px;
+  font-weight: 400;
+  line-height: 1.17;
+  letter-spacing: 0.11px;
+  color: var(--brand-ink, #000);
+}
+.pcs-body strong {
+  font-weight: 600;
+}
+
+.pcs-cta {
+  width: 360px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-ink, #000);
+  border-radius: var(--brand-radius-pill, 128px);
+}
+.pcs-cta-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--brand-ink-inverse, #fff);
+  white-space: nowrap;
+}

@@ -33,10 +33,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { getAudioDurationSeconds } from "@cgaravitoq/audio";
-import {
-  publishEpisodeArtifacts,
-  resolveR2PublishOptions,
-} from "./lib/r2-artifacts";
+import { type BrandPack, brandVarsStyleBlock, loadBrandPack } from "./lib/brand-pack";
+import { publishEpisodeArtifacts, resolveR2PublishOptions } from "./lib/r2-artifacts";
 import {
   appendLedger,
   buildRecord,
@@ -208,38 +206,13 @@ const readStageDurationSeconds = (htmlPath: string): number => {
 const stripVoiceoverTag = (html: string): string =>
   html.replace(/\s*<audio\b[^>]*\bid="voiceover"[^>]*>\s*<\/audio>\s*/g, "\n      ");
 
-interface BrandPack {
-  slug: string;
-  palette?: Record<string, string>;
-  publishable?: boolean;
-  notes?: string;
-}
-
 const stampBrand = (
   html: string,
   brandSlug: string | undefined,
 ): { html: string; brand: BrandPack | null } => {
   if (!brandSlug) return { html, brand: null };
-  const brandPath = path.resolve("brands", brandSlug, "brand.json");
-  if (!fs.existsSync(brandPath)) {
-    throw new Error(
-      `render-episode: meta.brand="${brandSlug}" but ${brandPath} does not exist. Create the brand pack or remove the field.`,
-    );
-  }
-  let brand: BrandPack;
-  try {
-    brand = JSON.parse(fs.readFileSync(brandPath, "utf8")) as BrandPack;
-  } catch (err) {
-    throw new Error(`render-episode: ${brandPath} is not valid JSON: ${(err as Error).message}`);
-  }
-  if (!brand.palette || typeof brand.palette !== "object") {
-    throw new Error(`render-episode: ${brandPath} missing required "palette" object.`);
-  }
-
-  const cssVars = Object.entries(brand.palette)
-    .map(([key, value]) => `  --brand-${key}: ${value};`)
-    .join("\n");
-  const styleBlock = `<style id="brand-vars" data-brand="${brand.slug}">\n:root {\n${cssVars}\n}\n</style>`;
+  const brand = loadBrandPack(process.cwd(), brandSlug, "render-episode");
+  const styleBlock = brandVarsStyleBlock(brand);
 
   const placeholderRe = /<style[^>]*id="brand-vars"[^>]*>[\s\S]*?<\/style>/;
   if (placeholderRe.test(html)) {
@@ -371,8 +344,10 @@ const main = async (): Promise<void> => {
         ? " Generate it with `bun run assemble <slug> --format=desktop` (see docs/formats.md)."
         : variant === "square-1080"
           ? " The square variant has no assembler support yet (see docs/formats.md)."
-        : "";
-    console.error(`render-episode: missing required file ${indexPath} for variant=${variant}.${hint}`);
+          : "";
+    console.error(
+      `render-episode: missing required file ${indexPath} for variant=${variant}.${hint}`,
+    );
     process.exit(1);
   }
 
@@ -399,7 +374,9 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
   if (!VALID_FPS_VALUES.includes(fpsParsed)) {
-    console.error(`render-episode: --fps must be one of ${VALID_FPS_VALUES.join(", ")}, got ${values.fps}`);
+    console.error(
+      `render-episode: --fps must be one of ${VALID_FPS_VALUES.join(", ")}, got ${values.fps}`,
+    );
     process.exit(1);
   }
 
@@ -440,7 +417,7 @@ const main = async (): Promise<void> => {
     if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
       console.error(
         `render-episode: ${audioPath} missing and could not read a positive data-duration from the stage <div>. ` +
-          'Generate voice with `bun run audio` or pin data-duration on <div data-composition-id=...>.',
+          "Generate voice with `bun run audio` or pin data-duration on <div data-composition-id=...>.",
       );
       process.exit(1);
     }
@@ -465,7 +442,8 @@ const main = async (): Promise<void> => {
     ? stampDuration(srcHtml, totalSeconds, voiceSeconds)
     : stripVoiceoverTag(srcHtml);
   const stamped = stampStageFps(stampedDuration, fpsParsed);
-  const { html: brandedHtml, brand } = stampBrand(stamped, meta.brand);
+  const sniffedBrand = stamped.match(/<style[^>]*id="brand-vars"[^>]*data-brand="([^"]+)"/)?.[1];
+  const { html: brandedHtml, brand } = stampBrand(stamped, meta.brand ?? sniffedBrand);
   if (brand && brand.publishable === false) {
     console.warn(
       `[render-episode] WARNING: brand "${brand.slug}" is marked publishable=false. ${brand.notes || "Internal use only."}`,
@@ -647,9 +625,7 @@ const main = async (): Promise<void> => {
   } catch (err) {
     console.warn(`[render-episode] telemetry ledger write failed: ${(err as Error).message}`);
   }
-  console.log(
-    formatSummaryLine({ slug, durations, totalMs, totalBytes: inventory.totalBytes }),
-  );
+  console.log(formatSummaryLine({ slug, durations, totalMs, totalBytes: inventory.totalBytes }));
 };
 
 main().catch((err) => {

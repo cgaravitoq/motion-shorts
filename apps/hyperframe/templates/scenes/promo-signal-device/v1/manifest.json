@@ -1,0 +1,21 @@
+{
+  "id": "promo-signal-device@1",
+  "type": "promo-signal-device",
+  "version": 1,
+  "label": "Promo signal — device with play pulse",
+  "description": "Carousel-ad content slide (promo-signal skeleton: accent chip + headline + how-to) whose bottom art is a phone mock rising from the frame edge with a separately baked action button that pops and pulses like a video about to play. Extends the promo-* family (1080x1920) with the --brand-accent token.",
+  "builder": "build_promoSignalDevice",
+  "classPrefix": "psd",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "badgeIcon": { "kind": "image", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "label": { "kind": "text", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "deviceImage": { "kind": "image", "required": true },
+    "actionImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

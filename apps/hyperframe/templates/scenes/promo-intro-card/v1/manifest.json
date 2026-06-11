@@ -1,0 +1,21 @@
+{
+  "id": "promo-intro-card@1",
+  "type": "promo-intro-card",
+  "version": 1,
+  "label": "Promo intro card (centered photo + headline)",
+  "description": "Story-ad opener on a white frame: a centered rounded speaker photo card with a notch holding a solid pill badge, the speaker name/role inside the card's lower-right, and below it a brand logo, an editorial headline and a date line in dark-on-light. Built for 1:1 replicas of social story ads.",
+  "builder": "build_promoIntroCard",
+  "classPrefix": "pin",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "speakerName": { "kind": "text", "required": true },
+    "speakerRole": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "date": { "kind": "text", "required": true },
+    "photoImage": { "kind": "image", "required": true },
+    "logoImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

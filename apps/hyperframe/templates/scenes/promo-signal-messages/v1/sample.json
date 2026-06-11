@@ -1,0 +1,17 @@
+{
+  "id": "sample-signal-messages",
+  "type": "promo-signal-messages",
+  "duration": 4.5,
+  "slots": {
+    "badge": "5 señales de comunicación ineficiente",
+    "badgeIcon": "assets/figma/logo-icon-black.svg",
+    "title": "La formación no crece al ritmo que lo hace la empresa",
+    "label": "Cómo mejorarlo:",
+    "body": "Crea contenidos escalables que crezcan al mismo ritmo que el equipo.",
+    "items": [
+      { "text": "チームへようこそ" },
+      { "text": "Willkommen im Team" },
+      { "text": "Bienvenida al equipo" }
+    ]
+  }
+}

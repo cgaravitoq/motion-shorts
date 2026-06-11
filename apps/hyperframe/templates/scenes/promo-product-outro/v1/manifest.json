@@ -1,0 +1,18 @@
+{
+  "id": "promo-product-outro@1",
+  "type": "promo-product-outro",
+  "version": 1,
+  "label": "Promo product outro (headline + product shot)",
+  "description": "Carousel-ad closer on a light frame: a display headline top-left, a short body, a baked product screenshot bleeding off the bottom-right corner, and the brand logo bottom-left. Extends the promo-* family (1080x1920); geometry from the Vidext 'Carrusel señales' reference.",
+  "builder": "build_promoProductOutro",
+  "classPrefix": "pou",
+  "defaultDuration": 5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "title": { "kind": "richText", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "artImage": { "kind": "image", "required": true },
+    "logoImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

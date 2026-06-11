@@ -2,7 +2,12 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { assertR2Config, objectKeyFor, uploadAndVerifyObject } from "./lib/r2-artifacts";
+import {
+  assertR2Config,
+  loadWorkspaceEnv,
+  objectKeyFor,
+  uploadAndVerifyObject,
+} from "./lib/r2-artifacts";
 
 const EPISODES_ROOT = path.resolve("src/episodes");
 const ASSET_RE =
@@ -48,6 +53,7 @@ const contentTypeFor = (filename: string): string | null => {
 const runId =
   process.argv.find((arg) => arg.startsWith("--run-id="))?.slice("--run-id=".length) ??
   "tracked-assets-migration";
+loadWorkspaceEnv();
 const env = {
   ...Bun.env,
   ...(Bun.env.R2_UPLOAD_GATEWAY_URL && Bun.env.R2_UPLOAD_GATEWAY_TOKEN

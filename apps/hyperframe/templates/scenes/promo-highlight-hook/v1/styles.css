@@ -1,0 +1,82 @@
+/* promo-highlight-hook — carousel-ad opener (9:16, absolute 1080x1920
+   geometry). Light paper frame; shell dark background layers and the
+   watermark are disabled whenever this type is present. <em> spans inside
+   the title render as the accent marker highlight from the reference. */
+
+#ep-stage:has(.phk) #bg-field {
+  background: var(--brand-paper, #f5f5f5);
+}
+#ep-stage:has(.phk) #bg-grid,
+#ep-stage:has(.phk) #bg-grain,
+#ep-stage:has(.phk) #bg-vignette,
+#ep-stage:has(.phk) #brand-corner {
+  display: none;
+}
+
+.scene-pad.phk {
+  position: relative;
+  padding: 0;
+  background: var(--brand-paper, #f5f5f5);
+}
+
+.phk-logo {
+  position: absolute;
+  left: 84px;
+  top: 129px;
+  height: 64px;
+  width: auto;
+  display: block;
+}
+
+.phk-block {
+  position: absolute;
+  left: 84px;
+  top: 400px;
+  width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 52px;
+}
+
+.phk-title {
+  margin: 0;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 104px;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -2.4px;
+  color: var(--brand-ink, #000);
+}
+.phk-title em {
+  font-style: normal;
+  background: var(--brand-accent, #c2f902);
+  border-radius: 26px;
+  padding: 4px 22px;
+  margin-left: -22px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.phk-subtitle {
+  margin: 0;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 50px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-ink, #000);
+}
+
+.phk-art {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+.phk-art-img {
+  display: block;
+  max-width: 1080px;
+}

@@ -1,0 +1,22 @@
+{
+  "id": "promo-signal-action@1",
+  "type": "promo-signal-action",
+  "version": 1,
+  "label": "Promo signal — cursor clicks a CTA",
+  "description": "Carousel-ad content slide (promo-signal skeleton: accent chip + headline + how-to) whose bottom art is an HTML CTA pill plus a cursor that travels in, clicks the button and spins its icon. Extends the promo-* family (1080x1920) with the --brand-accent token.",
+  "builder": "build_promoSignalAction",
+  "classPrefix": "psa",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "badgeIcon": { "kind": "image", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "label": { "kind": "text", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "ctaLabel": { "kind": "text", "required": true },
+    "ctaIcon": { "kind": "image", "required": true },
+    "cursorImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

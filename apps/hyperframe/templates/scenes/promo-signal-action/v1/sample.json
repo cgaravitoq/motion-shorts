@@ -1,0 +1,15 @@
+{
+  "id": "sample-signal-action",
+  "type": "promo-signal-action",
+  "duration": 4.5,
+  "slots": {
+    "badge": "5 señales de comunicación ineficiente",
+    "badgeIcon": "assets/figma/logo-icon-black.svg",
+    "title": "La información está desactualizada o es confusa",
+    "label": "Cómo mejorarlo:",
+    "body": "Usa contenidos fáciles de actualizar para que el mensaje siempre esté al día.",
+    "ctaLabel": "Actualizar",
+    "ctaIcon": "assets/figma/icon-refresh.svg",
+    "cursorImage": "assets/figma/cursor-arrow.svg"
+  }
+}

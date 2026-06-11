@@ -1,0 +1,28 @@
+{
+  "id": "promo-signal-cards@1",
+  "type": "promo-signal-cards",
+  "version": 1,
+  "label": "Promo signal — card carousel pick",
+  "description": "Carousel-ad content slide (promo-signal skeleton: accent chip + headline + how-to) whose bottom art is a row of 2-4 labelled folder cards that slide horizontally while the highlight cycles card to card, like picking one. Card shape is a baked image; labels are parametric HTML. Extends the promo-* family (1080x1920) with the --brand-accent token.",
+  "builder": "build_promoSignalCards",
+  "classPrefix": "psc",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "badgeIcon": { "kind": "image", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "label": { "kind": "text", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "cardImage": { "kind": "image", "required": true },
+    "items": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 4,
+      "item": {
+        "text": { "kind": "text", "required": true }
+      }
+    }
+  },
+  "validation": []
+}

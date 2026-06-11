@@ -1,0 +1,15 @@
+{
+  "id": "sample-signal-toolbar",
+  "type": "promo-signal-toolbar",
+  "duration": 4.5,
+  "slots": {
+    "badge": "5 señales de comunicación ineficiente",
+    "badgeIcon": "assets/figma/logo-icon-black.svg",
+    "title": "El conocimiento clave está en pocas personas",
+    "label": "Cómo mejorarlo:",
+    "body": "Centraliza el conocimiento en formatos que no dependan de una sola persona.",
+    "chipLabel": "Crear con IA",
+    "toolbarImage": "assets/figma/toolbar-base.png",
+    "toolImage": "assets/figma/toolbar-sparkle.png"
+  }
+}

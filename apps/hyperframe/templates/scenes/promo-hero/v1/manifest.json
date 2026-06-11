@@ -1,0 +1,21 @@
+{
+  "id": "promo-hero@1",
+  "type": "promo-hero",
+  "version": 1,
+  "label": "Promo hero (photo top + dark lower block)",
+  "description": "Story-ad hero: a rounded photo card pinned to the top of the frame over a full-bleed dimmed composite background, with a floating pill badge and a lower block (brand logo, display title, body, pill CTA) in light-on-dark. Built for 1:1 replicas of social story ads.",
+  "builder": "build_promoHero",
+  "classPrefix": "pmh",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "cta": { "kind": "text", "required": true },
+    "bgImage": { "kind": "image", "required": true },
+    "photoImage": { "kind": "image", "required": true },
+    "logoImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

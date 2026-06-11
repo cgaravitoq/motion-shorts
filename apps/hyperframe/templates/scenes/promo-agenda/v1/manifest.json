@@ -1,0 +1,26 @@
+{
+  "id": "promo-agenda@1",
+  "type": "promo-agenda",
+  "version": 1,
+  "label": "Promo agenda (numbered topics)",
+  "description": "Story-ad agenda on a white frame: a pill badge top-left, a display title, 2-4 numbered topic rows in soft gray cards, and a brand logo + date footer in dark-on-light. Matches the promo-* family geometry (1080x1920) so it slots between the other promo scenes.",
+  "builder": "build_promoAgenda",
+  "classPrefix": "pag",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "items": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 4,
+      "item": {
+        "text": { "kind": "text", "required": true }
+      }
+    },
+    "date": { "kind": "text", "required": true },
+    "logoImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

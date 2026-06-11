@@ -1,0 +1,22 @@
+{
+  "id": "promo-signal-toolbar@1",
+  "type": "promo-signal-toolbar",
+  "version": 1,
+  "label": "Promo signal — AI toolbar spotlight",
+  "description": "Carousel-ad content slide (promo-signal skeleton: accent chip + headline + how-to) whose bottom art is a toolbar mock: the bar rises, an HTML tooltip chip floats above it and the highlighted tool (baked separately) pops in with a wiggle and pulse. Extends the promo-* family (1080x1920) with the --brand-accent token.",
+  "builder": "build_promoSignalToolbar",
+  "classPrefix": "pst",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "badgeIcon": { "kind": "image", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "label": { "kind": "text", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "chipLabel": { "kind": "text", "required": true },
+    "toolbarImage": { "kind": "image", "required": true },
+    "toolImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

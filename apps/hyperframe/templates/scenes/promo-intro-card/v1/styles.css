@@ -1,0 +1,127 @@
+/* promo-intro-card — story-ad replica (9:16, absolute 1080x1920 geometry from
+   the source design). White frame; shell dark background layers and the
+   watermark are disabled whenever this type is present. The centered column
+   carries a CSS translateX(-50%), so the timeline only animates its children. */
+
+#ep-stage:has(.pin) #bg-field {
+  background: var(--brand-paper, #fff);
+}
+#ep-stage:has(.pin) #bg-grid,
+#ep-stage:has(.pin) #bg-grain,
+#ep-stage:has(.pin) #bg-vignette,
+#ep-stage:has(.pin) #brand-corner {
+  display: none;
+}
+
+.scene-pad.pin {
+  position: relative;
+  padding: 0;
+  background: var(--brand-paper, #fff);
+}
+
+.pin-col {
+  position: absolute;
+  left: calc(50% + 1.5px);
+  top: 250px;
+  transform: translateX(-50%);
+  width: 917px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 57px;
+}
+
+.pin-card {
+  position: relative;
+  width: 917px;
+  height: 848px;
+}
+.pin-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pin-badge {
+  position: absolute;
+  left: 0;
+  top: 11px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 35.5px;
+  background: var(--brand-ink, #000);
+  border-radius: var(--brand-radius-pill, 128px);
+}
+.pin-badge-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 28.4px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.95px;
+  color: var(--brand-ink-inverse, #fff);
+  white-space: nowrap;
+}
+
+.pin-speaker {
+  position: absolute;
+  left: 628px;
+  top: 785px;
+  color: var(--brand-ink, #000);
+}
+.pin-speaker p {
+  margin: 0;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 32px;
+  line-height: normal;
+  white-space: nowrap;
+}
+.pin-speaker-name {
+  font-weight: 500;
+}
+.pin-speaker-role {
+  font-weight: 400;
+}
+
+.pin-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 36px;
+  width: 100%;
+}
+.pin-logo {
+  width: 180px;
+  height: 42.2px;
+  display: block;
+}
+
+.pin-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 36px;
+  width: 100%;
+}
+.pin-title {
+  margin: 0;
+  width: 100%;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.11px;
+  color: var(--brand-ink, #000);
+}
+.pin-date {
+  margin: 0;
+  width: 100%;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.11px;
+  color: var(--brand-ink, #000);
+}

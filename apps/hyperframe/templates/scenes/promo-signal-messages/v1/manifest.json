@@ -1,0 +1,27 @@
+{
+  "id": "promo-signal-messages@1",
+  "type": "promo-signal-messages",
+  "version": 1,
+  "label": "Promo signal — floating message cards",
+  "description": "Carousel-ad content slide (promo-signal skeleton: accent chip + headline + how-to) whose bottom art is a staircase of 2-3 floating message cards (pure HTML: dot, label, placeholder block) that pop in one by one and drift gently. Extends the promo-* family (1080x1920) with the --brand-accent token.",
+  "builder": "build_promoSignalMessages",
+  "classPrefix": "psm",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "badgeIcon": { "kind": "image", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "label": { "kind": "text", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "items": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 3,
+      "item": {
+        "text": { "kind": "text", "required": true }
+      }
+    }
+  },
+  "validation": []
+}

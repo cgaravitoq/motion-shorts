@@ -1,0 +1,11 @@
+{
+  "badge": "Webinar gratuito",
+  "title": "Segna la data",
+  "chips": [
+    { "text": "Lunedì 15 giugno" },
+    { "text": "Ore 12:00 (CET)" },
+    { "text": "Online · Gratuito" }
+  ],
+  "cta": "Iscriviti ora",
+  "logoImage": "assets/generated/placeholder-asset.png"
+}

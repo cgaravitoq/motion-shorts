@@ -1,0 +1,11 @@
+{
+  "badge": "Webinar gratuito",
+  "title": "Cosa vedremo",
+  "items": [
+    { "text": "Dal PDF statico al video AI" },
+    { "text": "Il caso Iberdrola Italia" },
+    { "text": "Come iniziare con Vidext" }
+  ],
+  "date": "Lunedì 15 giugno 12:00 (CET)",
+  "logoImage": "assets/generated/placeholder-asset.png"
+}

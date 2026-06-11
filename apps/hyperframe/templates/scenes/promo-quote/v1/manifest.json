@@ -1,0 +1,21 @@
+{
+  "id": "promo-quote@1",
+  "type": "promo-quote",
+  "version": 1,
+  "label": "Promo quote (blur bg + speaker)",
+  "description": "Story-ad pull quote: a full-bleed blurred composite background, a pill badge top-left, a large light-on-dark quote, the circular speaker avatar with name/role below it, and the brand logo as footer. Matches the promo-* family geometry (1080x1920) so it slots between the other promo scenes.",
+  "builder": "build_promoQuote",
+  "classPrefix": "pqt",
+  "defaultDuration": 4,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "quote": { "kind": "richText", "required": true },
+    "speakerName": { "kind": "text", "required": true },
+    "speakerRole": { "kind": "text", "required": true },
+    "bgImage": { "kind": "image", "required": true },
+    "avatarImage": { "kind": "image", "required": true },
+    "logoImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

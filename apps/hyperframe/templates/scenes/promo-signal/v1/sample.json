@@ -1,0 +1,13 @@
+{
+  "id": "sample-signal",
+  "type": "promo-signal",
+  "duration": 4.5,
+  "slots": {
+    "badge": "5 señales de comunicación ineficiente",
+    "badgeIcon": "assets/figma/logo-icon-black.svg",
+    "title": "Los empleados repiten las mismas dudas una y otra vez",
+    "label": "Cómo mejorarlo:",
+    "body": "Explica una vez, de forma visual y clara, y deja el contenido accesible para todos.",
+    "artImage": "assets/figma/art-cards-strip.png"
+  }
+}

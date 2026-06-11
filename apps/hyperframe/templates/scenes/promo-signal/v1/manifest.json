@@ -1,0 +1,20 @@
+{
+  "id": "promo-signal@1",
+  "type": "promo-signal",
+  "version": 1,
+  "label": "Promo signal (chip + headline + bottom art)",
+  "description": "Carousel-ad content slide on a light frame: an accent chip badge top-left (icon + label), a display headline, a short label + body block, and a baked art composite (UI mock, device, cards) anchored to the bottom edge. Extends the promo-* family (1080x1920) with the --brand-accent token (lime fallback from the Vidext 'Carrusel señales' reference). Art composites bake the paper background in, so they are per-episode assets.",
+  "builder": "build_promoSignal",
+  "classPrefix": "psg",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "badgeIcon": { "kind": "image", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "label": { "kind": "text", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "artImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

@@ -1,0 +1,148 @@
+/* promo-blur-cta — story-ad replica (9:16, absolute 1080x1920 geometry from
+   the source design). Full-bleed blurred composite; shell dark background
+   layers and the watermark are disabled whenever this type is present. */
+
+#ep-stage:has(.pbc) #bg-field {
+  background: var(--brand-paper, #fff);
+}
+#ep-stage:has(.pbc) #bg-grid,
+#ep-stage:has(.pbc) #bg-grain,
+#ep-stage:has(.pbc) #bg-vignette,
+#ep-stage:has(.pbc) #brand-corner {
+  display: none;
+}
+
+.scene-pad.pbc {
+  position: relative;
+  padding: 0;
+  background: var(--brand-paper, #fff);
+}
+
+.pbc-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pbc-badge {
+  position: absolute;
+  left: 84px;
+  top: 129px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  background: var(--brand-paper, #fff);
+  border: 1px solid var(--brand-line, #e5e5e5);
+  border-radius: var(--brand-radius-chip, 40px);
+  box-shadow: var(--brand-shadow-badge, 0 4px 2px rgba(157, 155, 155, 0.05));
+}
+.pbc-badge-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand-ink, #000);
+}
+.pbc-badge-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-ink, #000);
+  white-space: nowrap;
+}
+
+.pbc-avatar {
+  position: absolute;
+  left: 83px;
+  top: 677px;
+  width: 187px;
+  height: 187px;
+  border-radius: 50%;
+}
+
+.pbc-speaker {
+  position: absolute;
+  left: 313px;
+  top: 771px;
+  transform: translateY(-50%);
+  color: var(--brand-ink-inverse, #fff);
+}
+.pbc-speaker p {
+  margin: 0;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 34px;
+  line-height: normal;
+  white-space: nowrap;
+}
+.pbc-speaker-name {
+  font-weight: 500;
+}
+.pbc-speaker-role {
+  font-weight: 400;
+}
+
+.pbc-block {
+  position: absolute;
+  left: 84px;
+  right: 79px;
+  top: 1034px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 80px;
+}
+.pbc-logo {
+  width: 180px;
+  height: 42.2px;
+  display: block;
+}
+
+.pbc-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  color: var(--brand-ink-inverse, #fff);
+}
+.pbc-title {
+  margin: 0;
+  width: 870px;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 130px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -4px;
+  color: var(--brand-ink-inverse, #fff);
+}
+.pbc-body {
+  margin: 0;
+  width: 870px;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 45px;
+  font-weight: 400;
+  line-height: 1.29;
+  letter-spacing: 0.11px;
+  color: var(--brand-ink-inverse, #fff);
+}
+.pbc-body strong {
+  font-weight: 600;
+}
+
+.pbc-cta {
+  width: 360px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-paper, #fff);
+  border-radius: var(--brand-radius-pill, 128px);
+}
+.pbc-cta-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--brand-ink, #000);
+  white-space: nowrap;
+}

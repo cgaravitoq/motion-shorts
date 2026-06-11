@@ -1,0 +1,18 @@
+{
+  "id": "promo-highlight-hook@1",
+  "type": "promo-highlight-hook",
+  "version": 1,
+  "label": "Promo highlight hook (marker headline)",
+  "description": "Carousel-ad opener on a light frame: a brand logo top-left, a display headline where <em> spans render as an accent marker-highlight pill, a plain subtitle, and a full-width baked art canvas anchored to the bottom edge. Extends the promo-* family (1080x1920) with the --brand-accent token (lime fallback from the Vidext 'Carrusel señales' reference).",
+  "builder": "build_promoHighlightHook",
+  "classPrefix": "phk",
+  "defaultDuration": 4.5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "logoImage": { "kind": "image", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "subtitle": { "kind": "text", "required": true },
+    "artImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

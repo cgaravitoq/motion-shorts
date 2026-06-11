@@ -1,0 +1,23 @@
+{
+  "id": "promo-blur-cta@1",
+  "type": "promo-blur-cta",
+  "version": 1,
+  "label": "Promo blur CTA (avatar + lower block)",
+  "description": "Story-ad closer: a full-bleed blurred composite background, a pill badge top-left, a circular speaker avatar with name/role at mid-frame, and a lower block (brand logo, display title, body, light pill CTA) in light-on-dark. Built for 1:1 replicas of social story ads.",
+  "builder": "build_promoBlurCta",
+  "classPrefix": "pbc",
+  "defaultDuration": 5,
+  "intentTags": ["social", "brand"],
+  "slots": {
+    "badge": { "kind": "text", "required": true },
+    "speakerName": { "kind": "text", "required": true },
+    "speakerRole": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "body": { "kind": "richText", "required": true },
+    "cta": { "kind": "text", "required": true },
+    "bgImage": { "kind": "image", "required": true },
+    "avatarImage": { "kind": "image", "required": true },
+    "logoImage": { "kind": "image", "required": true }
+  },
+  "validation": []
+}

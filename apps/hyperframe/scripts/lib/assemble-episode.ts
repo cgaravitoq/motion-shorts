@@ -19,14 +19,22 @@ import {
   type SceneTypeManifest,
 } from "@cgaravitoq/spec";
 import { Result } from "effect";
+import { brandVarsStyleBlock, EMPTY_BRAND_VARS, loadBrandPack } from "./brand-pack";
 import { instantiateScene } from "./scene-instantiator";
 
-const shellDir = (hubRoot?: string): string => path.resolve(hubRoot ?? process.cwd(), "templates/_shell");
+const shellDir = (hubRoot?: string): string =>
+  path.resolve(hubRoot ?? process.cwd(), "templates/_shell");
 
 const FADE = 0.55;
 const DEFAULT_ACCENT = "#5b6cff";
 const DEFAULT_ACCENT2 = "#e9ff00";
-const GRAIN_DRIFT = [[-5, 4], [6, -3], [-8, 1], [2, 6], [-4, -4]];
+const GRAIN_DRIFT = [
+  [-5, 4],
+  [6, -3],
+  [-8, 1],
+  [2, 6],
+  [-4, -4],
+];
 
 const round = (n: number, d = 3): number => Number(n.toFixed(d));
 const indent = (text: string, n: number): string => {
@@ -174,7 +182,9 @@ export function assembleEpisode(
     const sel = `sceneSel("scene-${sc.id}")`;
     const paramsJson = scriptSafe(JSON.stringify(sc.slots ?? {}));
     if (!prev) {
-      lines.push(`tl.set("#scene-${sc.id}", { autoAlpha: 1, scale: 1, filter: "blur(0px)" }, ${start});`);
+      lines.push(
+        `tl.set("#scene-${sc.id}", { autoAlpha: 1, scale: 1, filter: "blur(0px)" }, ${start});`,
+      );
     } else {
       lines.push(
         `tl.to("#scene-${prev.id}", { autoAlpha: 0, scale: 0.985, filter: "blur(8px)", duration: FADE, ease: "power2.in" }, ${round(start - FADE)});`,
@@ -214,6 +224,14 @@ export function assembleEpisode(
   let shell = fs.readFileSync(path.join(shellDir(hubRoot), "shell.html.tmpl"), "utf8");
   shell = shell
     .replaceAll("__FORMAT_ATTR__", desktop ? ' data-format="desktop-1080p"' : "")
+    .replaceAll(
+      "__BRAND_VARS__",
+      spec.brand
+        ? brandVarsStyleBlock(
+            loadBrandPack(hubRoot ?? process.cwd(), spec.brand, "assemble-episode"),
+          )
+        : EMPTY_BRAND_VARS,
+    )
     .replaceAll("__SHELL_CSS__", indent(shellCss.trim(), 6))
     .replaceAll("__SCENE_CSS__", indent(cssBlocks.join("\n\n"), 6))
     .replaceAll("__SCENES__", sections)

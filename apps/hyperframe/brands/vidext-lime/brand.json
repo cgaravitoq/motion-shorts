@@ -1,0 +1,18 @@
+{
+  "slug": "vidext-lime",
+  "palette": {
+    "paper": "#f5f5f5",
+    "ink": "#000",
+    "ink-inverse": "#fff",
+    "surface": "#e5e5e5",
+    "muted": "#a3a3a3",
+    "accent": "#c2f902",
+    "font": "\"Inter\", system-ui, sans-serif",
+    "radius-pill": "420px",
+    "radius-chip": "44px",
+    "radius-card": "37px",
+    "shadow-badge": "0 4px 2px rgba(157, 155, 155, 0.05)"
+  },
+  "publishable": true,
+  "notes": "Vidext lime carousel design system ('Carrusel señales'), extracted from Figma file jxswtTALYI7QcQlW6m87a9 node 5374:2173. Pixel-sampled 2026-06-11. Divergences vs base vidext pack: canvas is #f5f5f5 (not white) while elevated CTA chips stay #fff -- paper maps to the canvas role, so white CTAs render #f5f5f5 under this pack. 'line' omitted (no hairline borders in source; falls back). 'accent' (#c2f902 lime highlight/badge) is emitted as --brand-accent but not yet consumed by any promo-* scene-type."
+}

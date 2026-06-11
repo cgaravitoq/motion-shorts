@@ -1,0 +1,14 @@
+{
+  "id": "sample-signal-device",
+  "type": "promo-signal-device",
+  "duration": 4.5,
+  "slots": {
+    "badge": "5 señales de comunicación ineficiente",
+    "badgeIcon": "assets/figma/logo-icon-black.svg",
+    "title": "Inviertes mucho tiempo intentando mantener al equipo alineado",
+    "label": "Cómo mejorarlo:",
+    "body": "Apuesta por formatos más cortos, dinámicos y con mayor retención.",
+    "deviceImage": "assets/figma/phone-base.png",
+    "actionImage": "assets/figma/phone-play.png"
+  }
+}

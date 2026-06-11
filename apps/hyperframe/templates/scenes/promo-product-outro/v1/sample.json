@@ -1,0 +1,11 @@
+{
+  "id": "sample-product-outro",
+  "type": "promo-product-outro",
+  "duration": 5,
+  "slots": {
+    "title": "Estas señales pueden costar tiempo, dinero y rotación",
+    "body": "Con Vidext Visual, puedes resolverlas todas.",
+    "artImage": "assets/figma/art-dashboard.png",
+    "logoImage": "assets/figma/logo-vidext-black.svg"
+  }
+}

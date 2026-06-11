@@ -1,0 +1,108 @@
+/* promo-signal — carousel-ad content slide (9:16, absolute 1080x1920
+   geometry). Light paper frame; shell dark background layers and the
+   watermark are disabled whenever this type is present. The chip badge uses
+   the accent token; measured fallbacks come from the Vidext 'Carrusel
+   señales' reference (chip radius 44px, lime #c2f902). */
+
+#ep-stage:has(.psg) #bg-field {
+  background: var(--brand-paper, #f5f5f5);
+}
+#ep-stage:has(.psg) #bg-grid,
+#ep-stage:has(.psg) #bg-grain,
+#ep-stage:has(.psg) #bg-vignette,
+#ep-stage:has(.psg) #brand-corner {
+  display: none;
+}
+
+.scene-pad.psg {
+  position: relative;
+  padding: 0;
+  background: var(--brand-paper, #f5f5f5);
+}
+
+.psg-badge {
+  position: absolute;
+  left: 84px;
+  top: 129px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 44px;
+  background: var(--brand-accent, #c2f902);
+  border-radius: var(--brand-radius-chip, 44px);
+  box-shadow: var(--brand-shadow-badge, 0 4px 2px rgba(157, 155, 155, 0.05));
+}
+.psg-badge-icon {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+.psg-badge-label {
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 31px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-ink, #000);
+  white-space: nowrap;
+}
+
+.psg-block {
+  position: absolute;
+  left: 84px;
+  top: 372px;
+  width: 912px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 56px;
+}
+
+.psg-title {
+  margin: 0;
+  width: 100%;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 100px;
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -2.4px;
+  color: var(--brand-ink, #000);
+}
+
+.psg-howto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+.psg-label {
+  margin: 0;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 50px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-ink, #000);
+}
+.psg-body {
+  margin: 0;
+  width: 880px;
+  font-family: var(--brand-font, "Inter", system-ui, sans-serif);
+  font-size: 41px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--brand-ink, #000);
+}
+
+.psg-art {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+.psg-art-img {
+  display: block;
+  max-width: 1080px;
+}
