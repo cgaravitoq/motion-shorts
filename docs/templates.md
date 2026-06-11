@@ -9,7 +9,7 @@ scene-spec.json  ──(assembler)──>  index.html  ──(render)──>  mp
 
 `index.html` is **generated**. Never edit it by hand; edit the spec and re-run `bun run assemble <slug>`.
 
-This doc is the **scene-type authoring reference**: the shell, the 24 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
+This doc is the **scene-type authoring reference**: the shell, the 39 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
 
 ## Layout
 
@@ -51,9 +51,9 @@ The build engine is `apps/hyperframe/scripts/lib/`:
 | `scene-spec.ts` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
 | `scene-router.ts` | intent → recommended scene-type skeleton + typed summaries |
 
-## The 24 scene-types
+## The 39 scene-types
 
-These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count. The last seven (`media-split` through `before-after`) are the desktop-first component library — asset-led layouts born for 16:9 that also carry a portrait layout.
+These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count. The seven `media-split` through `before-after` are the desktop-first component library — asset-led layouts born for 16:9 that also carry a portrait layout. The fifteen `promo-*` types are the brand-pack-driven story-ad family (light full-frame layouts replicated from Figma ad references; see `docs/brand-packs.md`): seven event-promo types plus eight carousel types.
 
 | Type | Purpose | Default dur (s) | Repeatable slot (range) | Other slots |
 |------|---------|:---------------:|-------------------------|-------------|
@@ -81,6 +81,21 @@ These are the only building blocks. `hook` opens; `outro` is the pinned brand si
 | `logo-grid` | Social-proof band of name chips/wordmarks | 7 | `items` **3-8** (`label*`) | `title?` (rich), `eyebrow?` |
 | `before-after` | Two images with a vertical wipe reveal | 7 | — | `imageBefore*`, `imageAfter*`, `labelBefore?`, `labelAfter?`, `title?` (rich), `eyebrow?` |
 | `outro` | Pinned brand sign-off (track 7, last) | 5.5 | — | `source?` |
+| `promo-intro-card` | Story-ad opener: speaker photo card with badge notch | 4.5 | — | `badge*`, `speakerName*`, `speakerRole*`, `title*` (rich), `date*`, `photoImage*`, `logoImage*` |
+| `promo-hero` | Story-ad hero: photo card over dimmed composite bg | 4.5 | — | `badge*`, `title*` (rich), `body*` (rich), `cta*`, `bgImage*`, `photoImage*`, `logoImage*` |
+| `promo-card-speaker` | Story-ad: speaker card + title/body/CTA block | 4.5 | — | `badge*`, `speakerName*`, `speakerRole*`, `title*` (rich), `body*` (rich), `cta*`, `photoImage*`, `logoImage*` |
+| `promo-blur-cta` | Story-ad closer: blurred bg, avatar, CTA block | 5 | — | `badge*`, `speakerName*`, `speakerRole*`, `title*` (rich), `body*` (rich), `cta*`, `bgImage*`, `avatarImage*`, `logoImage*` |
+| `promo-agenda` | Story-ad agenda: numbered topic rows | 4.5 | `items` **2-4** (`text*`) | `badge*`, `title*` (rich), `date*`, `logoImage*` |
+| `promo-quote` | Story-ad pull quote over blurred bg | 4 | — | `badge*`, `quote*` (rich), `speakerName*`, `speakerRole*`, `bgImage*`, `avatarImage*`, `logoImage*` |
+| `promo-details` | Story-ad event recap: info chips + CTA | 4.5 | `chips` **2-4** (`text*`) | `badge*`, `title*` (rich), `cta*`, `logoImage*` |
+| `promo-highlight-hook` | Carousel opener: accent marker headline + art canvas | 4.5 | — | `logoImage*`, `title*` (rich), `subtitle*`, `artImage*` |
+| `promo-signal` | Carousel slide: accent chip + headline + baked art | 4.5 | — | `badge*`, `badgeIcon*`, `title*` (rich), `label*`, `body*` (rich), `artImage*` |
+| `promo-signal-cards` | Carousel slide: card row with travelling highlight | 4.5 | `items` **2-4** (`text*`) | `badge*`, `badgeIcon*`, `title*` (rich), `label*`, `body*` (rich), `cardImage*` |
+| `promo-signal-action` | Carousel slide: cursor clicks an HTML CTA | 4.5 | — | `badge*`, `badgeIcon*`, `title*` (rich), `label*`, `body*` (rich), `ctaLabel*`, `ctaIcon*`, `cursorImage*` |
+| `promo-signal-toolbar` | Carousel slide: toolbar mock with tool spotlight | 4.5 | — | `badge*`, `badgeIcon*`, `title*` (rich), `label*`, `body*` (rich), `chipLabel*`, `toolbarImage*`, `toolImage*` |
+| `promo-signal-messages` | Carousel slide: floating HTML message cards | 4.5 | `items` **2-3** (`text*`) | `badge*`, `badgeIcon*`, `title*` (rich), `label*`, `body*` (rich) |
+| `promo-signal-device` | Carousel slide: phone mock with pulsing action | 4.5 | — | `badge*`, `badgeIcon*`, `title*` (rich), `label*`, `body*` (rich), `deviceImage*`, `actionImage*` |
+| `promo-product-outro` | Carousel closer: headline + product shot bleed | 5 | — | `title*` (rich), `body*` (rich), `artImage*`, `logoImage*` |
 
 `*` = required, `?` = optional. "(rich)" slots accept inline HTML (`<strong>`, `<em>`, `<br>`); everything else is escaped as plain text. The same `*`/`?`/`[min-max]` summary is what `recommend_scene_types` and `scene:check` print.
 
@@ -172,7 +187,7 @@ A repeat block is delimited by HTML comments and rendered once per item:
 
 Create `templates/scenes/<type>/v1/` with these five files:
 
-1. **`manifest.json`** — `id` (`<type>@1`), `type`, `version`, `label`, `description`, `builder` (the exact `build_<x>` function name), `classPrefix`, `defaultDuration`, `intentTags` (subset of `informative`, `data`, `workflow`, `social`, `brand`, `vfx`), and `slots`. Each slot is `text`, `richText`, or `repeat` (with `min`, `max`, and an `item` field schema). Add `fixedTrack` / `role` only for structural types like `outro`.
+1. **`manifest.json`** — `id` (`<type>@1`), `type`, `version`, `label`, `description`, `builder` (the exact `build_<x>` function name), `classPrefix`, `defaultDuration`, `intentTags` (subset of `informative`, `data`, `workflow`, `social`, `brand`, `vfx`), and `slots`. Each slot is `text`, `richText`, `image` (episode-relative path, validated at instantiation), or `repeat` (with `min`, `max`, and an `item` field schema). Add `fixedTrack` / `role` only for structural types like `outro`.
 2. **`fragment.html`** — the inner DOM. Use `__SLOT__` tokens and `<!-- repeat:NAME --> … <!-- /repeat:NAME -->` blocks. Wrap content in `.scene-pad` + your `classPrefix`. Reuse shared roles (`.eyebrow`, `.headline`, `.subcopy`) where they fit. Respect the visual-framing rule: don't double-frame self-framed objects (terminal/code windows, social cards, device mockups are already containers — make them the primary scene object).
 3. **`styles.css`** — class-scoped CSS using your `classPrefix`. No `__SLOT__` tokens here, no `position: absolute` on the section root (the runtime force-applies that). The assembler emits this block once.
 4. **`timeline.js`** — the `build_<x>(tl, t, s, p)` function matching `manifest.builder`. Follow the builder contract above. `title-cards/v1/timeline.js` is the canonical reference (it documents the contract inline).
