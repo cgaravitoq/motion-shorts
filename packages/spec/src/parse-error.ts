@@ -5,7 +5,8 @@ const formatter = SchemaIssue.makeFormatterStandardSchemaV1();
 const formatPath = (path: ReadonlyArray<PropertyKey>): string => {
   let out = "";
   for (const segment of path) {
-    out += typeof segment === "number" ? `[${segment}]` : out ? `.${String(segment)}` : String(segment);
+    out +=
+      typeof segment === "number" ? `[${segment}]` : out ? `.${String(segment)}` : String(segment);
   }
   return out;
 };

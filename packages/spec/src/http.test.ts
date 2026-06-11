@@ -1,8 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { Effect, Result } from "effect";
-import { fetchWithRetry, fetchWithRetryPromise, type FetchLike } from "./http";
+import { type FetchLike, fetchWithRetry, fetchWithRetryPromise } from "./http";
 
-const scripted = (responses: Array<() => Response | Error>): { fetchImpl: FetchLike; calls: () => number } => {
+const scripted = (
+  responses: Array<() => Response | Error>,
+): { fetchImpl: FetchLike; calls: () => number } => {
   let call = 0;
   return {
     fetchImpl: async () => {
@@ -26,7 +28,9 @@ describe("fetchWithRetry", () => {
       () => new Response("boom", { status: 502 }),
       () => new Response("ok", { status: 200 }),
     ]);
-    const response = await Effect.runPromise(fetchWithRetry("https://x.test/a", undefined, { ...fast, fetchImpl }));
+    const response = await Effect.runPromise(
+      fetchWithRetry("https://x.test/a", undefined, { ...fast, fetchImpl }),
+    );
     expect(response.status).toBe(200);
     expect(calls()).toBe(3);
   });
@@ -36,14 +40,18 @@ describe("fetchWithRetry", () => {
       () => new Response("slow down", { status: 429 }),
       () => new Response("ok", { status: 200 }),
     ]);
-    const response = await Effect.runPromise(fetchWithRetry("https://x.test/b", undefined, { ...fast, fetchImpl }));
+    const response = await Effect.runPromise(
+      fetchWithRetry("https://x.test/b", undefined, { ...fast, fetchImpl }),
+    );
     expect(response.status).toBe(200);
     expect(calls()).toBe(2);
   });
 
   it("does not retry client errors — resolves with the 4xx response", async () => {
     const { fetchImpl, calls } = scripted([() => new Response("nope", { status: 404 })]);
-    const response = await Effect.runPromise(fetchWithRetry("https://x.test/c", undefined, { ...fast, fetchImpl }));
+    const response = await Effect.runPromise(
+      fetchWithRetry("https://x.test/c", undefined, { ...fast, fetchImpl }),
+    );
     expect(response.status).toBe(404);
     expect(calls()).toBe(1);
   });
@@ -60,7 +68,9 @@ describe("fetchWithRetry", () => {
   it("fails with a tagged HttpRequestError on persistent network failure", async () => {
     const { fetchImpl, calls } = scripted([() => new Error("ECONNRESET")]);
     const result = await Effect.runPromise(
-      Effect.result(fetchWithRetry("https://x.test/e", undefined, { ...fast, retries: 1, fetchImpl })),
+      Effect.result(
+        fetchWithRetry("https://x.test/e", undefined, { ...fast, retries: 1, fetchImpl }),
+      ),
     );
     expect(Result.isFailure(result)).toBe(true);
     if (Result.isFailure(result)) {
@@ -75,7 +85,9 @@ describe("fetchWithRetry", () => {
       () => new Error("ECONNRESET"),
       () => new Response("ok", { status: 200 }),
     ]);
-    const response = await Effect.runPromise(fetchWithRetry("https://x.test/f", undefined, { ...fast, fetchImpl }));
+    const response = await Effect.runPromise(
+      fetchWithRetry("https://x.test/f", undefined, { ...fast, fetchImpl }),
+    );
     expect(response.status).toBe(200);
   });
 
@@ -83,7 +95,12 @@ describe("fetchWithRetry", () => {
     const never: FetchLike = () => new Promise<Response>(() => {});
     const result = await Effect.runPromise(
       Effect.result(
-        fetchWithRetry("https://x.test/g", undefined, { baseDelayMs: 1, timeoutMs: 10, retries: 1, fetchImpl: never }),
+        fetchWithRetry("https://x.test/g", undefined, {
+          baseDelayMs: 1,
+          timeoutMs: 10,
+          retries: 1,
+          fetchImpl: never,
+        }),
       ),
     );
     expect(Result.isFailure(result)).toBe(true);

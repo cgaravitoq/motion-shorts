@@ -2,8 +2,8 @@ import { describe, expect, it } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
 import { Result } from "effect";
-import { formatParseError } from "./parse-error";
 import { decodeSceneTypeManifest } from "./manifest";
+import { formatParseError } from "./parse-error";
 
 const scenesRoot = path.resolve(import.meta.dir, "../../../apps/hyperframe/templates/scenes");
 

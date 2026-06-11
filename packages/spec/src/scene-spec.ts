@@ -1,9 +1,7 @@
 import { Schema } from "effect";
 import { exitToResult } from "./parse-error";
 
-export const Slug = Schema.String.check(
-  Schema.isPattern(/^[a-z0-9][a-z0-9-]*$/),
-).annotate({
+export const Slug = Schema.String.check(Schema.isPattern(/^[a-z0-9][a-z0-9-]*$/)).annotate({
   identifier: "Slug",
   message: "must be kebab-case (lowercase letters, digits, hyphens)",
 });
@@ -31,6 +29,7 @@ export const SceneSpec = Schema.Struct({
   height: Schema.optional(FiniteNumber),
   audioDuration: Schema.optional(FiniteNumber),
   palette: Schema.optional(Schema.Record(Schema.String, Schema.String)),
+  brand: Schema.optional(Slug),
   scenes: Schema.NonEmptyArray(SceneSpecScene),
 });
 export type SceneSpec = typeof SceneSpec.Type;
