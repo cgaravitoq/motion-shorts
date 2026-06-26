@@ -2,6 +2,7 @@
 set -euo pipefail
 
 scripts/check-no-process-env.sh
+scripts/check-env-example.sh
 
 # Validate any staged scene-spec.json against the scene-type manifests.
 staged_specs=$(git diff --cached --name-only --diff-filter=ACMR -- 'apps/hyperframe/src/episodes/**/scene-spec.json')

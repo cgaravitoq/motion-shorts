@@ -33,7 +33,7 @@ export default Alchemy.Stack(
       Alchemy.RemovalPolicy.retain(isProd),
     );
 
-    const gateway = yield* Cloudflare.Worker("UploadGateway", {
+    const gateway = yield* Cloudflare.Worker("Gateway", {
       main: "./src/gateway.ts",
       env: {
         BUCKET: bucket,
