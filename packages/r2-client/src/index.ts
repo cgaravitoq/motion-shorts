@@ -1,8 +1,16 @@
-export { env } from "./env";
+export {
+  env,
+  findWorkspaceEnvPath,
+  loadWorkspaceEnv,
+  parseDotenv,
+  type RuntimeEnv,
+} from "./env";
 export {
   createCanonicalRequest,
   createStringToSign,
   encodeKey,
+  presignRequest,
+  type PresignRequestArgs,
   sha256Hex,
   signRequest,
   timestamp,

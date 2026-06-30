@@ -17,6 +17,7 @@
       "dependencies": {
         "@cgaravitoq/audio": "workspace:*",
         "@cgaravitoq/publish": "workspace:*",
+        "@cgaravitoq/r2-client": "workspace:*",
         "@cgaravitoq/spec": "workspace:*",
         "effect": "4.0.0-beta.78",
       },

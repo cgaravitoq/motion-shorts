@@ -1,7 +1,14 @@
-import { createHash, createHmac } from "node:crypto";
 import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
+import {
+  encodeKey,
+  loadWorkspaceEnv as loadWorkspaceEnvShared,
+  presignRequest,
+  type SignConfig,
+  sha256Hex as sha256HexValue,
+  signRequest,
+} from "@cgaravitoq/r2-client";
 import {
   decodeRemoteManifest,
   type FetchLike,
@@ -14,8 +21,6 @@ import {
 import { Effect, Result } from "effect";
 
 const DEFAULT_PROJECT_PREFIX = "motion-shorts";
-const REGION = "auto";
-const SERVICE = "s3";
 const BINARY_ASSET_EXTENSIONS = new Set([
   ".avif",
   ".gif",
@@ -52,55 +57,11 @@ const transportErrorMessage =
   "Set either R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or " +
   "R2_ACCESS_KEY_ID_WRITE + R2_SECRET_ACCESS_KEY_WRITE.";
 
-const parseDotenv = (source: string): Array<[string, string]> => {
-  const entries: Array<[string, string]> = [];
-  for (const line of source.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const separator = trimmed.indexOf("=");
-    if (separator === -1) continue;
-    const key = trimmed.slice(0, separator).trim();
-    let value = trimmed.slice(separator + 1).trim();
-    if (!key) continue;
-    if (value.startsWith('"') && value.endsWith('"')) {
-      value = value.slice(1, -1);
-    }
-    entries.push([key, value]);
-  }
-  return entries;
-};
-
-const findWorkspaceEnvPath = (startDir: string = import.meta.dirname): string | null => {
-  let current = path.resolve(startDir);
-  while (true) {
-    const envPath = path.join(current, ".env");
-    const hasWorkspaceMarker = ["turbo.json", "bun.lockb", "bun.lock"].some((marker) =>
-      fsSync.existsSync(path.join(current, marker)),
-    );
-    if (hasWorkspaceMarker && fsSync.existsSync(envPath)) {
-      return envPath;
-    }
-    const parent = path.dirname(current);
-    if (parent === current) return null;
-    current = parent;
-  }
-};
-
 export const loadWorkspaceEnv = ({
   env = Bun.env as R2Env,
   startDir = import.meta.dirname,
-}: { env?: R2Env; startDir?: string } = {}): boolean => {
-  const envPath = findWorkspaceEnvPath(startDir);
-  if (!envPath) return false;
-
-  const source = fsSync.readFileSync(envPath, "utf8");
-  for (const [key, value] of parseDotenv(source)) {
-    if (!env[key]) {
-      env[key] = value;
-    }
-  }
-  return true;
-};
+}: { env?: R2Env; startDir?: string } = {}): boolean =>
+  loadWorkspaceEnvShared(env, startDir).loaded;
 
 export interface R2ArtifactsConfig {
   accountId: string;
@@ -239,48 +200,22 @@ export const objectKeyFor = ({
 
 export const sha256Hex = async (filePath: string): Promise<string> => {
   const bytes = await fs.readFile(filePath);
-  return createHash("sha256").update(bytes).digest("hex");
+  return sha256HexValue(bytes);
 };
 
-const sha256Buffer = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
+const signConfig = (config: R2ArtifactsConfig): SignConfig => ({
+  accessKeyId: config.accessKeyId ?? "",
+  secretAccessKey: config.secretAccessKey ?? "",
+  endpoint: config.endpoint,
+  endpointPrefix: config.endpointPrefix,
+});
 
-const hmac = (key: string | Buffer, value: string): Buffer =>
-  createHmac("sha256", key).update(value).digest();
-const hmacHex = (key: string | Buffer, value: string): string =>
-  createHmac("sha256", key).update(value).digest("hex");
-
-const signingKey = (secretAccessKey: string, dateStamp: string): Buffer => {
-  const kDate = hmac(`AWS4${secretAccessKey}`, dateStamp);
-  const kRegion = hmac(kDate, REGION);
-  const kService = hmac(kRegion, SERVICE);
-  return hmac(kService, "aws4_request");
-};
-
-const encodeKey = (key: string): string => key.split("/").map(encodeURIComponent).join("/");
-
-const timestamp = (date: Date): string => date.toISOString().replace(/[:-]|\.\d{3}/g, "");
-
-const signedHeadersString = (headers: Record<string, string>): string =>
-  Object.keys(headers).sort().join(";");
-
-const canonicalHeaderString = (headers: Record<string, string>): string =>
-  `${Object.keys(headers)
-    .sort()
-    .map((key) => `${key}:${String(headers[key]).trim().replace(/\s+/g, " ")}`)
-    .join("\n")}\n`;
-
-export interface SignedR2Request {
-  url: string;
-  headers: Record<string, string>;
-}
-
-export const signR2Request = ({
+const signR2Request = ({
   config,
   method,
   key,
   payloadHash,
-  headers = {},
-  now = new Date(),
+  headers,
   expiresSeconds,
 }: {
   config: R2ArtifactsConfig;
@@ -288,71 +223,11 @@ export const signR2Request = ({
   key: string;
   payloadHash: string;
   headers?: Record<string, string>;
-  now?: Date;
   expiresSeconds?: number;
-}): SignedR2Request => {
-  const host = new URL(config.endpoint).host;
-  const amzDate = timestamp(now);
-  const dateStamp = amzDate.slice(0, 8);
-  const credentialScope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`;
-  const canonicalUri = `${config.endpointPrefix}/${encodeKey(key)}`;
-  const normalizedHeaders: Record<string, string> = {
-    host,
-    "x-amz-content-sha256": payloadHash,
-    "x-amz-date": amzDate,
-    ...Object.fromEntries(
-      Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value]),
-    ),
-  };
-
-  let canonicalQueryString = "";
-  const requestHeaders = { ...normalizedHeaders };
-  if (expiresSeconds !== undefined) {
-    delete requestHeaders["x-amz-date"];
-    const query = {
-      "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
-      "X-Amz-Credential": `${config.accessKeyId}/${credentialScope}`,
-      "X-Amz-Date": amzDate,
-      "X-Amz-Expires": String(expiresSeconds),
-      "X-Amz-SignedHeaders": signedHeadersString(requestHeaders),
-    };
-    canonicalQueryString = Object.entries(query)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
-      .join("&");
-  }
-
-  const canonicalRequest = [
-    method,
-    canonicalUri,
-    canonicalQueryString,
-    canonicalHeaderString(requestHeaders),
-    signedHeadersString(requestHeaders),
-    payloadHash,
-  ].join("\n");
-  const stringToSign = [
-    "AWS4-HMAC-SHA256",
-    amzDate,
-    credentialScope,
-    createHash("sha256").update(canonicalRequest).digest("hex"),
-  ].join("\n");
-  const signature = hmacHex(signingKey(config.secretAccessKey ?? "", dateStamp), stringToSign);
-  const url = `${config.endpoint}${canonicalUri}${canonicalQueryString ? `?${canonicalQueryString}&X-Amz-Signature=${signature}` : ""}`;
-
-  if (expiresSeconds !== undefined) {
-    return { url, headers: requestHeaders };
-  }
-
-  return {
-    url,
-    headers: {
-      ...requestHeaders,
-      authorization:
-        `AWS4-HMAC-SHA256 Credential=${config.accessKeyId}/${credentialScope}, ` +
-        `SignedHeaders=${signedHeadersString(requestHeaders)}, Signature=${signature}`,
-    },
-  };
-};
+}): { url: string; headers: Record<string, string> } =>
+  expiresSeconds !== undefined
+    ? presignRequest({ config: signConfig(config), method, key, payloadHash, headers, expiresSeconds })
+    : signRequest({ config: signConfig(config), method, key, payloadHash, headers });
 
 export interface RemoteUrlInfo {
   strategy: "signed-url" | "public-url";
@@ -427,7 +302,7 @@ const readRemoteManifest = async (manifestPath: string): Promise<RemoteManifest>
 const existingAssetMatches = async (outputPath: string, object: RemoteObject): Promise<boolean> => {
   try {
     const bytes = await fs.readFile(outputPath);
-    return bytes.byteLength === object.bytes && sha256Buffer(bytes) === object.sha256;
+    return bytes.byteLength === object.bytes && sha256HexValue(bytes) === object.sha256;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
     throw error;
@@ -493,7 +368,7 @@ const uploadAndVerifyObjectViaGateway = async ({
   }
   const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
   const type = contentType ?? contentTypeFor(filePath ?? key);
-  const hash = createHash("sha256").update(bytes).digest("hex");
+  const hash = sha256HexValue(bytes);
   const url = gatewayObjectUrl(config, key);
   const putResponse = await doFetch(
     fetchImpl,
@@ -530,7 +405,7 @@ const uploadAndVerifyObjectViaGateway = async ({
     );
   }
   const remoteBytes = Buffer.from(await getResponse.arrayBuffer());
-  const remoteHash = createHash("sha256").update(remoteBytes).digest("hex");
+  const remoteHash = sha256HexValue(remoteBytes);
   if (remoteBytes.byteLength !== bytes.byteLength || remoteHash !== hash) {
     throw new Error(
       `R2 gateway verification mismatch for ${key}: local=${bytes.byteLength}/${hash} remote=${remoteBytes.byteLength}/${remoteHash}`,
@@ -573,7 +448,7 @@ const downloadAndVerifyObjectViaGateway = async ({
     );
   }
   const bytes = Buffer.from(await response.arrayBuffer());
-  const hash = sha256Buffer(bytes);
+  const hash = sha256HexValue(bytes);
   if (bytes.byteLength !== object.bytes || hash !== object.sha256) {
     throw new Error(
       `R2 hydrate verification mismatch for ${object.key}: expected=${object.bytes}/${object.sha256} received=${bytes.byteLength}/${hash}`,
@@ -602,7 +477,7 @@ export const uploadAndVerifyObject = async ({
   }
 
   const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
-  const hash = createHash("sha256").update(bytes).digest("hex");
+  const hash = sha256HexValue(bytes);
   const headers = {
     "content-type": contentType ?? contentTypeFor(filePath ?? key),
     "x-amz-meta-sha256": hash,
@@ -641,7 +516,7 @@ export const uploadAndVerifyObject = async ({
     );
   }
   const remoteBytes = Buffer.from(await getResponse.arrayBuffer());
-  const remoteHash = createHash("sha256").update(remoteBytes).digest("hex");
+  const remoteHash = sha256HexValue(remoteBytes);
   if (remoteBytes.byteLength !== bytes.byteLength || remoteHash !== hash) {
     throw new Error(
       `R2 verification mismatch for ${key}: local=${bytes.byteLength}/${hash} remote=${remoteBytes.byteLength}/${remoteHash}`,
@@ -1056,7 +931,7 @@ export const hydrateEpisodeArtifacts = async ({
             );
           }
           const downloadedBytes = Buffer.from(await response.arrayBuffer());
-          const hash = sha256Buffer(downloadedBytes);
+          const hash = sha256HexValue(downloadedBytes);
           if (downloadedBytes.byteLength !== object.bytes || hash !== object.sha256) {
             throw new Error(
               `R2 hydrate verification mismatch for ${object.key}: expected=${object.bytes}/${object.sha256} received=${downloadedBytes.byteLength}/${hash}`,

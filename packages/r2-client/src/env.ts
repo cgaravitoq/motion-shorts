@@ -3,9 +3,9 @@ import path from "node:path";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-type RuntimeEnv = Record<string, string | undefined>;
+export type RuntimeEnv = Record<string, string | undefined>;
 
-const parseDotenv = (source: string): Array<[string, string]> => {
+export const parseDotenv = (source: string): Array<[string, string]> => {
   const entries: Array<[string, string]> = [];
   for (const line of source.split(/\r?\n/)) {
     const trimmed = line.trim();
@@ -23,7 +23,7 @@ const parseDotenv = (source: string): Array<[string, string]> => {
   return entries;
 };
 
-const findWorkspaceEnvPath = (startDir: string = import.meta.dirname): string | null => {
+export const findWorkspaceEnvPath = (startDir: string = import.meta.dirname): string | null => {
   let current = path.resolve(startDir);
   while (true) {
     const envPath = path.join(current, ".env");
@@ -39,9 +39,12 @@ const findWorkspaceEnvPath = (startDir: string = import.meta.dirname): string | 
   }
 };
 
-const loadWorkspaceEnv = (runtimeEnv: RuntimeEnv): RuntimeEnv => {
-  const envPath = findWorkspaceEnvPath();
-  if (!envPath) return runtimeEnv;
+export const loadWorkspaceEnv = (
+  runtimeEnv: RuntimeEnv,
+  startDir: string = import.meta.dirname,
+): { runtimeEnv: RuntimeEnv; loaded: boolean } => {
+  const envPath = findWorkspaceEnvPath(startDir);
+  if (!envPath) return { runtimeEnv, loaded: false };
 
   const source = fs.readFileSync(envPath, "utf8");
   for (const [key, value] of parseDotenv(source)) {
@@ -49,7 +52,7 @@ const loadWorkspaceEnv = (runtimeEnv: RuntimeEnv): RuntimeEnv => {
       runtimeEnv[key] = value;
     }
   }
-  return runtimeEnv;
+  return { runtimeEnv, loaded: true };
 };
 
 export const env = createEnv({
@@ -67,5 +70,5 @@ export const env = createEnv({
     R2_SECRET_ACCESS_KEY_WRITE: z.string().min(1).optional(),
   },
   emptyStringAsUndefined: true,
-  runtimeEnv: loadWorkspaceEnv(process.env),
+  runtimeEnv: loadWorkspaceEnv(process.env).runtimeEnv,
 });
