@@ -1,4 +1,5 @@
 import type { FetchLike } from "./fetch-like";
+import { assertOkJson, postTokenForm } from "./oauth";
 export const YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload";
 
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -64,9 +65,8 @@ export const exchangeYoutubeCode = async ({
   redirectUri: string;
   fetchImpl?: FetchLike;
 }): Promise<YoutubeTokens> => {
-  const response = await fetchImpl(TOKEN_ENDPOINT, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+  const json = await postTokenForm({
+    endpoint: TOKEN_ENDPOINT,
     body: new URLSearchParams({
       code,
       client_id: config.clientId,
@@ -74,9 +74,9 @@ export const exchangeYoutubeCode = async ({
       redirect_uri: redirectUri,
       grant_type: "authorization_code",
     }),
+    fetchImpl,
+    parse: (response) => assertOkJson<TokenResponse>(response, "YouTube code exchange"),
   });
-  await assertOk(response, "YouTube code exchange");
-  const json = (await response.json()) as TokenResponse;
   return {
     accessToken: json.access_token,
     refreshToken: json.refresh_token,
@@ -93,18 +93,17 @@ export const refreshYoutubeAccessToken = async ({
   refreshToken: string;
   fetchImpl?: FetchLike;
 }): Promise<YoutubeTokens> => {
-  const response = await fetchImpl(TOKEN_ENDPOINT, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+  const json = await postTokenForm({
+    endpoint: TOKEN_ENDPOINT,
     body: new URLSearchParams({
       refresh_token: refreshToken,
       client_id: config.clientId,
       client_secret: config.clientSecret,
       grant_type: "refresh_token",
     }),
+    fetchImpl,
+    parse: (response) => assertOkJson<TokenResponse>(response, "YouTube token refresh"),
   });
-  await assertOk(response, "YouTube token refresh");
-  const json = (await response.json()) as TokenResponse;
   return { accessToken: json.access_token, refreshToken, expiresInSeconds: json.expires_in };
 };
 

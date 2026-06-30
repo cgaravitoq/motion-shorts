@@ -23,23 +23,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import {
-  type PublishRecord,
-  presignGetUrl,
-  publishInstagramReel,
-  readStoredToken,
-  refreshInstagramToken,
-  refreshTiktokToken,
-  refreshYoutubeAccessToken,
-  uploadTiktokDraft,
-  uploadYoutubeVideo,
-  upsertPublishRecord,
-  writeStoredToken,
-} from "@cgaravitoq/publish";
+import { type PublishRecord, readStoredToken, upsertPublishRecord } from "@cgaravitoq/publish";
 import { decodePublishLedger, formatParseError, type PublishLedger } from "@cgaravitoq/spec";
 import { Result } from "effect";
 import { validateDistribution } from "./lib/distribution-spec";
 import { resolveEpisodeContext } from "./lib/episode-context";
+import { redactPublishError, runPublish } from "./lib/publish-handlers";
 import {
   assertR2Config,
   loadWorkspaceEnv,
@@ -194,109 +183,6 @@ const verifiedLocalMp4 = async (): Promise<string> => {
   return localMp4;
 };
 
-const publish = async (): Promise<{
-  id: string;
-  url?: string;
-  privacy?: string;
-  ledgerStatus?: "inbox";
-}> => {
-  if (platform === "youtube") {
-    const clientId = Bun.env.YOUTUBE_CLIENT_ID;
-    const clientSecret = Bun.env.YOUTUBE_CLIENT_SECRET;
-    if (!clientId || !clientSecret) fail("set YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET in .env");
-    if (!token.refreshToken)
-      fail("stored YouTube token has no refresh token — re-run publish:auth youtube");
-
-    const localMp4 = await verifiedLocalMp4();
-    const refreshed = await refreshYoutubeAccessToken({
-      config: { clientId, clientSecret },
-      refreshToken: token.refreshToken,
-    });
-    const video = new Uint8Array(await Bun.file(localMp4).arrayBuffer());
-    const result = await uploadYoutubeVideo({
-      accessToken: refreshed.accessToken,
-      video,
-      title: copy.title,
-      description: copy.description,
-      privacyStatus: privacy,
-    });
-    return { id: result.videoId, url: result.url, privacy: result.privacyStatus };
-  }
-
-  if (platform === "tiktok") {
-    const clientKey = Bun.env.TIKTOK_CLIENT_KEY;
-    const clientSecret = Bun.env.TIKTOK_CLIENT_SECRET;
-    if (!clientKey || !clientSecret) fail("set TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET in .env");
-    if (!token.refreshToken)
-      fail("stored TikTok token has no refresh token — re-run publish:auth tiktok");
-
-    const localMp4 = await verifiedLocalMp4();
-    // Access tokens last 24h; refresh every run and persist the rotated pair.
-    const refreshed = await refreshTiktokToken({
-      config: { clientKey, clientSecret },
-      refreshToken: token.refreshToken,
-    });
-    writeStoredToken(SECRETS_DIR, {
-      ...token,
-      accessToken: refreshed.accessToken,
-      refreshToken: refreshed.refreshToken,
-      obtainedAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + refreshed.refreshExpiresInSeconds * 1000).toISOString(),
-    });
-    const video = new Uint8Array(await Bun.file(localMp4).arrayBuffer());
-    const result = await uploadTiktokDraft({ accessToken: refreshed.accessToken, video });
-    return { id: result.publishId, ledgerStatus: "inbox" };
-  }
-
-  // instagram: feed the container a presigned R2 GET URL (signed-headers-free)
-  const config = assertR2Config(Bun.env);
-  if (!config.accessKeyId || !config.secretAccessKey) {
-    fail(
-      "Instagram publishing needs direct S3 R2 credentials (R2_ACCESS_KEY_ID_WRITE / R2_SECRET_ACCESS_KEY_WRITE) to presign the video URL",
-    );
-  }
-  let accessToken = token.accessToken;
-  const remainingDays = token.expiresAt
-    ? (new Date(token.expiresAt).getTime() - Date.now()) / 86_400_000
-    : 0;
-  const ageHours = (Date.now() - new Date(token.obtainedAt).getTime()) / 3_600_000;
-  if (remainingDays < 10 && ageHours > 24) {
-    const refreshed = await refreshInstagramToken({ accessToken });
-    accessToken = refreshed.accessToken;
-    writeStoredToken(SECRETS_DIR, {
-      ...token,
-      accessToken,
-      obtainedAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + refreshed.expiresInSeconds * 1000).toISOString(),
-    });
-    console.log("  (refreshed the long-lived Instagram token)");
-  }
-  const videoUrl = presignGetUrl({
-    config: {
-      accessKeyId: config.accessKeyId,
-      secretAccessKey: config.secretAccessKey,
-      endpoint: config.endpoint,
-      endpointPrefix: config.endpointPrefix,
-    },
-    key: renderRef.key,
-    expiresSeconds: 7200,
-  });
-  const result = await publishInstagramReel({
-    accessToken,
-    igUserId: token.igUserId ?? "",
-    videoUrl,
-    caption: copy.caption,
-  });
-  return { id: result.mediaId, url: result.permalink ?? undefined };
-};
-
-// Graph errors can echo the presigned video_url (credential + signature in
-// the query string) — redact every query string before persisting/printing.
-const redact = (err: unknown): string =>
-  String((err as { message?: unknown })?.message ?? err)
-    .replace(/\?[^\s"')]+/g, "?<redacted-query>")
-    .slice(0, 500);
-
 const uploadLedgerToR2 = async (): Promise<void> => {
   const config = assertR2Config(Bun.env);
   await uploadAndVerifyObject({
@@ -321,28 +207,28 @@ if (existing?.status === "published" && existing.renderSha256 === renderRef.sha2
 
 let outcome: { id: string; url?: string; privacy?: string; ledgerStatus?: "inbox" };
 try {
-  outcome = await publish();
-} catch (err) {
-  const redacted = redact(err);
-  writeLedger({
-    status: "failed",
-    error: redacted,
-    renderSha256: renderRef.sha256,
+  // Gate-2 orchestrator: the explicit --confirm above has already passed; this
+  // dispatches to the per-platform handler and writes the publish ledger
+  // (success or redacted failure) once, centrally.
+  outcome = await runPublish({
+    platform,
+    privacy,
     lang,
+    writeLedger,
+    handlerCtx: {
+      token,
+      copy,
+      renderRef,
+      secretsDir: SECRETS_DIR,
+      verifiedLocalMp4,
+      env: Bun.env,
+      log: (message) => console.log(message),
+    },
   });
-  fail(`publish failed (recorded in ${ledgerPath}): ${redacted}`);
+} catch (err) {
+  fail(`publish failed (recorded in ${ledgerPath}): ${redactPublishError(err)}`);
 }
-
-// The video is live from here on: the local ledger records it immediately and
-// is never reverted — only the R2 sync below may be pending.
-const { ledgerStatus, ...result } = outcome;
-writeLedger({
-  status: ledgerStatus ?? "published",
-  ...result,
-  publishedAt: new Date().toISOString(),
-  renderSha256: renderRef.sha256,
-  lang,
-});
+const result = outcome;
 if (platform === "tiktok") {
   console.log(`\n✓ draft sent to your TikTok inbox (publish_id ${result.id})`);
   console.log(
@@ -358,7 +244,7 @@ try {
   console.log(`✓ ledger updated: ${ledgerPath} (+R2)`);
 } catch (err) {
   console.error(
-    `publish-episode: WARNING — the video is live and the local ledger is updated, but the R2 ledger upload failed: ${redact(err)}`,
+    `publish-episode: WARNING — the video is live and the local ledger is updated, but the R2 ledger upload failed: ${redactPublishError(err)}`,
   );
   console.error(
     "  Re-run the same command to sync it — the re-run is idempotent and will NOT re-publish this render.",

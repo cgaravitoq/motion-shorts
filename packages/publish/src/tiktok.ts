@@ -1,4 +1,5 @@
 import type { FetchLike } from "./fetch-like";
+import { postTokenForm } from "./oauth";
 
 const AUTH_ENDPOINT = "https://www.tiktok.com/v2/auth/authorize/";
 const TOKEN_ENDPOINT = "https://open.tiktokapis.com/v2/oauth/token/";
@@ -91,12 +92,12 @@ const tokenRequest = async (
   what: string,
   fetchImpl: FetchLike,
 ): Promise<TiktokTokens> => {
-  const response = await fetchImpl(TOKEN_ENDPOINT, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+  const json = await postTokenForm({
+    endpoint: TOKEN_ENDPOINT,
     body,
+    fetchImpl,
+    parse: (response) => tiktokJson<TokenResponse>(response, what),
   });
-  const json = await tiktokJson<TokenResponse>(response, what);
   if (!json.access_token) throw new Error(`${what} failed: no access_token in response`);
   return {
     accessToken: json.access_token,
