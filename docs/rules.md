@@ -131,7 +131,7 @@ Run from `apps/hyperframe/` cwd:
 - `bun run scene:gallery` — generate the gallery episode exercising every scene-type.
 - `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2] [--frames=1|3] [--format=short|desktop]` — per-scene visual QA: snapshots key frames per scene + `hyperframes inspect` for overflow/overlap. Writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. No full mp4. `--scenes` re-checks only changed scenes; `--frames=3` adds entry/mid/late frames for motion debugging (default `1`); `--format=desktop` QAs the 16:9 variant.
 - `bun run render:episode <slug> --format=mp4 [--keep-local]` — final full render (after per-scene approval).
-- `bun run audio <script.txt> --lang=es --speed=1.0 --no-pause-injection [--out=<dir>]` — TTS + captions (`generate-audio.ts`). Takes any script path as a positional; `--out` defaults to `out/audio/`. Point it at the canonical voice dir per rule 21, e.g. `--out=public/voice/<slug>`.
+- `bun run audio <script.txt> --lang=es --speed=1.04 [--out=<dir>]` — TTS + captions (`generate-audio.ts`). Takes any script path as a positional; `--out` defaults to `out/audio/`. Point it at the canonical voice dir per rule 21, e.g. `--out=public/voice/<slug>`.
 
 Render variants:
 
@@ -177,7 +177,7 @@ One `AGENTS.md` at root, with `CLAUDE.md` as a symlink.
 
 `TTS_PROVIDER=elevenlabs|inworld`; default is ElevenLabs.
 ElevenLabs voices use `ELEVENLABS_VOICE_ID_ES` / `ELEVENLABS_VOICE_ID_EN`.
-ElevenLabs TTS defaults to `ELEVENLABS_MODEL_ID=eleven_v3`; override per run with `--model=<id>`.
+ElevenLabs TTS uses `ELEVENLABS_MODEL_ID=eleven_v3` — v3-only; non-v3 model IDs (`eleven_multilingual_v2`, `eleven_turbo_v2`, any v2/v2.5) are permanently blocked and the CLI throws if one is passed.
 Inworld requires `INWORLD_API_KEY` + `INWORLD_VOICE_ID_ES` / `INWORLD_VOICE_ID_EN`.
 Inworld model defaults to `INWORLD_TTS_MODEL=inworld-tts-2`.
 STT swap via `STT_PROVIDER=elevenlabs|hyperframes-transcribe`.
@@ -191,9 +191,9 @@ Amplified style: `--style=0.25` (increases API latency).
 
 See `docs/voice-config.md` for full voice configuration.
 
-## 24. Script-side pause injection
+## 24. Native pacing (no injection)
 
-Pause injection is **v2/v2.5-only** (SSML `<break />` after `.!?` and `:;--`, via `--pause-sentence=<ms>` / `--pause-clause=<ms>`). On `eleven_v3` — the production default — injection never runs and `--pause-*` flags are ignored with a warning: v3 pause tags produce unpredictable multi-second gaps. Hand-author at most 1-2 expressive tags in the script instead (`[excited]`, `[thoughtful]`, `[short pause]`).
+There is no pause injection. The old `--pause-sentence` / `--pause-clause` / `--no-pause-injection` flags are removed, and `eleven_v3` is the only model. Pacing is native: write tight scripts and control rhythm with punctuation only (periods/commas for beats, ellipses `…` for a longer hold). Never inject `<break>` SSML or `[pause]` / `[short pause]` / `[long pause]` tags programmatically; hand-author at most 1-2 expressive tags in the script instead (`[excited]`, `[thoughtful]`).
 
 ## 25. Captions shape
 

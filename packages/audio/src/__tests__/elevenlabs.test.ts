@@ -98,14 +98,14 @@ describe("ElevenLabsTTSProvider", () => {
     });
   });
 
-  it("resolveDefaults honours explicit voice and model", () => {
+  it("resolveDefaults honours explicit voice and forces eleven_v3", () => {
     const { client } = stubClient(makeStream([0]));
     const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
     expect(
-      provider.resolveDefaults({ lang: "es", voice: "custom-voice-id", model: "custom-model" }),
+      provider.resolveDefaults({ lang: "es", voice: "custom-voice-id", model: "eleven_v3" }),
     ).toEqual({
       voiceId: "custom-voice-id",
-      modelId: "custom-model",
+      modelId: "eleven_v3",
     });
   });
 
@@ -116,22 +116,29 @@ describe("ElevenLabsTTSProvider", () => {
     expect(convert.mock.calls[0]?.[0]).toBe("custom-voice-id");
   });
 
-  it("honours ELEVENLABS_MODEL_ID over the repo default", async () => {
+  it("blocks a non-v3 ELEVENLABS_MODEL_ID (v3-only pipeline)", async () => {
     mockEnv.ELEVENLABS_MODEL_ID = "eleven_multilingual_v2";
+    const { client } = stubClient(makeStream([0]));
+    const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
+    await expect(provider.synthesize("hola", { lang: "es" })).rejects.toThrow(/eleven_v3-only/);
+  });
+
+  it("blocks a non-v3 per-call modelId override", async () => {
+    mockEnv.ELEVENLABS_MODEL_ID = "eleven_v3";
+    const { client } = stubClient(makeStream([0]));
+    const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
+    await expect(
+      provider.synthesize("hola", { lang: "es", modelId: "eleven_multilingual_v2" }),
+    ).rejects.toThrow(/eleven_v3-only/);
+  });
+
+  it("always sends eleven_v3 as the model", async () => {
+    mockEnv.ELEVENLABS_MODEL_ID = "eleven_v3";
     const { client, convert } = stubClient(makeStream([0]));
     const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
     await provider.synthesize("hola", { lang: "es" });
     const [, request] = convert.mock.calls[0] ?? [];
-    expect(request).toMatchObject({ modelId: "eleven_multilingual_v2" });
-  });
-
-  it("lets per-call modelId override env/default model selection", async () => {
-    mockEnv.ELEVENLABS_MODEL_ID = "eleven_v3";
-    const { client, convert } = stubClient(makeStream([0]));
-    const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
-    await provider.synthesize("hola", { lang: "es", modelId: "eleven_multilingual_v2" });
-    const [, request] = convert.mock.calls[0] ?? [];
-    expect(request).toMatchObject({ modelId: "eleven_multilingual_v2" });
+    expect(request).toMatchObject({ modelId: "eleven_v3" });
   });
 
   it("applies the narration preset (stability=0.5, similarityBoost=0.82, speed=1.04) when no tuning overrides are passed", async () => {

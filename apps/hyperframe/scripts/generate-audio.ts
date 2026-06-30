@@ -8,25 +8,19 @@ import {
   type CacheMode,
   cacheEntryPaths,
   computeTtsCacheKey,
-  DEFAULT_PACING,
   getAudioDurationSeconds,
   getCacheRoot,
   getSTTProvider,
   getTTSProvider,
   getTTSProviderName,
   type HyperframesCaption,
-  injectElevenV3Pauses,
-  injectPauses,
-  isElevenV3Model,
   type Lang,
-  MAX_BREAK_MS,
   MAX_TTS_CHARS,
   type MergeArtifactsResult,
   type MergedSegmentArtifact,
   type MixBgmResult,
   mergeSegmentArtifacts,
   mixBgm,
-  type PacingResult,
   type ParseScriptResult,
   parseCaptionFormats,
   parseScript,
@@ -64,17 +58,9 @@ Options:
                          Repo default 0.82 (narration preset).
   --style=<0..1>         Voice tuning. Amplifies the original speaker's
                          style; 0 = flat. Default 0. Increases latency if >0.
-  --speed=<0.5..1.5>     Voice tuning. <1 slower, >1 faster. Provider-specific
-                         caps apply: ElevenLabs v2 [0.7, 1.2], Inworld
-                         [0.5, 1.5]. Repo default 1.04 (narration preset).
-  --pause-sentence=<ms>  Inject SSML pauses after .!? Default 400. v2/v2.5 only —
-                         on eleven_v3 injection never runs (hand-author
-                         [short pause]/[long pause] tags instead).
-                         0 disables. Capped at 3000.
-  --pause-clause=<ms>    Inject SSML pause after :;—. Default 250. v2/v2.5 only —
-                         ignored on eleven_v3. 0 disables.
-  --no-pause-injection   Skip pause injection entirely (use when the script
-                         already contains hand-authored pause tags).
+  --speed=<0.5..1.5>     Voice tuning. <1 slower, >1 faster. Inworld [0.5, 1.5].
+                         Repo default 1.04 (narration preset). ElevenLabs is
+                         eleven_v3-only; pace via script punctuation, never flags.
   --caption-format=<list>
                          Comma-separated list of additional sidecar caption
                          formats to emit alongside captions.json. Supported:
@@ -131,9 +117,6 @@ const main = async () => {
       "similarity-boost": { type: "string" },
       style: { type: "string" },
       speed: { type: "string" },
-      "pause-sentence": { type: "string" },
-      "pause-clause": { type: "string" },
-      "no-pause-injection": { type: "boolean", default: false },
       "caption-format": { type: "string" },
       cache: { type: "string" },
       bgm: { type: "string" },
@@ -202,8 +185,6 @@ const main = async () => {
   const similarityBoost = parseRange(values["similarity-boost"], "similarity-boost", 0, 1);
   const style = parseRange(values.style, "style", 0, 1);
   const speed = parseRange(values.speed, "speed", 0.5, 1.5);
-  const pauseSentenceMs = parseRange(values["pause-sentence"], "pause-sentence", 0, MAX_BREAK_MS);
-  const pauseClauseMs = parseRange(values["pause-clause"], "pause-clause", 0, MAX_BREAK_MS);
   const ttsProviderNameForDefaults = getTTSProviderName();
   let resolvedVoiceId: string | undefined;
   let modelId: string | undefined;
@@ -222,12 +203,6 @@ const main = async () => {
     modelId = values.model ?? undefined;
     deferredVoiceError = err;
   }
-  const isV3 =
-    ttsProviderNameForDefaults === "elevenlabs" &&
-    typeof modelId === "string" &&
-    isElevenV3Model(modelId);
-  const hasExplicitPauseControls =
-    values["pause-sentence"] != null || values["pause-clause"] != null;
   const tuningRecap = [
     stability != null && `stability=${stability}`,
     similarityBoost != null && `similarityBoost=${similarityBoost}`,
@@ -236,26 +211,6 @@ const main = async () => {
   ]
     .filter(Boolean)
     .join(" ");
-
-  if (hasExplicitPauseControls && ttsProviderNameForDefaults !== "elevenlabs") {
-    console.warn(
-      `[generate-audio] pause-injection: skipped — provider="${ttsProviderNameForDefaults}" does not support SSML/v3 break tags. --pause-* flags ignored.`,
-    );
-  }
-  if (hasExplicitPauseControls && isV3) {
-    console.warn(
-      "[generate-audio] pause-injection: skipped — eleven_v3 pause tags produce unpredictable multi-second gaps. Hand-author [short pause]/[long pause] in the script instead. --pause-* flags ignored.",
-    );
-  }
-  const shouldInjectPauses =
-    !values["no-pause-injection"] && ttsProviderNameForDefaults === "elevenlabs" && !isV3;
-  const injectPausesForText = (raw: string): PacingResult =>
-    shouldInjectPauses
-      ? (isV3 ? injectElevenV3Pauses : injectPauses)(raw, {
-          sentenceMs: pauseSentenceMs ?? DEFAULT_PACING.sentenceMs,
-          clauseMs: pauseClauseMs ?? DEFAULT_PACING.clauseMs,
-        })
-      : { text: raw, injected: 0, syntax: isV3 ? "eleven-v3-tags" : "ssml-break" };
 
   let parsedScript: ParseScriptResult;
   try {
@@ -283,22 +238,12 @@ const main = async () => {
     console.log(`[generate-audio] speakers: ${summary}`);
   }
 
-  const pacingResult = injectPausesForText(text);
-  const finalText = pacingResult.text;
-  if (!isMultiSpeaker && pacingResult.injected > 0) {
-    const sMs = pauseSentenceMs ?? DEFAULT_PACING.sentenceMs;
-    const cMs = pauseClauseMs ?? DEFAULT_PACING.clauseMs;
-    console.log(
-      `[generate-audio] injected ${pacingResult.injected} ${pacingResult.syntax} pauses (sentence=${sMs}ms, clause=${cMs}ms)`,
-    );
-  }
+  const finalText = text;
 
   if (!isMultiSpeaker && finalText.length > MAX_TTS_CHARS) {
-    const fromBreaks = finalText.length - text.length;
     console.error(
-      `generate-audio: post-injection text is ${finalText.length} chars (script ${text.length}` +
-        `${fromBreaks > 0 ? ` + ${fromBreaks} from pause tags` : ""}), exceeds cap (${MAX_TTS_CHARS}). ` +
-        "Refusing to burn TTS credits. Shorten the script or pass --no-pause-injection.",
+      `generate-audio: script is ${finalText.length} chars, exceeds cap (${MAX_TTS_CHARS}). ` +
+        "Refusing to burn TTS credits. Shorten the script.",
     );
     process.exit(1);
   }
@@ -357,8 +302,7 @@ const main = async () => {
     try {
       segmentTmpDir = fs.mkdtempSync(path.join(outDir, ".segments-"));
       for (const segment of parsedScript.segments) {
-        const segPacing = injectPausesForText(segment.text);
-        const segText = segPacing.text;
+        const segText = segment.text;
         if (segText.length > MAX_TTS_CHARS) {
           console.error(
             `generate-audio: segment ${segment.index} (speaker="${segment.speakerName ?? "(default)"}") is ${segText.length} chars, exceeds cap (${MAX_TTS_CHARS}).`,
@@ -670,13 +614,7 @@ const main = async () => {
       `  tts char usage:   ${multiSpeakerTotalChars} across ${parsedScript.segments.length} segments`,
     );
   } else if (ttsProviderName) {
-    if (finalText.length === text.length) {
-      console.log(`  tts char usage:   ${text.length}`);
-    } else {
-      console.log(
-        `  tts char usage:   ${finalText.length} (script ${text.length} + ${finalText.length - text.length} from pause tags)`,
-      );
-    }
+    console.log(`  tts char usage:   ${text.length}`);
   } else {
     console.log(`  tts char usage:   0 (cache hit)`);
   }
