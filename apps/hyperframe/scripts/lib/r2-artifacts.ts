@@ -583,7 +583,7 @@ const downloadAndVerifyObjectViaGateway = async ({
   return bytes;
 };
 
-export const uploadAndVerifyObject = async ({
+const uploadAndVerifyObjectViaS3 = async ({
   config,
   filePath,
   key,
@@ -591,17 +591,6 @@ export const uploadAndVerifyObject = async ({
   contentType,
   fetchImpl = fetch,
 }: UploadObjectArgs): Promise<UploadedObjectInfo> => {
-  if (config.uploadGatewayUrl) {
-    return uploadAndVerifyObjectViaGateway({
-      config,
-      filePath,
-      key,
-      bytes: bodyBytes,
-      contentType,
-      fetchImpl,
-    });
-  }
-
   const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
   const hash = createHash("sha256").update(bytes).digest("hex");
   const headers = {
@@ -656,6 +645,29 @@ export const uploadAndVerifyObject = async ({
     contentType: headers["content-type"],
     ...buildRemoteUrl({ config, key }),
   };
+};
+
+export const uploadAndVerifyObject = async (
+  args: UploadObjectArgs,
+): Promise<UploadedObjectInfo> => {
+  const { config, key } = args;
+  const canDirectS3 = Boolean(config.accessKeyId && config.secretAccessKey);
+  if (config.uploadGatewayUrl) {
+    try {
+      return await uploadAndVerifyObjectViaGateway(args);
+    } catch (err) {
+      if (!canDirectS3) throw err;
+      console.warn(
+        `[r2] gateway upload failed for ${key} (${(err as Error).message}); falling back to direct S3.`,
+      );
+    }
+  }
+  if (!canDirectS3) {
+    throw new Error(
+      `R2 upload for ${key} needs direct-S3 credentials (R2_ACCESS_KEY_ID_WRITE + R2_SECRET_ACCESS_KEY_WRITE) when no gateway is available.`,
+    );
+  }
+  return uploadAndVerifyObjectViaS3(args);
 };
 
 const categoryForExt = (ext: string): string => {
