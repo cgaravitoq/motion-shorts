@@ -150,7 +150,7 @@ function renderRepeat(
     }
     return row.trim();
   });
-  return fragment.replace(re, rows.join("\n      "));
+  return fragment.replace(re, () => rows.join("\n      "));
 }
 
 export interface InstantiatedScene {
