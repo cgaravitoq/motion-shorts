@@ -6,7 +6,7 @@ description: >
   library (promo-intro-card, promo-hero, promo-card-speaker, promo-blur-cta, promo-agenda,
   promo-quote, promo-details), binds a brand pack via spec.brand, then assembles, runs per-scene
   QA, and renders. Defer to this skill for any brand-pack-driven promo. Skip for non-promo
-  shorts (short-router) and when the brand pack does not exist yet (extract-brand-pack first).
+  shorts (canonical-short) and when the brand pack does not exist yet (extract-brand-pack first).
 ---
 
 # Promo from brief
@@ -18,7 +18,7 @@ A promo episode is a typed **`scene-spec.json`** composed from the promo-* scene
 ## Scope
 
 - IN: composing a complete branded promo episode from a text brief (campaign goal, speaker, date, language, CTA) using only the existing promo-* scene-types.
-- OUT: extracting a new brand (`.agents/skills/extract-brand-pack/SKILL.md`), building a new scene-type from a design reference (`.agents/skills/figma-to-scene-type/SKILL.md`), non-promo shorts (`short-router`).
+- OUT: extracting a new brand (`.agents/skills/extract-brand-pack/SKILL.md`), building a new scene-type from a design reference (`.agents/skills/figma-to-scene-type/SKILL.md`), non-promo shorts (`canonical-short`).
 
 ## Inputs
 
