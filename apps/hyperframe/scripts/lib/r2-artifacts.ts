@@ -653,10 +653,7 @@ const uploadAndVerifyObjectViaS3 = async ({
 };
 
 const cloudflareApiObjectUrl = (config: R2ArtifactsConfig, key: string): string =>
-  `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/r2/buckets/${config.bucket}/objects/${key
-    .split("/")
-    .map(encodeURIComponent)
-    .join("/")}`;
+  `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/r2/buckets/${config.bucket}/objects/${encodeURIComponent(key)}`;
 
 const uploadAndVerifyObjectViaCloudflareApi = async ({
   config,
