@@ -1,13 +1,9 @@
 import { InworldTTS } from "@inworld/tts";
 import { env } from "./env";
-import { type Lang, MAX_TTS_CHARS, type SynthesizeOptions, type TTSProvider } from "./types";
+import { BaseTTSProvider, type ProviderConstructorOptions } from "./tts-provider";
+import type { Lang, SynthesizeOptions } from "./types";
 
 type InworldTTSClient = ReturnType<typeof InworldTTS>;
-
-interface ProviderOptions {
-  apiKey?: string;
-  client?: InworldTTSClient;
-}
 
 let warnedElevenLabsOnlyOptions = false;
 
@@ -41,81 +37,45 @@ const warnIgnoredOptionsOnce = (opts: SynthesizeOptions) => {
   );
 };
 
-export class InworldTTSProvider implements TTSProvider {
-  readonly name = "inworld";
-  private readonly client: InworldTTSClient;
+export class InworldTTSProvider extends BaseTTSProvider<InworldTTSClient> {
+  constructor(opts: ProviderConstructorOptions<InworldTTSClient> = {}) {
+    super(
+      {
+        name: "inworld",
+        displayName: "Inworld",
+        emptyBufferNoun: "buffer",
+        apiKeyEnvName: "INWORLD_API_KEY",
+        readApiKey: () => env.INWORLD_API_KEY,
+        createClient: (apiKey) => InworldTTS({ apiKey }),
+        resolveDefaults: ({ lang, voice, model }) => {
+          const voiceId = resolveVoiceId(lang, voice);
+          if (!voiceId) {
+            throw new Error(
+              `No Inworld voice ID configured for lang="${lang}". Set INWORLD_VOICE_ID_${lang.toUpperCase()} or pass opts.voice.`,
+            );
+          }
+          return { voiceId, modelId: model ?? env.INWORLD_TTS_MODEL };
+        },
+        synthesize: async ({ client, text, voiceId, modelId, opts }) => {
+          const speakingRate = resolveSpeakingRate(opts.speed);
+          warnIgnoredOptionsOnce(opts);
 
-  constructor(opts: ProviderOptions = {}) {
-    if (opts.client) {
-      this.client = opts.client;
-      return;
-    }
-    const apiKey = opts.apiKey ?? env.INWORLD_API_KEY;
-    if (!apiKey) {
-      throw new Error(
-        "INWORLD_API_KEY missing — set it in .env or pass opts.apiKey to InworldTTSProvider",
-      );
-    }
-    this.client = InworldTTS({ apiKey });
-  }
+          const request: Parameters<typeof client.generate>[0] = {
+            text,
+            voice: voiceId,
+            model: modelId,
+            encoding: "MP3",
+            language: toLanguageCode(opts.lang),
+          };
+          if (speakingRate !== undefined) {
+            request.speakingRate = speakingRate;
+          }
 
-  resolveDefaults(opts: { lang: Lang; voice?: string; model?: string }): {
-    voiceId: string;
-    modelId: string;
-  } {
-    const voiceId = resolveVoiceId(opts.lang, opts.voice);
-    if (!voiceId) {
-      throw new Error(
-        `No Inworld voice ID configured for lang="${opts.lang}". Set INWORLD_VOICE_ID_${opts.lang.toUpperCase()} or pass opts.voice.`,
-      );
-    }
-    return {
-      voiceId,
-      modelId: opts.model ?? env.INWORLD_TTS_MODEL,
-    };
-  }
-
-  async synthesize(text: string, opts: SynthesizeOptions): Promise<Buffer> {
-    const trimmed = text.trim();
-    if (trimmed.length === 0) {
-      throw new Error("InworldTTSProvider.synthesize: text is empty");
-    }
-    if (trimmed.length > MAX_TTS_CHARS) {
-      throw new Error(
-        `InworldTTSProvider.synthesize: text exceeds soft cap (${trimmed.length} > ${MAX_TTS_CHARS} chars). Refusing to burn Inworld credits.`,
-      );
-    }
-
-    const { voiceId, modelId } = this.resolveDefaults({
-      lang: opts.lang,
-      voice: opts.voiceId,
-      model: opts.modelId,
-    });
-
-    const speakingRate = resolveSpeakingRate(opts.speed);
-    warnIgnoredOptionsOnce(opts);
-
-    const request: Parameters<typeof this.client.generate>[0] = {
-      text: trimmed,
-      voice: voiceId,
-      model: modelId,
-      encoding: "MP3",
-      language: toLanguageCode(opts.lang),
-    };
-    if (speakingRate !== undefined) {
-      request.speakingRate = speakingRate;
-    }
-
-    const audio = await this.client.generate(request);
-
-    const buffer = Buffer.from(audio);
-    if (buffer.length === 0) {
-      throw new Error(
-        "InworldTTSProvider.synthesize: API returned an empty audio buffer. " +
-          "This usually means the request was silently rate-limited or the text " +
-          "produced no phonemes — check the Inworld dashboard.",
-      );
-    }
-    return buffer;
+          const audio = await client.generate(request);
+          return Buffer.from(audio);
+        },
+      },
+      opts,
+    );
   }
 }

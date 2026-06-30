@@ -48,7 +48,12 @@ export {
   resolveElevenLabsModelId,
   resolveElevenLabsVoiceId,
 } from "./elevenlabs";
-export { getTTSProvider, getTTSProviderName, resolveTTSProviderDefaults } from "./factory";
+export {
+  createTTSProvider,
+  getTTSProvider,
+  getTTSProviderName,
+  resolveTTSProviderDefaults,
+} from "./factory";
 // ffprobe helper — duration probing shared by render-episode + generate-audio + Scribe.
 export { getAudioDurationSeconds } from "./ffprobe";
 // Multi-speaker scripts: inline `[speaker:<name>]` markup → per-segment TTS + merged captions.
@@ -78,6 +83,7 @@ export {
   type PacingOptions,
   type PacingResult,
   type PacingSyntax,
+  type PauseSyntax,
 } from "./script-pacing";
 // STT (Hyperframes-shape captions: { text, start, end, confidence? })
 export { getSTTProvider, type STTProviderName } from "./stt-factory";

@@ -31,7 +31,6 @@ import {
   getTTSProvider,
   getTTSProviderName,
   type HyperframesCaption,
-  injectElevenV3Pauses,
   injectPauses,
   isElevenV3Model,
   type Lang,
@@ -273,10 +272,14 @@ const main = async () => {
     !values["no-pause-injection"] && ttsProviderNameForDefaults === "elevenlabs" && !isV3;
   const injectPausesForText = (raw: string): PacingResult =>
     shouldInjectPauses
-      ? (isV3 ? injectElevenV3Pauses : injectPauses)(raw, {
-          sentenceMs: pauseSentenceMs ?? DEFAULT_PACING.sentenceMs,
-          clauseMs: pauseClauseMs ?? DEFAULT_PACING.clauseMs,
-        })
+      ? injectPauses(
+          raw,
+          {
+            sentenceMs: pauseSentenceMs ?? DEFAULT_PACING.sentenceMs,
+            clauseMs: pauseClauseMs ?? DEFAULT_PACING.clauseMs,
+          },
+          isV3 ? "v3" : "ssml",
+        )
       : { text: raw, injected: 0, syntax: isV3 ? "eleven-v3-tags" : "ssml-break" };
 
   // Parse the script for `[speaker:<name>]` markup BEFORE pause injection. A
@@ -354,17 +357,30 @@ const main = async () => {
     process.exit(1);
   }
 
-  const cacheHash =
-    isMultiSpeaker || cacheMode === "off" || !resolvedVoiceId
+  // Single source of truth for the cache key, shared by the single-speaker and
+  // per-segment multi-speaker paths. Returns null whenever the cache is off or
+  // the voice/model needed for a stable key isn't resolved yet — both paths
+  // treat null as "don't cache". Tuning (speed/stability/similarityBoost) is
+  // identical across the run, so it's captured here rather than passed in.
+  const computeCacheable = (input: {
+    text: string;
+    voiceId: string | undefined;
+    modelId: string | undefined;
+  }): string | null =>
+    cacheMode === "off" || !input.voiceId || !input.modelId
       ? null
       : computeTtsCacheKey({
-          text: finalText,
-          voiceId: resolvedVoiceId,
-          modelId: modelId as string,
+          text: input.text,
+          voiceId: input.voiceId,
+          modelId: input.modelId,
           speed,
           stability,
           similarityBoost,
         });
+
+  const cacheHash = isMultiSpeaker
+    ? null
+    : computeCacheable({ text: finalText, voiceId: resolvedVoiceId, modelId });
 
   let audioBuffer: Buffer | null = null;
   let captions: HyperframesCaption[] | null = null;
@@ -421,17 +437,11 @@ const main = async () => {
             `No default voice is configured for untagged segment ${segment.index}; set a provider voice env var, pass --voice, or add [speaker:<voice-id>] markup for every segment.`,
           );
         }
-        const segCacheHash =
-          cacheMode === "off" || !segVoiceId || !modelId
-            ? null
-            : computeTtsCacheKey({
-                text: segText,
-                voiceId: segVoiceId,
-                modelId,
-                speed,
-                stability,
-                similarityBoost,
-              });
+        const segCacheHash = computeCacheable({
+          text: segText,
+          voiceId: segVoiceId,
+          modelId,
+        });
 
         let segAudio: Buffer | null = null;
         let segCaptions: HyperframesCaption[] | null = null;
@@ -483,7 +493,11 @@ const main = async () => {
 
         if (segCacheHash && (segCacheStatus === "miss" || segCacheStatus === "refresh")) {
           writeCachedTts(segCacheHash, { audio: segAudio, captions: segCaptions });
-          await writeCachedTtsToR2(segCacheHash, { audio: segAudio, captions: segCaptions }, { cacheMode });
+          await writeCachedTtsToR2(
+            segCacheHash,
+            { audio: segAudio, captions: segCaptions },
+            { cacheMode },
+          );
         }
 
         const segDuration = await getAudioDurationSeconds(segAudioPath);
