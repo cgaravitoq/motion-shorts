@@ -13,7 +13,7 @@ description: >
 
 > **CWD**: all bash commands assume `cd apps/hyperframe` first.
 
-Turn an episode into paste-ready, per-platform publishing copy persisted as a typed sidecar: `src/episodes/<slug>/distribution.json`. The text fields ARE the final paste-ready copy — hashtags inline, nothing to assemble later. `bun run publish:episode` consumes this file for YouTube/Instagram (direct) and TikTok (draft-to-inbox; the CLI prints the caption to paste in-app) — see docs/publishing.md. LinkedIn publishes by copy-paste.
+Turn an episode into paste-ready, per-platform publishing copy persisted as a typed sidecar: `src/episodes/<slug>/distribution.json`. The text fields ARE the final paste-ready copy — hashtags inline, nothing to assemble later. Every platform publishes by copy-paste: the text fields are ready to drop into each app.
 
 ## 1. Resolve episode context
 
@@ -98,7 +98,7 @@ Approval rules enforced by the validator:
 - `approved` requires `renderRef.sha256` matching the episode's current `render.remote.json` — you cannot approve copy against an unrendered or re-rendered episode.
 - A re-render changes the mp4 sha256: `copy:check` then fails every `approved` platform. Reset them to `draft`, refresh `renderRef` from the new context, and re-review.
 
-Approving copy does NOT authorize publishing — Gate 2 is `bun run publish:episode <slug> --platform=youtube|instagram --confirm` (it re-enforces the approved status + sha pin and shows the exact copy before uploading; see docs/publishing.md).
+Approving copy does NOT authorize publishing — publishing is manual: paste the approved per-platform copy into each app yourself.
 
 ## 7. Persist and mirror
 

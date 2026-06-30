@@ -16,7 +16,6 @@
       "version": "0.1.0",
       "dependencies": {
         "@cgaravitoq/audio": "workspace:*",
-        "@cgaravitoq/publish": "workspace:*",
         "@cgaravitoq/spec": "workspace:*",
         "effect": "4.0.0-beta.78",
       },
@@ -62,14 +61,6 @@
       },
       "devDependencies": {
         "vitest": "4.1.8",
-      },
-    },
-    "packages/publish": {
-      "name": "@cgaravitoq/publish",
-      "version": "0.1.0",
-      "dependencies": {
-        "@cgaravitoq/spec": "workspace:*",
-        "effect": "4.0.0-beta.78",
       },
     },
     "packages/r2-client": {
@@ -188,8 +179,6 @@
     "@cgaravitoq/infra": ["@cgaravitoq/infra@workspace:apps/infra"],
 
     "@cgaravitoq/mcp": ["@cgaravitoq/mcp@workspace:apps/mcp"],
-
-    "@cgaravitoq/publish": ["@cgaravitoq/publish@workspace:packages/publish"],
 
     "@cgaravitoq/r2-client": ["@cgaravitoq/r2-client@workspace:packages/r2-client"],
 

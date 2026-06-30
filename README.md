@@ -262,8 +262,6 @@ packages/audio/          @cgaravitoq/audio — ElevenLabs TTS + Scribe STT,
 packages/spec/           @cgaravitoq/spec — Effect-Schema single source of
                          truth for scene-spec + remote manifests, imported
                          across the engine.
-packages/publish/        @cgaravitoq/publish — YouTube/TikTok/Instagram
-                         upload clients + token/ledger helpers.
 packages/r2-client/      R2 upload/manifest helper for render + audio artifacts.
 apps/mcp/                Local stdio MCP server: list_scene_types,
                          get_scene_type, recommend_scene_types,
