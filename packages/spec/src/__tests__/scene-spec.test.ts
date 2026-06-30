@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { Result } from "effect";
-import { formatParseError } from "./parse-error";
-import { decodeSceneSpec } from "./scene-spec";
+import { formatParseError } from "../parse-error";
+import { decodeSceneSpec } from "../scene-spec";
 
 const validSpec = {
   slug: "demo-short",

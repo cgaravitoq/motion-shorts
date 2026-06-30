@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import * as Effect from "effect/Effect";
-import { type GatewayBucket, handleGatewayRequest } from "./gateway-core";
+import { type GatewayBucket, handleGatewayRequest } from "../gateway-core";
 
 const sha256 = async (bytes: Uint8Array): Promise<string> => {
   const digest = await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>);

@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { type CaptionWord, parseCaptionWords, resolveEpisodeContext } from "./episode-context";
+import { type CaptionWord, parseCaptionWords, resolveEpisodeContext } from "../episode-context";
 
 const WORDS = [
   { text: "Hello", start: 0.1, end: 0.4, confidence: 1 },

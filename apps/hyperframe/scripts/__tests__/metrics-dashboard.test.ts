@@ -5,7 +5,7 @@ import {
   percentile,
   renderDashboard,
   sparklineSvg,
-} from "./metrics-dashboard";
+} from "../metrics-dashboard";
 
 const record = (
   slug: string,

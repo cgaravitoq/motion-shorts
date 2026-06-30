@@ -9,7 +9,7 @@ import {
   createTimer,
   formatBytes,
   formatSummaryLine,
-} from "./telemetry";
+} from "../telemetry";
 
 const setupWorkdir = async () => {
   const root = await mkdtemp(path.join(tmpdir(), "telemetry-"));

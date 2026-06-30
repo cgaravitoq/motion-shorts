@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { Effect, Result } from "effect";
-import { type FetchLike, fetchWithRetry, fetchWithRetryPromise } from "./http";
+import { type FetchLike, fetchWithRetry, fetchWithRetryPromise } from "../http";
 
 const scripted = (
   responses: Array<() => Response | Error>,

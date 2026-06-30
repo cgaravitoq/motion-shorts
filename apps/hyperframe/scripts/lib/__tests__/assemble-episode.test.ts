@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
-import { assembleEpisode } from "./assemble-episode";
+import { assembleEpisode } from "../assemble-episode";
 
-const hubRoot = path.resolve(import.meta.dir, "../..");
+const hubRoot = path.resolve(import.meta.dir, "../../..");
 // Inline fixture against the TRACKED scene-type manifests (templates/scenes):
 // episodes under src/episodes are local working copies, never in git/CI.
 const realSpec = () => ({

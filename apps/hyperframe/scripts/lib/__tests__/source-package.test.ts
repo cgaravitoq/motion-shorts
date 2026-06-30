@@ -17,13 +17,13 @@ import {
   findCapturedFiles,
   runCaptureSource,
   toKebab,
-} from "../capture-source";
+} from "../../capture-source";
 import {
   isQuarantineCandidate,
   validateCaptureUrl,
   validateEpisodeSlug,
   validateSourcePackage,
-} from "./source-package";
+} from "../source-package";
 
 type SpawnImpl = NonNullable<Parameters<typeof runCaptureSource>[0]["spawnImpl"]>;
 type SourcePackage = ReturnType<typeof buildSourcePackage>;
@@ -32,7 +32,7 @@ type CaptureResultWritten = Extract<
   { dryRun: false }
 >;
 
-const appDir = path.resolve(import.meta.dirname, "../..");
+const appDir = path.resolve(import.meta.dirname, "../../..");
 const episodesDir = path.join(appDir, "src/episodes");
 const testSlugs = new Set<string>();
 

@@ -91,8 +91,8 @@ const sampleFor = (type: string): Record<string, unknown> => {
 // Brand lockup for the outro: BRAND_NAME/BRAND_TAGLINE override the manifest
 // defaults (cgaravitoq / AI Engineering) at scaffold time, keeping assemble pure.
 const brandSlots: Record<string, string> = {};
-if (env.brandName) brandSlots.wordmark = env.brandName;
-if (env.brandTagline) brandSlots.tagline = env.brandTagline;
+if (env.BRAND_NAME) brandSlots.wordmark = env.BRAND_NAME;
+if (env.BRAND_TAGLINE) brandSlots.tagline = env.BRAND_TAGLINE;
 
 // Keep scene ids unique even if a type repeats in the skeleton.
 const counts: Record<string, number> = {};

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { validateDistribution } from "./distribution-spec";
+import { validateDistribution } from "../distribution-spec";
 
 const SHA = "a".repeat(64);
 const STALE = "b".repeat(64);

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import path from "node:path";
-import { validateSceneSpec } from "./scene-spec";
+import { validateSceneSpec } from "../scene-spec";
 
-const hubRoot = path.resolve(import.meta.dir, "../..");
+const hubRoot = path.resolve(import.meta.dir, "../../..");
 
 type FixtureScene = {
   id: string;

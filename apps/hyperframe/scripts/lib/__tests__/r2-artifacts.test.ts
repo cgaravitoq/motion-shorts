@@ -13,7 +13,7 @@ import {
   objectKeyFor,
   publishEpisodeArtifacts,
   resolveR2PublishOptions,
-} from "./r2-artifacts";
+} from "../r2-artifacts";
 
 const env = {
   R2_ACCOUNT_ID: "account-id",

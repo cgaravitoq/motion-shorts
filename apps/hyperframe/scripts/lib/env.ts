@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createEnv } from "@t3-oss/env-core";
+import { z } from "zod";
 
 type RuntimeEnv = Record<string, string | undefined>;
 
@@ -50,11 +52,11 @@ const loadWorkspaceEnv = (runtimeEnv: RuntimeEnv): RuntimeEnv => {
   return runtimeEnv;
 };
 
-loadWorkspaceEnv(process.env);
-
-const read = (name: string): string | undefined => process.env[name] || undefined;
-
-export const env = {
-  brandName: read("BRAND_NAME"),
-  brandTagline: read("BRAND_TAGLINE"),
-};
+export const env = createEnv({
+  server: {
+    BRAND_NAME: z.string().min(1).optional(),
+    BRAND_TAGLINE: z.string().min(1).optional(),
+  },
+  emptyStringAsUndefined: true,
+  runtimeEnv: loadWorkspaceEnv(process.env),
+});
