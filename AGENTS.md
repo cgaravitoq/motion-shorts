@@ -22,12 +22,12 @@ Shorts are authored as a typed **scene-spec.json** (an ordered list of parametri
 ```
 apps/hyperframe/               Shorts pipeline (Hyperframes 0.6.x + GSAP 3.15.x)
   templates/_shell/            Universal shell: look + paused timeline + tracks, emitted into every episode
-  templates/scenes/<type>/v1/  39 parametric scene-types (hook, title-cards, flow, fanout, metric, bars,
+  templates/scenes/<type>/v1/  39 scene-types — 24 general (hook, title-cards, flow, fanout, metric, bars,
                                big-stat, comparison, timeline, quote, code, social-card,
                                progress-ring, line-chart, contrib-heatmap, decision-tree,
                                media-split, annotated-asset, code-output, dashboard-composite,
-                               statement-lower-third, logo-grid, before-after, outro,
-                               plus the 15 brand-pack-driven promo-* story-ad types)
+                               statement-lower-third, logo-grid, before-after, outro)
+                               plus 15 brand-pack-driven promo-* story-ad types
   scripts/lib/                 Engine: scene-instantiator, assemble-episode, scene-spec, scene-router
   src/episodes/<slug>/         scene-spec.json (source of truth) -> generated index.html
 packages/audio/                TTS + STT + ffprobe + script pacing (@cgaravitoq/audio)

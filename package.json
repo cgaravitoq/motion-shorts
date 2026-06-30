@@ -2,7 +2,7 @@
   "name": "motion-shorts",
   "version": "0.1.0",
   "private": true,
-  "description": "Local-first monorepo for vertical motion-graphics shorts (YouTube, TikTok, LinkedIn, Reels) with Hyperframes, GSAP, ElevenLabs TTS, MCP tooling, and a catalog-driven authoring pipeline.",
+  "description": "Local-first monorepo for vertical motion-graphics shorts (YouTube, TikTok, LinkedIn, Reels) with Hyperframes, GSAP, ElevenLabs TTS, and a scene-hub authoring pipeline.",
   "type": "module",
   "license": "MIT",
   "author": "Carlos Garavito <cg9822@gmail.com>",

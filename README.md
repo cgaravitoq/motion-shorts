@@ -30,7 +30,9 @@ paused GSAP timeline + crossfades, captions/audio, track allocation) plus
 `contrib-heatmap`, `decision-tree`, `outro` (the pinned brand sign-off,
 always last), plus seven desktop-first asset-led types — `media-split`,
 `annotated-asset`, `code-output`, `dashboard-composite`,
-`statement-lower-third`, `logo-grid`, and `before-after`.
+`statement-lower-third`, `logo-grid`, and `before-after`. A further 15
+brand-pack-driven `promo-*` story-ad types bring the on-disk total to 39
+scene-types.
 Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps`
 2-6, `metric.stats` 1-4, `timeline.events` 3-6, `code.lines` 1-12).
 
@@ -241,7 +243,7 @@ apps/hyperframe/
                            _shell/        Universal look (tokens, bg layers,
                                           brand-corner, paused GSAP timeline,
                                           captions/audio, track allocation)
-                           scenes/<type>/v1/  24 scene-types: hook, title-cards,
+                           scenes/<type>/v1/  24 general scene-types: hook, title-cards,
                                           flow, fanout, metric, bars, big-stat,
                                           comparison, timeline, quote, code,
                                           social-card, progress-ring, line-chart,
@@ -251,6 +253,8 @@ apps/hyperframe/
                                           dashboard-composite,
                                           statement-lower-third, logo-grid,
                                           before-after
+                                          + 15 brand promo-* story-ad types
+                                          (39 scene-types total)
   examples/<slug>.txt    Narration scripts (one per episode)
   public/voice/<slug>/   Canonical audio assets (gitignored, regenerable)
   renders/               Local render + scene-qa cache (gitignored)

@@ -193,7 +193,7 @@ Create `templates/scenes/<type>/v1/` with these five files:
 4. **`timeline.js`** — the `build_<x>(tl, t, s, p)` function matching `manifest.builder`. Follow the builder contract above. `title-cards/v1/timeline.js` is the canonical reference (it documents the contract inline).
 5. **`sample.json`** — example params with every slot filled (repeat slots near their max), so `scene:gallery` can exercise the type.
 
-Optionally add **`styles.desktop.css`** with the type's 16:9 overrides — the assembler appends it after `styles.css` only when assembling with `--format=desktop` (no `[data-format]` gating needed; reuse the base selectors at equal-or-higher specificity to override them). All 24 shipped types carry one.
+Optionally add **`styles.desktop.css`** with the type's 16:9 overrides — the assembler appends it after `styles.css` only when assembling with `--format=desktop` (no `[data-format]` gating needed; reuse the base selectors at equal-or-higher specificity to override them). All 24 general types carry one; the 15 promo-* types are full-frame and ship portrait-only.
 
 The assembler auto-discovers the type (no registration needed). After adding it, add it to a `scene-spec.json` and run `scene:check` + `assemble` + `scene:gallery` to verify it renders and stays within frame — and `scene-qa --format=desktop` if you shipped a desktop layout.
 

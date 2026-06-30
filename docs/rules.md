@@ -15,7 +15,7 @@ A short is a typed `scene-spec.json` at `apps/hyperframe/src/episodes/<slug>/sce
 
 ## 2. Scene-types — the only building blocks
 
-There are 24 scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`.
+There are 39 scene-types (24 general + 15 brand-pack-driven `promo-*` story-ad types). The 24 general scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`.
 
 Repeatable slots have ranges:
 
@@ -142,7 +142,7 @@ Render variants:
 
 ## 15. Pipeline and gates
 
-producer -> strategist (3 scripts) -> [researcher] -> visual-director (writes `scene-spec.json`) -> audio-producer -> composer (`scene:check` + `assemble` + lint) -> qa (per-scene `scene-qa` loop, then final render) -> publisher.
+producer -> strategist (3 scripts) -> [researcher] -> visual-director (writes `scene-spec.json`) -> audio-producer -> composer (`scene:check` + `assemble` + lint) -> qa (per-scene `scene-qa` loop, then final render). Publishing is manual copy-paste downstream — distribution copy is produced by the generate-distribution-copy skill (`distribution.json` + `copy:check` / `copy:gate`).
 
 Gates:
 
