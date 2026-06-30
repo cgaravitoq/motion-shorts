@@ -155,7 +155,7 @@ describe("r2 artifact publishing", () => {
 
   it("fails fast when upload is requested without an R2 transport", () => {
     expect(() => assertR2Config({ R2_BUCKET: "bucket-name" })).toThrow(
-      "Set either R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN",
+      "Set one of: CLOUDFLARE_API_TOKEN, or R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN",
     );
   });
 
@@ -208,7 +208,7 @@ describe("r2 artifact publishing", () => {
       "R2_UPLOAD_GATEWAY_TOKEN",
     ]);
     expect(options.warning).toContain("WARNING: R2 credentials are missing");
-    expect(options.warning).toContain("Set either R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN");
+    expect(options.warning).toContain("Set one of: CLOUDFLARE_API_TOKEN, or R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN");
   });
 
   it("publishes when gateway-only R2 credentials are configured", () => {
@@ -585,7 +585,9 @@ describe("r2 artifact publishing", () => {
     expect(calls[0]?.url).toContain(
       "/objects/motion-shorts/episodes/demo-short/final/renders/clip.mp4",
     );
-    expect(calls.every((call) => call.token === "secret-token")).toBe(true);
+    expect(
+      calls.filter((call) => call.method === "PUT").every((call) => call.token === "secret-token"),
+    ).toBe(true);
     expect(store.has("motion-shorts/index.json")).toBe(true);
 
     await rm(root, { recursive: true, force: true });
