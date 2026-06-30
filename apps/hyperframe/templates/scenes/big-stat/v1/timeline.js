@@ -5,9 +5,8 @@
 // frame-by-frame seek; only set() materialises reliably). The .bs-suffix span
 // keeps its own slot value.
 function build_bigStat(tl, t, s, p) {
-  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   tl.from(s(".bs-label"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
-  tl.from(s(".bs-figure"), { scale: 0.7, autoAlpha: 0, filter: "blur(18px)", transformOrigin: isDesktop ? "50% 50%" : "0% 50%", duration: 0.78, ease: "back.out(1.5)" }, t + 0.42);
+  tl.from(s(".bs-figure"), { scale: 0.7, autoAlpha: 0, filter: "blur(18px)", transformOrigin: "0% 50%", duration: 0.78, ease: "back.out(1.5)" }, t + 0.42);
   tl.from(s(".bs-context"), { y: 26, opacity: 0, duration: 0.55, ease: "power2.out" }, t + 1.05);
 
   const parseCountUp = (display) => {

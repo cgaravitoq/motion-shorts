@@ -9,7 +9,7 @@
  * read-only — no more git-dirty surprises after a render.
  *
  *   bun run scripts/render-episode.ts <slug> [--format=mp4|mov|webm]
- *                                              [--variant=short|desktop-1080p|desktop-4k|square-1080]
+ *                                              [--variant=short|square-1080]
  *                                              [--quality=draft|standard|high]
  *                                              [--output=<path>]
  *                                              [--fps=30]
@@ -21,7 +21,6 @@
  *
  * Episode layout expected:
  *   src/episodes/<slug>/index.html         # root 9:16 composition (variant=short)
- *   src/episodes/<slug>/index.desktop.html # optional 16:9 composition (variant=desktop-1080p|desktop-4k)
  *   src/episodes/<slug>/index.square.html  # optional 1:1 composition (variant=square-1080)
  *   src/episodes/<slug>/meta.json          # { id, name, ... }
  *   src/episodes/<slug>/hyperframes.json   # config
@@ -64,21 +63,15 @@ const HELP = `Usage: bun run scripts/render-episode.ts <slug> [options]
 Options:
   --format=mp4|mov|webm    Output container format. Default mp4 (h264 yuv420p).
                            mov gives ProRes 4444 + alpha; webm gives VP9 + alpha.
-  --variant=short|desktop-1080p|desktop-4k|square-1080
+  --variant=short|square-1080
                             Composition variant. Default short (9:16, reads
-                            index.html). desktop-1080p (16:9, reads
-                            index.desktop.html) renders 1920x1080 for YouTube
-                            long-form, LinkedIn desktop, X landscape, Vimeo.
-                            desktop-4k reuses index.desktop.html and renders
-                            3840x2160. square-1080 reads index.square.html and
+                            index.html). square-1080 reads index.square.html and
                             renders 1080x1080.
   --quality=draft|standard|high
                            Render quality preset. Default standard.
   --output=<path>          Output file. Default renders/<slug>.<format> for
-                           short, renders/<slug>.desktop.<format> for
-                            desktop-1080p, renders/<slug>.desktop-4k.<format>
-                            for desktop-4k, renders/<slug>.square.<format>
-                            for square-1080.
+                            short, renders/<slug>.square.<format> for
+                            square-1080.
   --fps=24|30|60           Frame rate. Default 30.
   --tail=<seconds>         Padding past end-of-audio so the final frame can
                            hold for reading. Resolution order: CLI flag >
@@ -102,7 +95,7 @@ Options:
 
 const VALID_FORMATS = ["mp4", "mov", "webm"];
 const VALID_FPS_VALUES = [24, 30, 60];
-const VALID_VARIANTS = ["short", "desktop-1080p", "desktop-4k", "square-1080"];
+const VALID_VARIANTS = ["short", "square-1080"];
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
 interface VariantRender {
@@ -117,18 +110,6 @@ interface VariantRender {
 // byte-identical when --variant is omitted.
 const VARIANT_RENDER: Record<string, VariantRender> = {
   short: { index: "index.html", outputSuffix: "", resolution: "portrait", bitrate30: "10M" },
-  "desktop-1080p": {
-    index: "index.desktop.html",
-    outputSuffix: ".desktop",
-    resolution: "landscape",
-    bitrate30: "12M",
-  },
-  "desktop-4k": {
-    index: "index.desktop.html",
-    outputSuffix: ".desktop-4k",
-    resolution: "landscape-4k",
-    bitrate30: "40M",
-  },
   "square-1080": {
     index: "index.square.html",
     outputSuffix: ".square",
@@ -340,11 +321,9 @@ const main = async (): Promise<void> => {
 
   if (!fs.existsSync(indexPath)) {
     const hint =
-      variant === "desktop-1080p" || variant === "desktop-4k"
-        ? " Generate it with `bun run assemble <slug> --format=desktop` (see docs/formats.md)."
-        : variant === "square-1080"
-          ? " The square variant has no assembler support yet (see docs/formats.md)."
-          : "";
+      variant === "square-1080"
+        ? " The square variant has no assembler support yet (see docs/formats.md)."
+        : "";
     console.error(
       `render-episode: missing required file ${indexPath} for variant=${variant}.${hint}`,
     );

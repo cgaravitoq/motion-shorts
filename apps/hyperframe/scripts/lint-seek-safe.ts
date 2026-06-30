@@ -327,10 +327,6 @@ function findEpisodes(episodesDir: string): Target[] {
     if (!statSync(dir).isDirectory()) continue;
     const html = path.join(dir, "index.html");
     if (existsSync(html)) out.push({ slug: name, path: html });
-    // 16:9 desktop variant — same monolithic single-file contract, must also
-    // be seek-safe. Episodes without one are silently skipped.
-    const desktopHtml = path.join(dir, "index.desktop.html");
-    if (existsSync(desktopHtml)) out.push({ slug: `${name} (desktop)`, path: desktopHtml });
   }
   return out;
 }

@@ -27,9 +27,6 @@
      primary component (cards/graph/window/chart). Scene content centers as ONE
      cohesive group — never spread heading and component apart. */
   --title-block-gap: 72px;
-  /* Per-format base system. shell.desktop.css redeclares EVERY token below
-     under #ep-stage[data-format="desktop-1080p"] — formats never share values
-     (enforced by the token-superset contract test). */
   --content-max: 920px;
   --fs-eyebrow: 24px;
   --fs-headline: 92px;

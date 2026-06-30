@@ -8,7 +8,6 @@
 // BEFORE any tween. This runs synchronously at load — fully deterministic, so
 // identical p.data => identical DOM => identical bytes.
 function build_contrib_heatmap(tl, t, s, p) {
-  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const grid = document.querySelector(s(".ch-grid"));
   const rows = String(p && p.data ? p.data : "")
     .split("/")
@@ -20,47 +19,12 @@ function build_contrib_heatmap(tl, t, s, p) {
 
   if (grid && valid) {
     grid.style.setProperty("--ch-cols", String(cols));
-    const panel = document.querySelector(s(".ch-panel"));
-    if (isDesktop) {
-      // FRAME-FILL: the matrix consumes the full 1440px usable width via
-      // grid-template-columns:repeat(cols,1fr) (CSS) and fills the vertical band
-      // via grid-template-rows:repeat(7,1fr) over --ch-grid-h. Cells size to
-      // their 1fr slots, so no per-cell --ch-cell is needed on desktop.
-      // --ch-cols/--ch-gap live on the panel so .ch-months and .ch-grid (its
-      // grid children) share the same column tracks and stay aligned.
-      if (panel) {
-        panel.style.setProperty("--ch-cols", String(cols));
-        panel.style.setProperty("--ch-gap", "10px");
-      }
-      grid.style.setProperty("--ch-gap", "10px");
-      grid.style.setProperty("--ch-grid-h", "440px");
-      // Month labels across the top so the full width reads intentional. One
-      // label every ~4 columns, span-positioned over the matching grid tracks.
-      if (panel && !panel.querySelector(".ch-months")) {
-        const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        const months = document.createElement("div");
-        months.className = "ch-months";
-        const labelEvery = 4;
-        const labelCount = Math.ceil(cols / labelEvery);
-        for (let i = 0; i < labelCount; i++) {
-          const startCol = i * labelEvery;
-          const span = Math.min(labelEvery, cols - startCol);
-          const m = document.createElement("span");
-          m.className = "ch-month";
-          m.style.gridColumn = startCol + 1 + " / span " + span;
-          m.textContent = MONTHS[i % 12];
-          months.appendChild(m);
-        }
-        panel.insertBefore(months, grid);
-      }
-    } else {
-      // Portrait: fixed square cells fit the 9:16 safe band (width ~832px).
-      const gap = 8;
-      const cellByWidth = Math.floor((832 - (cols - 1) * gap) / cols);
-      const cell = Math.max(20, Math.min(52, cellByWidth));
-      grid.style.setProperty("--ch-cell", cell + "px");
-      grid.style.setProperty("--ch-gap", gap + "px");
-    }
+    // Fixed square cells fit the 9:16 safe band (width ~832px).
+    const gap = 8;
+    const cellByWidth = Math.floor((832 - (cols - 1) * gap) / cols);
+    const cell = Math.max(20, Math.min(52, cellByWidth));
+    grid.style.setProperty("--ch-cell", cell + "px");
+    grid.style.setProperty("--ch-gap", gap + "px");
     // Column-major order so the diagonal sweep reads left-to-right per week.
     for (let c = 0; c < cols; c++) {
       for (let r = 0; r < 7; r++) {

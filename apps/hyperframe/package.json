@@ -17,7 +17,6 @@
     "publish:episode": "bun run scripts/publish-episode.ts",
     "scene:gallery": "bun run scripts/build-catalog-demo.ts",
     "lint:seek-safe": "bun run scripts/lint-seek-safe.ts",
-    "lint:desktop-safe": "bun run scripts/lint-desktop-safe.ts",
     "preview": "bunx hyperframes preview",
     "render": "bunx hyperframes render",
     "render:episode": "bun run scripts/render-episode.ts",

@@ -1,6 +1,6 @@
 # Publishing — direct YouTube + Instagram, semi-auto TikTok
 
-Automated publishing for approved episodes. TikTok uses the **Upload-as-Draft inbox flow** (semi-auto: the video lands in your TikTok inbox; you paste the caption and publish in the app — TikTok's Direct Post audit prohibits personal-use apps, but the draft flow only needs the `video.upload` scope). LinkedIn stays manual (its self-serve `w_member_social` tier issues no refresh token — gated to approved MDP partners — so OAuth re-consent every 60 days; native video accepts 9:16, 1:1, and 16:9 within a 1:2.4–2.4:1 range, so both the portrait and desktop 16:9 renders upload cleanly).
+Automated publishing for approved episodes. TikTok uses the **Upload-as-Draft inbox flow** (semi-auto: the video lands in your TikTok inbox; you paste the caption and publish in the app — TikTok's Direct Post audit prohibits personal-use apps, but the draft flow only needs the `video.upload` scope). LinkedIn stays manual (its self-serve `w_member_social` tier issues no refresh token — gated to approved MDP partners — so OAuth re-consent every 60 days; native video accepts 9:16 within a 1:2.4–2.4:1 range, so the portrait render uploads cleanly).
 
 ```
 distribution.json (approved, sha-pinned) ──publish:episode──▶ platform API

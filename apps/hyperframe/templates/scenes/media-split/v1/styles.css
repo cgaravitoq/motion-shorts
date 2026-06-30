@@ -1,7 +1,7 @@
 /* media-split portrait (9:16) — title top, image mid (full-width), bullets below.
    The image is the primary asset (rounded, bordered, soft shadow) and is never
-   wrapped in a separate glass card. data-side is a no-op in portrait (the stack
-   is vertical regardless); it only mirrors columns on desktop. */
+   wrapped in a separate glass card. data-side is a no-op (the stack is vertical
+   regardless). */
 
 .ms- { gap: 0; }
 .ms-copy { display: contents; }

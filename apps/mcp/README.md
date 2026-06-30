@@ -94,7 +94,7 @@ bun run mcp:inspector
 
 Verify the tools and resources appear, then call:
 
-1. `list_scene_types` and expect the 24 scene-types (hook, title-cards, flow, outro, … through the desktop-first types) with slot summaries.
+1. `list_scene_types` and expect the scene-types (hook, title-cards, flow, outro, … through the asset-led types) with slot summaries.
 2. `validate_scene_spec` with a small spec and expect `{ ok: true }`; `assemble_episode` with the same spec and expect `html`.
 3. `render_composition` with a tiny composition and expect a local `outputPath`.
 

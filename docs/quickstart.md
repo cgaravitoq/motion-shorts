@@ -44,11 +44,6 @@ bun run new:episode short-09 --intent=workflow      # seed from an intent skelet
 # Regenerate index.html from scene-spec.json (run after every spec edit)
 bun run assemble short-09
 
-# Optional 16:9 desktop variant: assemble index.desktop.html, then render it
-# (each assemble generates one format only). See docs/formats.md for details.
-bun run assemble short-09 --format=desktop
-bun run render:episode short-09 --variant=desktop-1080p --format=mp4
-
 # Validate scene-spec(s) against the scene-type manifests (no assembly)
 bun run scene:check                                  # all episodes
 bun run scene:check src/episodes/short-09/scene-spec.json
@@ -136,7 +131,6 @@ The command writes `apps/hyperframe/src/episodes/<slug>/assets/source.json` plus
 | Target | Command | Notes |
 |--------|---------|-------|
 | YouTube (9:16) | `bun run render:episode <slug> --format=mp4 --crf=18` | Default, portrait 1080×1920, yuv420p |
-| Desktop (16:9) | `bun run assemble <slug> --format=desktop` then `bun run render:episode <slug> --variant=desktop-1080p --format=mp4` | 1920×1080 landscape — see `docs/formats.md` |
 | Overlay (alpha) | `bunx hyperframes render <dir> --format mov` | ProRes 4444 + alpha |
 | Overlay (web) | `bunx hyperframes render <dir> --format webm` | VP9 alpha |
 
