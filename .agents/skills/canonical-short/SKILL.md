@@ -87,7 +87,7 @@ Classify the short into exactly one intent — its primary visual job — then s
 
 **Gate 3 replaces the old "render the whole mp4 then eyeball" gate.** Reject loops re-QA only the changed scenes (`--scenes=<id>`), never the whole short.
 
-**Every gate is reviewed inside the session — the user never opens repo folders.** Gate 1: paste the candidate scripts inline in the chat, including `<break>` tags, so pacing is visible. Gate 2: deliver `voice.mp3` into the chat (plus the STT transcript as a pronunciation proxy). Gate 3: send `renders/<slug>-qa/contact-sheet.jpg` into the chat (`bun run scripts/scene-qa.ts <slug>` writes it). Gate 4: deliver the mp4 into the chat.
+**Every gate is reviewed inside the session — the user never opens repo folders.** Gate 1: paste the candidate scripts inline in the chat so pacing (punctuation + any hand-authored expressive tags) is visible. Gate 2: deliver `voice.mp3` into the chat (plus the STT transcript as a pronunciation proxy). Gate 3: send `renders/<slug>-qa/contact-sheet.jpg` into the chat (`bun run scripts/scene-qa.ts <slug>` writes it). Gate 4: deliver the mp4 into the chat.
 
 ## Voice + TTS gotchas
 
@@ -104,14 +104,14 @@ Audio settings (canonical):
 
 ```bash
 bun run audio examples/<slug>.txt --lang=es \
-  --model=eleven_v3 \
   --speed=1.04 \
   --out=public/voice/<slug>
 ```
 
-- `model=eleven_v3` -- expressive production default. Pause injection NEVER runs on v3 (`--pause-*` flags are ignored with a warning); hand-author 1-2 bracketed audio tags where they matter.
+- `eleven_v3` is the only model -- non-v3 IDs (`eleven_multilingual_v2`, `eleven_turbo_v2`, any v2/v2.5) are permanently blocked; the CLI throws if you pass `--model` with one.
 - `speed=1.04` -- natural but a little tighter; keep ES narration in the conservative 1.0-1.08 band.
-- v2 fallback only (`--model=eleven_multilingual_v2`): add `--pause-sentence=300 --pause-clause=0`. EN narration uses the v2 voice at `--speed=1.1`.
+- No pause injection. Pace with punctuation only (periods/commas, ellipses …); never inject `<break>` SSML or `[pause]` tags — hand-author at most 1-2 expressive tags where they matter.
+- EN narration: v3 runs ~24% slower than the old v2@1.1, so write ~120-135 words and use `--speed=1.1` (range ~1.04-1.15) to land 50-60s.
 
 ### TTS pronunciation gotchas (peninsular ES)
 
@@ -239,7 +239,7 @@ The assembler now owns the timeline, palette, captions, and typography, so these
 
 - `AGENTS.md` -- critical constraints that break renders if ignored
 - `docs/rules.md` -- full rules reference
-- `docs/voice-config.md` -- voice IDs, tuning presets, pause injection
+- `docs/voice-config.md` -- voice IDs, tuning presets, native pacing
 - `.agents/skills/new-episode/SKILL.md` -- scaffolder
 - `.agents/skills/audio-pipeline/SKILL.md` -- TTS + Scribe details
 - `.agents/skills/generated-raster-assets/SKILL.md` -- generated image assets for visual-heavy scenes

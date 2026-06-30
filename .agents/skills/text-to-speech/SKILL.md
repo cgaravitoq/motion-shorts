@@ -24,7 +24,7 @@ client = ElevenLabs()
 audio = client.text_to_speech.convert(
     text="Hello, welcome to ElevenLabs!",
     voice_id="JBFqnCBsd6RMkjVDRZzb",  # George
-    model_id="eleven_multilingual_v2"
+    model_id="eleven_v3"
 )
 
 with open("output.mp3", "wb") as f:
@@ -41,7 +41,7 @@ import { createWriteStream } from "fs";
 const client = new ElevenLabsClient();
 const audio = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
   text: "Hello, welcome to ElevenLabs!",
-  modelId: "eleven_multilingual_v2",
+  modelId: "eleven_v3",
 });
 audio.pipe(createWriteStream("output.mp3"));
 ```
@@ -51,19 +51,16 @@ audio.pipe(createWriteStream("output.mp3"));
 ```bash
 curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"text": "Hello!", "model_id": "eleven_multilingual_v2"}' --output output.mp3
+  -d '{"text": "Hello!", "model_id": "eleven_v3"}' --output output.mp3
 ```
 
 ## Models
 
 | Model ID | Languages | Latency | Best For |
 |----------|-----------|---------|----------|
-| `eleven_v3` | 70+ | Standard | Highest quality, emotional range |
-| `eleven_multilingual_v2` | 29 | Standard | High quality, long-form content |
-| `eleven_flash_v2_5` | 32 | ~75ms | Ultra-low latency, real-time |
-| `eleven_flash_v2` | English | ~75ms | English-only, fastest |
-| `eleven_turbo_v2_5` | 32 | ~250-300ms | Balanced quality/speed |
-| `eleven_turbo_v2` | English | ~250-300ms | English-only, balanced |
+| `eleven_v3` | 70+ | Standard | Highest quality, emotional range (use this) |
+| `eleven_flash_v2_5` | 32 | ~75ms | Ultra-low latency, real-time only |
+| `eleven_flash_v2` | English | ~75ms | English-only, fastest, real-time only |
 
 ## Voice IDs
 
@@ -114,7 +111,7 @@ Force specific language for pronunciation:
 audio = client.text_to_speech.convert(
     text="Bonjour, comment allez-vous?",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
-    model_id="eleven_multilingual_v2",
+    model_id="eleven_v3",
     language_code="fr"  # ISO 639-1 code
 )
 ```
@@ -213,7 +210,7 @@ Monitor character usage via response headers (`x-character-count`, `request-id`)
 
 ```python
 response = client.text_to_speech.convert.with_raw_response(
-    text="Hello!", voice_id="JBFqnCBsd6RMkjVDRZzb", model_id="eleven_multilingual_v2"
+    text="Hello!", voice_id="JBFqnCBsd6RMkjVDRZzb", model_id="eleven_v3"
 )
 audio = response.parse()
 print(f"Characters used: {response.headers.get('x-character-count')}")

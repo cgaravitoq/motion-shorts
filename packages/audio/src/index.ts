@@ -64,16 +64,7 @@ export {
   type SpeakerSummaryEntry,
   summariseSpeakers,
 } from "./multi-speaker";
-export {
-  DEFAULT_PACING,
-  injectElevenV3Pauses,
-  injectPauses,
-  isElevenV3Model,
-  MAX_BREAK_MS,
-  type PacingOptions,
-  type PacingResult,
-  type PacingSyntax,
-} from "./script-pacing";
+export { isElevenV3Model } from "./script-pacing";
 export { getSTTProvider, type STTProviderName } from "./stt-factory";
 export {
   DEFAULT_MAX_AUDIO_MINUTES,

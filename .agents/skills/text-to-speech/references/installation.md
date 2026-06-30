@@ -71,7 +71,7 @@ Include in requests via the `xi-api-key` header:
 curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"text": "Hello world", "model_id": "eleven_multilingual_v2"}'
+  -d '{"text": "Hello world", "model_id": "eleven_v3"}'
 ```
 
 ## Getting an API Key

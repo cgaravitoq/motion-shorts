@@ -7,7 +7,7 @@ Set in `.env`:
 ```
 ELEVENLABS_VOICE_ID_ES=<your-spanish-voice-id>  # Primary ES narration voice
 ELEVENLABS_VOICE_ID_EN=<your-english-voice-id>  # Primary EN narration voice
-ELEVENLABS_MODEL_ID=eleven_v3                   # Default TTS model; override with --model when testing v2/v2.5
+ELEVENLABS_MODEL_ID=eleven_v3                   # TTS model — v3-only; non-v3 IDs are permanently blocked (the CLI throws)
 ```
 
 Pick voices from the [ElevenLabs Voice Library](https://elevenlabs.io/app/voice-library) — copy each voice's ID into the env vars above. Recommended criteria for a narration short:
@@ -27,15 +27,14 @@ Override per call with `--voice=<id>` on the audio CLI when A/B-ing voices.
 
 ```bash
 bun run audio examples/<slug>.txt --lang=es \
-  --model=eleven_v3 \
   --speed=1.04 \
   --out=public/voice/<slug>
 ```
 
-- `model=eleven_v3` — expressive default for production shorts; use `--model=eleven_multilingual_v2` only for fallback/regression tests.
-- `speed=1.04` — natural but a little tighter for 30-45s technical shorts.
-- Pause injection NEVER runs on v3 — `generate-audio` ignores `--pause-*` flags with a warning (incident 2026-06-06: auto-injected `[short pause]` tags inflated a 64s short by several seconds of dead air). Hand-author one or two expressive tags where they matter.
-- For v2 fallback only: add `--pause-sentence=300 --pause-clause=0`.
+- `eleven_v3` is the only model — non-v3 IDs (`eleven_multilingual_v2`, `eleven_turbo_v2`, any v2/v2.5) are permanently blocked; the CLI throws if you pass `--model` with one.
+- `speed=1.04` — the default preset; natural but a little tighter for technical shorts.
+- EN scripts: v3 runs ~24% slower than the old v2@1.1, so write ~120-135 words and pass `--speed=1.1` (range ~1.04-1.15) to land 50-60s.
+- No pause injection. Control rhythm with punctuation only (periods/commas, ellipses …); never inject `<break>` SSML or `[pause]` tags. Hand-author at most 1-2 expressive tags where they matter (incident 2026-06-06: auto-injected `[short pause]` tags inflated a 64s short by several seconds of dead air).
 
 ## Voice tuning preset
 
@@ -48,37 +47,21 @@ Override per-call:
 
 ElevenLabs rejects extreme `speed` values; keep production Spanish narration in the conservative `1.0-1.08` band unless a specific A/B wins.
 
-## Script-side pause injection
+## Native pacing (no injection)
 
-`@cgaravitoq/audio` injects model-safe pauses before calling the API — **v2/v2.5 only**:
-
-| Model | Trigger | Generated tag |
-|-------|---------|---------------|
-| `eleven_v3` | — | never injects; `--pause-*` flags are ignored with a warning |
-| v2 / v2.5 | `.!?` | `<break time="0.4s" />` |
-| v2 / v2.5 | `:;--` | `<break time="0.25s" />` |
-
-Flags:
-- Select model: `--model=eleven_v3` or `--model=eleven_multilingual_v2`
-- Skip: `--no-pause-injection`
-- Override sentence pause: `--pause-sentence=<ms>`
-- Override clause pause: `--pause-clause=<ms>` (SSML break caps at 3000ms for non-v3 models)
-- Ceiling: ~1 pause tag per 8-10 words
-
-If the script already contains `<break>` tags or v3 pause tags, skip injection.
+There is no pause injection. `@cgaravitoq/audio` calls the API with the script verbatim; the old `--pause-sentence`, `--pause-clause`, and `--no-pause-injection` flags are removed. Pacing on `eleven_v3` is native: write tight scripts and control rhythm with punctuation only — periods and commas for beats, ellipses (`…`) for a longer hold. Never inject `<break>` SSML or `[pause]` / `[short pause]` / `[long pause]` tags programmatically; at most hand-author 1-2 expressive tags where they matter.
 
 ## Eleven v3 expressive tags
 
 Use bracketed audio tags only when generating with `eleven_v3`. Keep them sparse and voice-compatible:
 
-- Pauses: `[pause]`, `[short pause]`, `[long pause]`.
 - Delivery: `[whispers]`, `[excited]`, `[curious]`, `[sarcastic]`, `[thoughtful]`.
 - Human reactions: `[sighs]`, `[exhales]`, `[laughs]`, `[clears throat]`.
 
-For technical shorts, prefer delivery tags over theatrical sounds. A good pattern is one tag in the hook and one tag at the twist/reveal. A live smoke on 2026-05-09 showed that even a short v3 pause tag can produce a multi-second gap, so listen before building HTML.
+For technical shorts, prefer delivery tags over theatrical sounds. A good pattern is one tag in the hook and one tag at the twist/reveal. Do not use pause tags for pacing — a live smoke on 2026-05-09 showed that even a short v3 pause tag can produce a multi-second gap. Pace with punctuation and listen before building HTML.
 
 ```txt
-[curious] Lo raro de Claude Code no es que ejecute comandos. [short pause] Es que puedes reescribir lo que ve antes de que lo lea.
+[curious] Lo raro de Claude Code no es que ejecute comandos. Es que puedes reescribir lo que ve antes de que lo lea.
 ```
 
 Avoid:

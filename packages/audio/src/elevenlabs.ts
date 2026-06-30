@@ -24,8 +24,15 @@ const resolveVoiceId = (lang: Lang, override?: string): string | undefined => {
 export const resolveElevenLabsVoiceId = (lang: Lang, override?: string): string | undefined =>
   resolveVoiceId(lang, override);
 
-export const resolveElevenLabsModelId = (override?: string): string =>
-  override ?? env.ELEVENLABS_MODEL_ID ?? DEFAULT_ELEVENLABS_MODEL_ID;
+export const resolveElevenLabsModelId = (override?: string): string => {
+  const requested = override ?? env.ELEVENLABS_MODEL_ID;
+  if (requested && requested.toLowerCase() !== DEFAULT_ELEVENLABS_MODEL_ID) {
+    throw new Error(
+      `ElevenLabs model "${requested}" is blocked. This pipeline is ${DEFAULT_ELEVENLABS_MODEL_ID}-only — v2 (and every non-v3 model) is permanently disabled. Drop the --model override / ELEVENLABS_MODEL_ID.`,
+    );
+  }
+  return DEFAULT_ELEVENLABS_MODEL_ID;
+};
 
 const streamToBuffer = async (stream: ReadableStream<Uint8Array>): Promise<Buffer> => {
   const reader = stream.getReader();

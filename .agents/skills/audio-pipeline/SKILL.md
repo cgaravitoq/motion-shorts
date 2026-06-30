@@ -24,7 +24,7 @@ TTS defaults to ElevenLabs; set `TTS_PROVIDER=inworld` for the secondary provide
 
 1. **Confirm the script file exists** and read it. Print char count.
 2. **Cost gate -- TTS char cap is 5000.** If `wc -m "$0"` exceeds 5000, abort and ask the user to split the script.
-3. **Voice/model resolution.** Confirm `--voice=<id>` flag OR env `ELEVENLABS_VOICE_ID_ES` / `ELEVENLABS_VOICE_ID_EN` (default) or `INWORLD_VOICE_ID_ES` / `INWORLD_VOICE_ID_EN` when `TTS_PROVIDER=inworld`. ElevenLabs model defaults to `ELEVENLABS_MODEL_ID=eleven_v3`; pass `--model=<id>` for A/B tests.
+3. **Voice/model resolution.** Confirm `--voice=<id>` flag OR env `ELEVENLABS_VOICE_ID_ES` / `ELEVENLABS_VOICE_ID_EN` (default) or `INWORLD_VOICE_ID_ES` / `INWORLD_VOICE_ID_EN` when `TTS_PROVIDER=inworld`. ElevenLabs uses `ELEVENLABS_MODEL_ID=eleven_v3` — v3-only; non-v3 IDs (`eleven_multilingual_v2`, `eleven_turbo_v2`) are permanently blocked and the CLI throws if one is passed.
 4. **STT provider choice.**
    - **ElevenLabs Scribe (default):** uses `ELEVENLABS_API_KEY`, billed by audio minutes, hard-capped at 5 minutes.
    - **`hyperframes-transcribe` (free/offline whisper.cpp):** requires whisper model download on first run (cached at `~/.cache/hyperframes/whisper/`). Pass `--stt=hyperframes-transcribe` or set env `STT_PROVIDER=hyperframes-transcribe`.
@@ -45,7 +45,7 @@ Wait for completion -- it prints the audio file path, captions path, and duratio
 - **Narration (default)** -- no flags needed.
 - **Hook (3-5s energetic)** -- `--stability=0.35 --similarity-boost=0.75 --speed=1.0`. Generate hooks to a separate `out/<ep>/hook/` dir and concat in editor.
 - **Style amplification** -- `--style=0.25`. Increases API latency; use sparingly.
-- **Model selection** -- default `eleven_v3`; fallback with `--model=eleven_multilingual_v2` when comparing older audio behavior.
+- **Model** -- `eleven_v3` only; non-v3 IDs are blocked, so there is no `--model` selection to make.
 
 ## A/B validation
 
@@ -58,22 +58,9 @@ TTS_PROVIDER=inworld bun run audio examples/<sample>.txt --out=out/audio-inworld
 
 `stability`, `similarityBoost`, `style` are ElevenLabs-only; `speed` maps to Inworld `speakingRate`.
 
-## Pause injection
+## Native pacing (no injection)
 
-Scripts run through `injectPauses()` (`packages/audio/src/script-pacing.ts`) BEFORE hitting the API — **v2/v2.5 only**. On `eleven_v3` (the production default) injection NEVER runs and `--pause-*` flags are ignored with a warning: v3 pause tags produce unpredictable multi-second gaps.
-
-| Punctuation | Generated pause control |
-|---|---|
-| `.!?` | `eleven_v3`: never; v2: `<break time="0.4s" />` |
-| `:;--` | `eleven_v3`: never; v2: `<break time="0.25s" />` |
-
-Override per call (v2/v2.5 only):
-- `--pause-sentence=<ms>` (default 400, cap 3000)
-- `--pause-clause=<ms>` (default 250, cap 3000)
-- `--no-pause-injection` -- skip injection entirely
-
-Density ceiling: ~1 pause/audio tag per 8-10 words. More destabilizes generation (hallucinations).
-For v3, hand-author at most 1-2 expressive tags in the script (`[excited]`, `[thoughtful]`, `[short pause]`).
+There is no pause injection. `eleven_v3` is the only model and pacing is native — the old `--pause-sentence`, `--pause-clause`, and `--no-pause-injection` flags are removed. Control rhythm with punctuation only: periods and commas for beats, ellipses (`…`) for a longer hold. Never inject `<break>` SSML or `[pause]` / `[short pause]` / `[long pause]` tags programmatically; hand-author at most 1-2 expressive tags in the script where they matter (`[excited]`, `[thoughtful]`).
 
 ## STT quality check (mandatory)
 

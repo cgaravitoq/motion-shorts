@@ -119,9 +119,9 @@ bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]
 # Add --variant=desktop-1080p to render the 16:9 index.desktop.html.
 bun run render:episode <slug> --format=mp4 [--variant=desktop-1080p] [--keep-local]
 
-# TTS + word-level captions
-bun run audio examples/<slug>.txt --lang=es --speed=1.0 \
-  --pause-sentence=300 --pause-clause=0 --out=public/voice/<slug>
+# TTS + word-level captions (eleven_v3 only; pacing is native — punctuation, no injection)
+bun run audio examples/<slug>.txt --lang=es --speed=1.04 \
+  --out=public/voice/<slug>
 ```
 
 ## Render an existing demo episode
@@ -193,7 +193,7 @@ echo "Your voiceover script." > examples/my-first-short.txt
 
 # 3. Generate voice + word-level captions
 bun run audio examples/my-first-short.txt --lang=es \
-  --speed=1.0 --pause-sentence=300 --pause-clause=0 \
+  --speed=1.04 \
   --out=public/voice/my-first-short
 
 # 4. Listen BEFORE building the visuals (TTS issues are cheap to fix in
