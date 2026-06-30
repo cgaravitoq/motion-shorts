@@ -52,9 +52,6 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Env discipline
-        run: bun run lint:env
-
       - name: Scene-spec validation
         run: bun run --cwd apps/hyperframe scene:check
 

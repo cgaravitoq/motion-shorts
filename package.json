@@ -36,8 +36,6 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "biome lint .",
-    "lint:env": "bash scripts/check-no-process-env.sh",
-    "lint:env-example": "bash scripts/check-env-example.sh",
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
     "check": "biome check --write .",

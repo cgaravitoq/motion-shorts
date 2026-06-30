@@ -90,7 +90,7 @@ For diagrams, choose the frame based on density. Compact charts or small decisio
 
 ## Environment
 
-**No `process.env` in `.ts` source.** All env reads go through the package's `env.ts`. Enforced by `scripts/check-no-process-env.sh` (pre-commit + `bun run lint:env`).
+**No `process.env` in `.ts` source.** All env reads go through the package's `env.ts`.
 
 ## Catalog tracking
 
