@@ -113,7 +113,7 @@ Generate **3 script drafts** with explicitly different angles. Don't write the s
 **Why this angle:** <one sentence>
 ```
 
-Map the topic's intent (informative / data / workflow / social / brand / vfx) to scene-types via `short-router`. The `outro` is always the last scene.
+Map the topic's intent (informative / data / workflow / social / brand / vfx) to scene-types via `canonical-short`'s intent → scene skeleton table (`recommend_scene_types({ intent })` returns the same spine). The `outro` is always the last scene.
 
 ### Angle diversification rule
 
@@ -209,7 +209,6 @@ Create (or update, matched by `Asset Slug`) the episode's page in the **🎞️ 
 
 ## See also
 
-- `short-router` -- classify intent, route to the matching intent short skill
-- `canonical-short` -- full scene-spec build pipeline this skill defers to
+- `canonical-short` -- full scene-spec build pipeline this skill defers to (carries the intent → scene skeleton table)
 - `generate-distribution-copy` -- per-platform copy + voice gate + archive contract
 - `audio-pipeline` -- TTS + Scribe details

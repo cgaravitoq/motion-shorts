@@ -24,7 +24,6 @@ permission:
     "bun run assemble *": allow
   task: deny
   skill:
-    "short-router": allow
     "canonical-short": allow
     "generated-raster-assets": allow
 ---
@@ -52,7 +51,7 @@ People retain what they SEE, and the narration + captions already carry the word
 
 ## Workflow
 
-1. Load `short-router` and classify the selected concept into exactly one intent (informative | data | workflow | social | brand | vfx).
+1. Classify the selected concept into exactly one intent (informative | data | workflow | social | brand | vfx) — see the **Intent → scene skeleton** table in `canonical-short`.
 2. Pick scene-types, their order, and durations — applying **Visual-first by default** (above):
    - `recommend_scene_types(intent)` (MCP), or `bun run scene:gallery` from `apps/hyperframe/` to browse all 24 types.
    - For each chosen type, `get_scene_type(<type>)` (MCP) or read `apps/hyperframe/templates/scenes/<type>/v1/manifest.json` to learn its exact slots + ranges.

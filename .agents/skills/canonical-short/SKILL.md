@@ -50,6 +50,21 @@ People retain what they see, and the narration + captions already deliver the wo
 - **Trim on-screen copy:** short titles, labels of 1–4 words, drop optional body lines when a label suffices, don't restate the narration.
 - **Never invent data** — only use `bars`/`metric`/`big-stat` with real numbers; for qualitative topics lean on `fanout`/`flow`/`code`.
 
+## Intent → scene skeleton
+
+Classify the short into exactly one intent — its primary visual job — then start from that intent's skeleton. `recommend_scene_types({ intent })` (MCP) returns the same spine at runtime plus every scene-type tagged for the intent; this table is the at-a-glance source.
+
+| Intent | When | Starter skeleton |
+|--------|------|------------------|
+| `informative` | concept explainers, definitions, lessons, frameworks, educational narratives | `hook → flow → big-stat → title-cards → outro` |
+| `data` | metrics, charts, comparisons, trends, benchmarks, dashboards, proof points | `hook → bars → line-chart → big-stat → outro` |
+| `workflow` | process diagrams, agent flows, decision trees, pipelines, automations | `hook → fanout → flow → decision-tree → outro` |
+| `social` | posts, comments, creator overlays, follow CTAs, media cards, platform-native UI | `hook → social-card → metric → quote → outro` |
+| `brand` | brand-system showcases, logo-led pieces, identity reveals, visual-system demos | `hook → big-stat → bars → title-cards → outro` |
+| `vfx` | experimental transitions, texture, motion studies, kinetic hooks, effects-forward | `hook → big-stat → fanout → title-cards → outro` |
+
+`hook` is always first, `outro` always last; the skeleton is a starting spine — adapt counts/types to the script. If multiple intents fit, pick the primary visual job. If the direction needs product/workspace screenshots, generated app surfaces, handoff bundles, or connector-heavy diagrams, invoke `.agents/skills/generated-raster-assets/SKILL.md` before authoring.
+
 ## Pipeline (stages + gates)
 
 ```

@@ -227,9 +227,7 @@ short is blocked on that follow-up.
 
 - Voice generation and captions -- audio-pipeline (`bun run audio ...`).
 - The typed scene-spec short pipeline, scene-hub, assembly, per-scene QA, render --
-  `canonical-short` and the intent skills (`short-informative`, `short-data-visual`,
-  `short-workflow-explainer`, `short-social-overlay`, `short-brand-system`,
-  `short-vfx-experimental`).
+  `canonical-short` (intent classification, scene-types, gates).
 - Episode scaffolding (`bun run new:episode <slug>`) -- `new-episode`.
 - Static PFP avatars in social overlays -- the `social-card` scene-type.
 

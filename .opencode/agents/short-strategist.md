@@ -16,7 +16,6 @@ permission:
     "bun run scene:check *": allow
   task: deny
   skill:
-    "short-router": allow
     "canonical-short": allow
 ---
 
@@ -24,8 +23,7 @@ You turn an idea into a production-ready short direction. Do not write files, ge
 
 Read the relevant skills before drafting:
 
-- `short-router` for intent classification.
-- `canonical-short` for script length, scene structure, and TTS pronunciation rules.
+- `canonical-short` for intent classification (the intent → scene skeleton table), script length, scene structure, and TTS pronunciation rules.
 
 ## Output
 
