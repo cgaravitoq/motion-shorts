@@ -2,7 +2,6 @@
 .dc-title:empty { display: none; }
 .dc-eyebrow:empty { display: none; }
 
-/* Portrait (9:16): 4 tiles -> 2x2 grid, 3 tiles -> single column. */
 .dc-grid { margin-top: var(--title-block-gap); display: grid; gap: 24px; }
 .dc-grid[data-count="3"] { grid-template-columns: 1fr; }
 .dc-grid[data-count="4"] { grid-template-columns: 1fr 1fr; }

@@ -1,8 +1,3 @@
-// annotated-asset entrance choreography. See title-cards/v1/timeline.js for the
-// contract. The image reveals first, then each numbered pin dot pops in with a
-// back.out scale stagger and its label chip fades in from the side. Animating
-// the inner .ax-pin__dot / .ax-pin__chip (never the .ax-pin wrapper) preserves
-// the wrapper's translate(-50%,-50%) anchoring at any seek position.
 function build_annotatedAsset(tl, t, s, p) {
   tl.from(s(".ax-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".ax-title"), { y: 40, opacity: 0, duration: 0.6, ease: "power2.out" }, t + 0.4);

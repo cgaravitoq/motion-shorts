@@ -1,25 +1,9 @@
-/* dashboard-composite desktop-1080p (16:9) overrides — appended AFTER styles.css
-   AND shell.desktop.css in desktop builds only. v4 FRAME-FILL / CARD_ROW doctrine:
-   the scene is a centered landing-hero header (eyebrow chip + title + optional
-   subcopy) over a full-bleed KPI tile row. The shell's [data-layout="centered"]
-   master switch already centers .scene-pad children + turns .eyebrow into the
-   pill chip; here we (1) span the header block across all 12 cols and centre it,
-   (2) span the tile row across all 12 cols at 100% width so the outer tiles touch
-   col-1 / col-12, (3) give the row real vertical presence (min-height ~420px,
-   grid-auto-rows:1fr) so equal-height tiles fill the band — no asymmetric void.
-   Each tile distributes its content via margin-top:auto on the track: the value +
-   label group pins the top, the sparkline track + delta chip pin the bottom.
-   Opacity layers (shell.desktop tokens): track surface -> structure layer, label
-   + delta chip -> context layer, big value stays at primary so numbers carry. */
-
 #ep-stage[data-format="desktop-1080p"] .scene-pad.dc {
   grid-template-rows: auto auto 1fr;
   align-content: center;
   row-gap: 0;
 }
 
-/* Centered header block: eyebrow chip + title span all 12 cols, centred, capped
-   at the header column so they read as one deliberate hero — not a top-left void. */
 #ep-stage[data-format="desktop-1080p"] .dc .dc-eyebrow {
   grid-column: 1 / 13;
   grid-row: 1;
@@ -36,13 +20,10 @@
   text-align: center;
   max-width: var(--header-max);
   margin: 12px 0 0;
-  /* component scene: cap the headline so it stays 1-2 lines above the tile row */
+
   font-size: clamp(56px, 5vw, 72px);
 }
 
-/* Tile row: primary visual, FULL usable width, equal-height tiles filling the
-   band. grid-auto-rows:1fr + align-items:stretch keep all tiles the same height
-   regardless of label/delta length. Outer tiles touch col-1 and col-12. */
 #ep-stage[data-format="desktop-1080p"] .dc .dc-grid {
   grid-column: 1 / 13;
   grid-row: 3;
@@ -57,11 +38,6 @@
 #ep-stage[data-format="desktop-1080p"] .dc .dc-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
 #ep-stage[data-format="desktop-1080p"] .dc .dc-grid[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
 
-/* Each tile fills its column and distributes content: value + label pin the top,
-   sparkline track + delta chip pin the bottom. The flat DOM is [value, label,
-   track, delta]; margin-top:auto on the track lifts the track+delta pair to the
-   floor while value+label stay grouped at the top — equal-height tiles read as
-   one deliberate dashboard row, never a centred cluster. */
 #ep-stage[data-format="desktop-1080p"] .dc .dc-tile {
   height: 100%;
   min-height: 0;
@@ -85,9 +61,6 @@
 }
 #ep-stage[data-format="desktop-1080p"] .dc .dc-grid[data-count="4"] .dc-tile__label { font-size: 30px; }
 
-/* The track surface drops to the structure layer via alpha on its own
-   background/border so the fill span inside stays at full strength (an opacity
-   on .dc-tile__track would dim the fill too). */
 #ep-stage[data-format="desktop-1080p"] .dc .dc-tile__track {
   height: 18px;
   margin-top: auto;

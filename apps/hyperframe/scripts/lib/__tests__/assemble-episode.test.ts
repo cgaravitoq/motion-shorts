@@ -37,7 +37,7 @@ describe("assembleEpisode formats", () => {
     expect(html).toContain('data-height="1080"');
     expect(html).toContain('data-format="desktop-1080p"');
     expect(html).toContain("--safe-top: 140px");
-    expect(html).toContain("/* scene-type: flow@1 (desktop) */");
+    expect(html).toContain('#ep-stage[data-format="desktop-1080p"] .fl-eyebrow');
   });
 
   it("desktop forces 1920x1080 even when the spec declares portrait dimensions", () => {

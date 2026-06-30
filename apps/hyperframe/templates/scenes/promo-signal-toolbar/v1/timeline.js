@@ -1,6 +1,3 @@
-// promo-signal-toolbar entrance + spotlight choreography. Seek-safe only
-// (from/to/set; no callbacks). The bar rises, the tooltip chip floats in
-// above it, the highlighted tool pops with a wiggle and pulses once.
 function build_promoSignalToolbar(tl, t, s, p) {
   tl.set(s(".pst-badge"), { autoAlpha: 0, y: -24 }, 0);
   tl.set(s(".pst-title"), { autoAlpha: 0, y: 46 }, 0);
@@ -17,7 +14,6 @@ function build_promoSignalToolbar(tl, t, s, p) {
   tl.to(s(".pst-tool"), { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.55, ease: "back.out(2.2)" }, t + 1.35);
   tl.to(s(".pst-chip"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, t + 1.6);
 
-  // tool pulse + chip float
   tl.to(s(".pst-tool"), { scale: 1.1, duration: 0.3, ease: "sine.inOut" }, t + 2.5);
   tl.to(s(".pst-tool"), { scale: 1, duration: 0.35, ease: "sine.inOut" }, t + 2.8);
   tl.to(s(".pst-chip"), { y: -10, duration: 0.8, ease: "sine.inOut" }, t + 2.3);

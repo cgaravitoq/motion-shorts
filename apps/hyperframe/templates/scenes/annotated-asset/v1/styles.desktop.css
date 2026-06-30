@@ -1,11 +1,4 @@
-/* annotated-asset desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. v4 FRAME-FILL / HERO doctrine:
-   centered eyebrow chip + centered title as ONE header block, then a
-   FULL-WIDTH annotated board (1400px x 620px) centred on the 960 axis with the
-   image object-fit:contain. The board now spans the whole band so the numbered
-   callouts spread across BOTH flanks (left labels + right labels) instead of
-   clustering inside a small left board. Symmetric letterbox on a contained
-   image is legal whitespace; the asymmetric left-anchored void is gone. */
+
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.ax {
   grid-template-rows: auto auto auto;
@@ -23,16 +16,10 @@
   grid-row: 2;
   max-width: var(--content-max);
   margin: 0 auto;
-  /* Component scene: keep the title to 1-2 lines so the 620px board fits the
-     710px band under the centred header. */
+  
   font-size: 64px;
 }
 
-/* Frame: full-width centred board. 1400px wide x 620px tall, centred on the
-   960 axis (justify-self:center). Budget: title block (~230px max) + 40px gap +
-   620px board fits when title is 1-2 lines (the band is 710px; the whole
-   3-row block is packed centred by align-content:center, the margin-top keeps
-   the title->board air gap honest). */
 #ep-stage[data-format="desktop-1080p"] .ax .ax-frame {
   grid-column: 1 / 13;
   grid-row: 3;
@@ -44,7 +31,6 @@
   padding: 0;
 }
 
-/* Image fills the full-width board; contain preserves aspect (symmetric matte). */
 #ep-stage[data-format="desktop-1080p"] .ax .ax-image {
   display: block;
   width: 100%;
@@ -54,7 +40,6 @@
   object-fit: cover;
 }
 
-/* No-image fallback: same full-width board so pins anchor deterministically. */
 #ep-stage[data-format="desktop-1080p"] .ax .ax-frame:has(.ax-image[src=""]) {
   width: min(920px, 100%);
   aspect-ratio: 16 / 9;
@@ -72,9 +57,6 @@
   font-size: 28px;
 }
 
-/* Chips: capped width + wrapping so an edge-anchored label never shoots past
-   the 1400px board. With pins authored across both flanks the chips spread to
-   the full board width — left labels and right labels — no left cluster. */
 #ep-stage[data-format="desktop-1080p"] .ax .ax-pin__chip {
   max-width: 220px;
   white-space: normal;

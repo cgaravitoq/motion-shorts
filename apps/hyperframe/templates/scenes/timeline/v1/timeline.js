@@ -1,7 +1,3 @@
-// timeline entrance choreography. See title-cards/v1/timeline.js for the contract.
-// The rail draws (portrait: vertical scaleY; desktop: horizontal scaleX), then each
-// event's dot and body stagger in (body slides x:36 portrait / y:36 desktop).
-// Stagger count adapts automatically to the resolved event count.
 function build_timeline(tl, t, s, p) {
   const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const railVars = isDesktop ? { scaleX: 0 } : { scaleY: 0 };

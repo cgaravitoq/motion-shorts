@@ -1,8 +1,3 @@
-// media-split entrance choreography. See title-cards/v1/timeline.js for the contract.
-// Copy block leads: eyebrow, title, then bullets stagger in (y + opacity). The
-// image is the asset — it pops with y + scale 0.96. On desktop the image slides
-// in from its own column edge (right side by default, left when mirrored) so the
-// motion reinforces the 70/30 split; portrait keeps the y-pop. Seek-safe only.
 function build_mediaSplit(tl, t, s, p) {
   const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
 

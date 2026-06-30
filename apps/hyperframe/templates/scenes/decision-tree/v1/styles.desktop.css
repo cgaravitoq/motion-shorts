@@ -1,10 +1,3 @@
-/* decision-tree desktop-1080p (16:9): the graph IS the scene. Eyebrow + title
-   are hidden — a lone branching diagram carries the message via its root
-   question, so the tree fills and CENTERS in the frame (a single object that
-   owns the whole band reads as centered, which is alignment-coherent).
-   Box is 1560x680 in EXACT sync with the builder W/H + the wires viewBox
-   (timeline.js isDesktop constants: W=1560, H=680, TRUNK_TOP=200, ELBOW_Y=340,
-   CHILD_TOP=430) — do not resize without updating all three. */
 .scene-pad.dt { grid-template-rows: 1fr; }
 
 .scene-pad.dt .dt-eyebrow,
@@ -12,12 +5,9 @@
 
 .scene-pad.dt .dt-tree { grid-column: 1 / 13; grid-row: 1; justify-self: center; align-self: center; width: 1560px; height: 680px; margin: 0; }
 
-/* root question centered on builder ROOT_X (780); min-height meets TRUNK_TOP (200)
-   so wires emanate from its bottom edge. Root text carries the whole message now. */
 .dt-tree .dt-node--root { top: 0; left: 780px; width: 860px; min-height: 196px; padding: 38px 64px; border-radius: 30px; }
 .dt-tree .dt-node--root .dt-node__text { font-size: 52px; }
 
-/* branches sit at builder CHILD_TOP (430); width spreads them across the box. */
 .dt-tree .dt-branch { top: 430px; width: 460px; }
 .dt-tree[data-count="2"] .dt-branch { width: 560px; }
 

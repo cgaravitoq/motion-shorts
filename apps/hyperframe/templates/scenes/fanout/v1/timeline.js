@@ -1,23 +1,3 @@
-// fanout entrance choreography. See decision-tree/v1/timeline.js for the SVG
-// wire-overlay pattern and progress-ring/v1/timeline.js for the real-px
-// stroke-dasharray draw.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance   p = resolved params (p.workers)
-// Source pops in, fan-out wires draw (strokeDashoffset len->0) and worker chips
-// stagger in, then converge wires draw and the synth node pops.
-//
-// Connector geometry is derived from the SAME fixed constants the CSS uses to
-// place the chips — NEVER getBoundingClientRect (would reflow every seeked
-// frame). Each wire's stroke-dasharray is its REAL axis-aligned px length (a
-// literal sum), drawn via strokeDashoffset (the seek-safe primitive). The chip
-// anchor points (source edge, worker edge, synth edge) are computed from the
-// identical W/H constants so the wires touch the chips in both formats.
-//   DESKTOP (horizontal, box 1560x680): W=1560 H=680 MID_Y=340; source right edge
-//     SRC_RIGHT=340, worker col WRK_X0=572..WRK_X1=988, synth left SYN_LEFT=1200,
-//     ELBOW_OUT=456 ELBOW_IN=1094; worker center-Y = (i+0.5)/n*H.
-//   PORTRAIT (vertical, box 912x600): W=912 H=600 ROOT_X=456; source bottom edge
-//     SRC_BOTTOM=118, worker row WRK_TOP=248..WRK_BOTTOM=352, synth top SYN_TOP=482,
-//     ELBOW_OUT=183 ELBOW_IN=417; worker center-X = (i+0.5)/n*W.
 function build_fanout(tl, t, s, p) {
   const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const workers = Array.isArray(p && p.workers) ? p.workers : [];

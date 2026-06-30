@@ -1,6 +1,3 @@
-// social-card entrance choreography. See title-cards/v1/timeline.js for the contract.
-// The card is the primary object: it scales + fades in, then its head, body and
-// engagement row reveal in sequence. Optional eyebrow/title lead in first.
 function build_socialCard(tl, t, s, p) {
   tl.from(s(".soc-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".soc-title"), { y: 40, opacity: 0, duration: 0.6, ease: "power2.out" }, t + 0.4);

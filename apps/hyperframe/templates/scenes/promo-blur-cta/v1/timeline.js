@@ -1,7 +1,3 @@
-// promo-blur-cta entrance choreography. See title-cards/v1/timeline.js for the
-// contract. Seek-safe only (from/to/set; no callbacks). The blurred bg fades
-// in; the avatar pops; the speaker fades (it keeps its CSS translateY(-50%),
-// so only autoAlpha is animated there); the lower block cascades up.
 function build_promoBlurCta(tl, t, s, p) {
   tl.set(s(".pbc-bg"), { autoAlpha: 0 }, 0);
   tl.set(s(".pbc-badge"), { autoAlpha: 0, y: -24 }, 0);

@@ -1,6 +1,3 @@
-// promo-agenda entrance choreography. See title-cards/v1/timeline.js for the
-// contract. Seek-safe only (from/to/set; no callbacks). Badge drops in, the
-// title rises, topic rows cascade with a stagger, the footer follows.
 function build_promoAgenda(tl, t, s, p) {
   tl.set(s(".pag-badge"), { autoAlpha: 0, y: -24 }, 0);
   tl.set([s(".pag-title"), s(".pag-footer")], { autoAlpha: 0, y: 42 }, 0);

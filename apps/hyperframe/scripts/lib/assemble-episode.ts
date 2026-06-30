@@ -128,9 +128,9 @@ export function assembleEpisode(
     const key = `${sc.type}@${sc.version}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    cssBlocks.push(`/* scene-type: ${key} */\n${sc.css.trim()}`);
+    cssBlocks.push(sc.css.trim());
     if (desktop && sc.cssDesktop) {
-      cssBlocks.push(`/* scene-type: ${key} (desktop) */\n${sc.cssDesktop.trim()}`);
+      cssBlocks.push(sc.cssDesktop.trim());
     }
     builderBlocks.push(sc.timeline.trim());
   }

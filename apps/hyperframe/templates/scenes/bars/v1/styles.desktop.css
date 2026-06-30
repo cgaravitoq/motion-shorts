@@ -1,11 +1,4 @@
-/* bars desktop-1080p (16:9): v4 FRAME-FILL. layout="centered" (manifest) — the
-   shell master switch centers the .scene-pad children (eyebrow chip + 1-2 line
-   title + subcopy) as one landing-hero header block. The chart below owns the
-   FULL band: it spans cols 1/13 at width 1536px and lays its rows on a
-   repeat(N,1fr) grid, so the tracks are distributed left/center/right across the
-   whole surface instead of clustering on the left. Track width scales UP at low
-   count to consume each 1fr slot; value 76px + label 34px stay centered over
-   each column. Whitespace stays symmetric — no asymmetric void. */
+
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.br {
   grid-template-rows: auto auto auto;
@@ -38,9 +31,6 @@
   column-gap: 0;
 }
 
-/* repeat(N,1fr): every column GROWS to an equal share of the 1536px surface, so
-   the tracks land at the band's left / center / right thirds (3-up) or quarters
-   (4-up), never bunched. >=5 keeps equal 1fr slots — caps live on the track. */
 #ep-stage[data-format="desktop-1080p"] .br-chart[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
 #ep-stage[data-format="desktop-1080p"] .br-chart[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
 #ep-stage[data-format="desktop-1080p"] .br-chart[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
@@ -81,8 +71,7 @@
   border: 1px solid var(--line);
   overflow: hidden;
 }
-/* Track widths grow as count drops so each track fills its 1fr column slot
-   (~768/512/384px wide at 2/3/4-up) instead of leaving the column half-empty. */
+
 #ep-stage[data-format="desktop-1080p"] .br-chart[data-count="2"] .br-track { width: 300px; height: 360px; }
 #ep-stage[data-format="desktop-1080p"] .br-chart[data-count="3"] .br-track { width: 270px; height: 350px; }
 #ep-stage[data-format="desktop-1080p"] .br-chart[data-count="4"] .br-track { width: 205px; height: 340px; }

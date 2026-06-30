@@ -1,15 +1,3 @@
-/* progress-ring desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds. v4 FRAME-FILL / CARD_ROW (layout:centered):
-   the eyebrow chip + title form ONE centered header block (cols 1/13), and the
-   ring row spans the full band (cols 1/13, width 100%) distributing its rings as
-   equal 1fr tracks so each dial GROWS toward its share of the 1536px surface —
-   no asymmetric void above the gauges. Each ring is an equal-height column: the
-   dial sits on the data layer and its caption is centered directly underneath, so
-   a two-line label never makes one column taller than its siblings. Arc geometry
-   (viewBox 200, r=86) is unchanged, so the builder's literal circumference and
-   stepped count-up stay valid — only the rendered dial box scales. */
-
-/* Centered header block — eyebrow chip and title centred as one unit. */
 #ep-stage[data-format="desktop-1080p"] .pr.scene-pad { row-gap: var(--title-block-gap); }
 
 #ep-stage[data-format="desktop-1080p"] .pr-eyebrow {
@@ -30,9 +18,6 @@
   line-height: 1.04;
 }
 
-/* Ring row owns the full band and distributes rings as equal 1fr tracks so each
-   dial centers within its own column slice — the row fills cols 1/13 edge to edge
-   regardless of N (1, 2, or 3 rings). */
 #ep-stage[data-format="desktop-1080p"] .pr-row {
   grid-column: 1 / 13;
   grid-row: 3;
@@ -55,11 +40,8 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
-/* Each ring is a centered column: dial on top, caption directly underneath. */
 #ep-stage[data-format="desktop-1080p"] .pr-ring { gap: 32px; }
 
-/* Dials sized to fill the 1fr vertical band (~300px), nudged larger for fewer
-   rings since each column owns more width. */
 #ep-stage[data-format="desktop-1080p"] .pr-dial { width: 360px; height: 360px; }
 #ep-stage[data-format="desktop-1080p"] .pr-row[data-count="2"] .pr-dial { width: 340px; height: 340px; }
 #ep-stage[data-format="desktop-1080p"] .pr-row[data-count="3"] .pr-dial { width: 300px; height: 300px; }

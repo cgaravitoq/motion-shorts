@@ -1,8 +1,3 @@
-/* promo-intro-card — story-ad replica (9:16, absolute 1080x1920 geometry from
-   the source design). White frame; shell dark background layers and the
-   watermark are disabled whenever this type is present. The centered column
-   carries a CSS translateX(-50%), so the timeline only animates its children. */
-
 #ep-stage:has(.pin) #bg-field {
   background: var(--brand-paper, #fff);
 }

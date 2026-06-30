@@ -1,10 +1,3 @@
-/* title-cards desktop-1080p (16:9) — appended AFTER styles.css AND shell.desktop.css
-   in desktop builds only. v4 FRAME-FILL / landing-hero "How It Works":
-   eyebrow chip + title centered as ONE header block (cols 1/13), then the
-   card row spans the FULL band (cols 1/13, width 1536px) and distributes its
-   children with repeat(N,1fr) so every card GROWS to occupy the width.
-   Whitespace is legal only when symmetric — no left-hugging void. */
-
 #ep-stage[data-format="desktop-1080p"] .scene-pad.tc {
   grid-template-rows: auto auto 1fr;
   align-content: center;
@@ -27,9 +20,6 @@
   line-height: 1.05;
 }
 
-/* The card row owns the full 1536px band. justify-self:stretch + width:100%
-   defeat the centered-layout master switch (justify-items:center would shrink
-   the grid to content and re-create the left-hugging void). */
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid {
   grid-column: 1 / 13;
   grid-row: 3;
@@ -44,16 +34,12 @@
   padding-block: 24px;
 }
 
-/* FRAME-FILL count map: ONE row at every count so each card grows to fill
-   1536px. N<=4 -> repeat(N,1fr) + gap 32px; N>=5 -> repeat(N,1fr) + gap 24px. */
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="5"] { grid-template-columns: repeat(5, 1fr); gap: 24px; }
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="6"] { grid-template-columns: repeat(6, 1fr); gap: 24px; }
 
-/* Card body reads left under the centered header. Equal heights: each card is a
-   flex column with min-height; spotlight only scales, it never resizes the box. */
 #ep-stage[data-format="desktop-1080p"] .tc .tc-card {
   text-align: left;
   min-height: 320px;
@@ -64,7 +50,6 @@
 #ep-stage[data-format="desktop-1080p"] .tc .tc-card__title { font-size: 50px; }
 #ep-stage[data-format="desktop-1080p"] .tc .tc-card__body { font-size: 34px; }
 
-/* Denser packs (5-6) ease type + box so the single row still fits the band. */
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="5"] .tc-card,
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="6"] .tc-card { min-height: 300px; padding: 32px 30px; }
 #ep-stage[data-format="desktop-1080p"] .tc .tc-grid[data-count="5"] .tc-card__title,

@@ -1,12 +1,3 @@
-// logo-grid entrance choreography. See title-cards/v1/timeline.js for the contract.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance: s(".lg-chip") -> "#scene-<id> .lg-chip"
-//   p  = resolved params object for this scene
-// Seek-safe only (from/to/fromTo/set). The monogram letter is materialised with
-// a zero-duration tl.set at literal time 0 (textContent — the seek-safe primitive;
-// the CSS disc can't read the label). Discs pop in first (back.out scale stagger),
-// then the wordmark labels fade up. Elements that animate TO visible are hidden
-// at literal 0 first so they materialise correctly at any seek position.
 function build_logoGrid(tl, t, s, p) {
   const discs = gsap.utils.toArray(s(".lg-chip__disc"));
   const items = Array.isArray(p && p.items) ? p.items : [];

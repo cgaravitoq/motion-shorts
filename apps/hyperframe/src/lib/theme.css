@@ -1,42 +1,19 @@
-/*
- * Visual theme tokens shared across compositions.
- *
- * These are the BASELINE tokens scaffolded into every new episode. Production
- * shorts (`src/episodes/short-{01..08}/`) override the palette in their own
- * inline `:root` block — that's intentional, each short owns its visual
- * identity. The tokens here are the safe fallbacks the scaffolder relies on
- * (see `scripts/new-episode.ts`'s `var(--ink, #060912)` / `var(--paper, ...)`
- * patterns).
- *
- * Hyperframes' deterministic font mapping does NOT resolve CSS vars in
- * `font-family` declarations. Reference fonts directly by name
- * ("Inter", "JetBrains Mono") in every composition.
- *
- * Each composition `<link rel="stylesheet" href="lib/theme.css">`. The
- * episode's `lib` symlink resolves to `src/lib/`.
- */
-
 :root {
-  /* Backgrounds (canonical: --ink dark base, --ink-2 secondary surface) */
   --ink: #060912;
   --ink-2: #0d121d;
   --surface: #121821;
   --surface-alt: #1a2230;
   --border: #2a3344;
 
-  /* Text */
   --paper: #f4f6fb;
   --muted: #8b95a5;
   --dim: #5d6a7a;
 
-  /* Brand accents — defaults; episodes typically override per-short.
-     Keep WCAG AA against --ink. */
   --accent: #34d399;
   --accent-2: #7b5cff;
   --accent-3: #ff7a1a;
 }
 
-/* Reset baseline applied to every composition */
 *,
 *::before,
 *::after {
@@ -54,14 +31,10 @@ body {
   overflow: hidden;
 }
 
-/* Compositions opt into a fill background by adding class="bg-fill" on the
- * stage. Overlays (lower-third, chapter chyrons) leave this off so they
- * render with alpha and can be exported as ProRes 4444 / WebM transparent. */
 .bg-fill {
   background: var(--ink);
 }
 
-/* Stage container — every composition root uses this */
 [data-composition-id] {
   position: relative;
   overflow: hidden;

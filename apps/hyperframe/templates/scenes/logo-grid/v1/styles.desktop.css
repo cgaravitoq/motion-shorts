@@ -1,12 +1,3 @@
-/* logo-grid desktop-1080p (16:9) — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. v4 FRAME-FILL (CARD_ROW): the
-   landing-hero treatment. Eyebrow chip + title center as ONE header block (cols
-   1/13, justify-self center) and the chip band spans the FULL surface (cols
-   1/13, width 100%) distributing its pills across repeat(4,1fr) so the outer
-   pills touch col-1/col-12 and the two rows fill the vertical band — no
-   asymmetric left-anchored void. Title is held to 64px so it reads in 1-2 lines
-   for a component scene. Opacity layers: the monogram disc reads as context
-   (--layer-context), the wordmark label is primary data (--layer-primary). */
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.lg {
   grid-template-rows: auto auto 1fr;
@@ -32,9 +23,6 @@
   font-size: 64px;
 }
 
-/* Chip band: spans the full surface, two equal rows of up to 4 pills. With
-   repeat(4,1fr) across cols 1/13 the outer pills touch col-1/col-12; grid-auto-
-   rows:1fr + the 1fr grid-row let the two rows GROW to fill the vertical band. */
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band {
   grid-column: 1 / 13;
   grid-row: 3;
@@ -50,7 +38,6 @@
 }
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
 
-/* Reset the portrait odd-count row-spans; desktop packs symmetric rows. */
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="3"] .lg-chip:nth-child(3),
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="5"] .lg-chip:nth-child(5),
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="7"] .lg-chip:nth-child(7) { grid-column: auto; }
@@ -60,8 +47,7 @@
   padding: 24px 30px;
   gap: 22px;
   border-radius: 26px;
-  /* defensive: the centered master switch sets text-align:center on .scene-pad
-     children; the chip is a left-reading disc+label row. */
+
   text-align: left;
 }
 
@@ -77,6 +63,5 @@
   opacity: var(--layer-primary);
 }
 
-/* Denser packs (7-8) ease the label so two names per row stay on one line. */
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="7"] .lg-chip__label,
 #ep-stage[data-format="desktop-1080p"] .lg .lg-band[data-count="8"] .lg-chip__label { font-size: 30px; }

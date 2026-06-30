@@ -1,9 +1,3 @@
-// code-output entrance choreography. See title-cards/v1/timeline.js for the
-// contract. The code window is the primary object: it pops in, then its lines
-// reveal with a typing-like x-stagger. The output panel reveals AFTER the code
-// (beat ~+1.2s) — the chip glows, the panel scales in, then its result lines
-// stagger up, so the "render" reads as a consequence of the code. Selectors are
-// scoped via s(); positions are t + localOffset; seek-safe constructs only.
 function build_codeOutput(tl, t, s, p) {
   tl.from(s(".co-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".co-title"), { y: 38, opacity: 0, duration: 0.58, ease: "power2.out" }, t + 0.4);

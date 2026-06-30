@@ -1,8 +1,3 @@
-// promo-intro-card entrance choreography. See title-cards/v1/timeline.js for
-// the contract. Seek-safe only (from/to/set; no callbacks). The photo card
-// settles in as a group; badge pops at its notch; the speaker fades; logo,
-// headline and date cascade up. .pin-col keeps its CSS translateX(-50%), so
-// only its children are animated.
 function build_promoIntroCard(tl, t, s, p) {
   tl.set(s(".pin-card"), { autoAlpha: 0, scale: 0.965, transformOrigin: "50% 40%" }, 0);
   tl.set(s(".pin-badge"), { autoAlpha: 0, y: -20 }, 0);

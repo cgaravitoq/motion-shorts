@@ -1,10 +1,3 @@
-// flow entrance choreography. See title-cards/v1/timeline.js for the contract.
-// Title in, then step nodes stagger along the rail while a SINGLE spine draws
-// through the badge column. The spine is one fixed-px element; it reveals from a
-// hidden scaleX/Y:0 state (set at literal time 0 first, seek-safe) and grows via
-// a to() tween that materialises at any seek position -> byte-identical render.
-// Desktop = horizontal spine (scaleX, origin left), portrait = vertical spine
-// (scaleY, origin top); the transform-origin matches the CSS for each format.
 function build_flow(tl, t, s, p) {
   const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const drawAxis = isDesktop ? "scaleX" : "scaleY";

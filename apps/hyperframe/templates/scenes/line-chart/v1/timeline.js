@@ -1,22 +1,6 @@
-// line-chart entrance choreography. See metric/v1/timeline.js for the seek-safe
-// count-up pattern and fanout/v1/timeline.js for hidden-at-literal-0 states.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance: s(".lc-line") -> "#scene-<id> .lc-line"
-//   p  = resolved params object (p.series, p.xLabels, p.unit) for this scene
-//
-// The builder is synchronous and deterministic: it parses p, computes plot
-// geometry, and createElementNS/setAttribute the gridlines, axis labels,
-// polylines and dots BEFORE any tween is created. Stroke reveal uses a REAL px
-// path length (Euclidean sums over the literal vertices) as stroke-dasharray and
-// tweens strokeDashoffset len -> 0 (seek-safe). No pathLength, no getTotalLength,
-// no randomness, no time APIs.
 function build_lineChart(tl, t, s, p) {
   const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const SVGNS = "http://www.w3.org/2000/svg";
-  // Desktop is the wide v4 frame-fill viewBox (1536x560, ~2.74:1) so a 100%-wide
-  // figure resolves ~560px tall and the chart spans the full band; portrait keeps
-  // the taller intrinsic 1000x620 box. PAD_R on desktop reserves room for the
-  // end-of-line value labels at each series' right terminus.
   const VB_W = isDesktop ? 1536 : 1000;
   const VB_H = isDesktop ? 560 : 620;
   const PAD_L = isDesktop ? 120 : 96;
@@ -146,9 +130,6 @@ function build_lineChart(tl, t, s, p) {
     dotEls.push(dots);
     dotFracs.push(pts.map((_, pi) => (total > 0 ? cum[pi] / total : pi / Math.max(1, pts.length - 1))));
 
-    // End-of-line value label at the right terminus (desktop frame-fill only):
-    // the wide viewBox leaves a right gutter (PAD_R), so the final value rides
-    // it and the right edge carries data instead of dead space.
     if (isDesktop && endLabelGroup) {
       const [lx, ly] = pts[pts.length - 1];
       const label = document.createElementNS(SVGNS, "text");
@@ -161,7 +142,6 @@ function build_lineChart(tl, t, s, p) {
     }
   });
 
-  // ── seek-safe entrance ──────────────────────────────────────────────────
   tl.set(gridGroup, { autoAlpha: 0 }, 0);
   tl.set(yLabelGroup, { autoAlpha: 0 }, 0);
   tl.set(xLabelGroup, { autoAlpha: 0 }, 0);

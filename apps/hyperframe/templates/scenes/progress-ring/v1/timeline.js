@@ -1,14 +1,3 @@
-// progress-ring entrance choreography. See metric/v1/timeline.js for the count-up
-// contract and bars/v1/timeline.js for the contract header.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance: s(".pr-arc") -> "#scene-<id> .pr-arc"
-//   p  = resolved params object for this scene (use p.rings for data-driven motion)
-// Seek-safe only. The arc geometry (r=86, matching the fragment) is fixed, so the
-// circumference C = 2*PI*r is a literal constant computed here — no getTotalLength()
-// and no normalized pathLength. The arc draws via strokeDashoffset C -> C*(1-pct/100)
-// (dasharray=C set synchronously up front). The center number counts up via stepped
-// tl.set(textContent) zero-duration tweens (the seek-safe primitive). All hidden
-// states are materialised at literal time 0.
 function build_progressRing(tl, t, s, p) {
   const R = 86;
   const C = 2 * Math.PI * R;

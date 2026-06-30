@@ -1,10 +1,4 @@
-/* big-stat desktop-1080p (16:9) overrides — appended AFTER styles.css AND
-   shell.desktop.css. ALL-CENTERED hero: a single centered stack — small eyebrow
-   label on top (context layer), the giant value+suffix as the hero numeral, and a
-   centered context line below at --body-max. A soft radial glow in the accent hue
-   sits behind the numeral (CSS ::before, no new DOM) so the hero never reads as
-   bare text. The figure scales from its own centre (timeline transformOrigin
-   50% 50% on desktop), and the glow scales with it. */
+
 
 #ep-stage[data-format="desktop-1080p"] .scene-pad.bs {
   grid-template-rows: 1fr auto auto auto 1fr;

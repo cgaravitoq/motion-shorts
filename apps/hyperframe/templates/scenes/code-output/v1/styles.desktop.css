@@ -1,12 +1,3 @@
-/* code-output desktop-1080p (16:9) overrides — appended AFTER styles.css AND
-   shell.desktop.css in desktop builds only. v4 FRAME-FILL / layout:centered.
-   The eyebrow chip + title form ONE centered header block (cols 1/13). The
-   code window + output panel are the CARD_ROW: they span the full band width
-   (cols 1/13, row 3) and stretch to equal height. The editor is the wider
-   primary object (1.4fr) and the output panel (1fr) sits to its right; both
-   are self-framed objects whose bodies vertically centre their content so a
-   longer code block never makes one panel taller than its sibling. */
-
 #ep-stage[data-format="desktop-1080p"] .scene-pad.co {
   grid-template-rows: auto auto 1fr;
 }
@@ -30,7 +21,6 @@
   max-width: var(--header-max);
 }
 
-/* CARD_ROW: full-width band, editor 1.4fr / output 1fr, both stretch equal. */
 #ep-stage[data-format="desktop-1080p"] .co .co-grid {
   grid-column: 1 / 13;
   grid-row: 3;
@@ -55,8 +45,6 @@
   padding: 34px 44px 34px 32px;
 }
 
-/* The taller band has more vertical room than portrait, so relax each
-   compaction notch one step while staying clear of the bottom dead zone. */
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="8"] .co-line__text,
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="9"] .co-line__text,
 #ep-stage[data-format="desktop-1080p"] .co .co-window[data-lines="10"] .co-line__text {

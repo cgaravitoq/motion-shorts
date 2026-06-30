@@ -1,7 +1,3 @@
-// comparison entrance choreography. See title-cards/v1/timeline.js for the contract.
-// Two columns reveal (left then accented right), VS badge pops, and each
-// column's points stagger in. Class+stagger entrances adapt to variable
-// point counts automatically.
 function build_comparison(tl, t, s, p) {
   tl.from(s(".cmp-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".cmp-title"), { y: 40, opacity: 0, duration: 0.6, ease: "power2.out" }, t + 0.4);

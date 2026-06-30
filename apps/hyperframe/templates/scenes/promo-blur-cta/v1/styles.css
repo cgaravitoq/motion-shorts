@@ -1,7 +1,3 @@
-/* promo-blur-cta — story-ad replica (9:16, absolute 1080x1920 geometry from
-   the source design). Full-bleed blurred composite; shell dark background
-   layers and the watermark are disabled whenever this type is present. */
-
 #ep-stage:has(.pbc) #bg-field {
   background: var(--brand-paper, #fff);
 }

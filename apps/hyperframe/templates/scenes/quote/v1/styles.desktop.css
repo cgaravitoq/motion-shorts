@@ -1,12 +1,3 @@
-/* quote desktop-1080p (16:9) — appended AFTER styles.css AND shell.desktop.css.
-   v4 frame-fill: CENTERED-HERO-EXEMPT. quote is a self-framed centered object,
-   so it carries NO data-layout="centered" — it is already centered and fills
-   the band on its own axis. The 440px backdrop glyph (line-height 0.7,
-   opacity 0.09) sits in the SAME grid cell behind the pull-quote and reaches
-   the band edges; the 76px type clamps 64-84. Backdrop + type occupy >=70% of
-   the 710px band (~520px tall) and are symmetric about the 960 axis, so the
-   whitespace is legal (no asymmetric void). */
-
 #ep-stage[data-format="desktop-1080p"] .scene-pad.qt {
   grid-template-rows: auto auto;
   min-height: 710px;

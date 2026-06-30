@@ -1,6 +1,3 @@
-// promo-details entrance choreography. See title-cards/v1/timeline.js for the
-// contract. Seek-safe only (from/to/set; no callbacks). Badge drops in; logo,
-// title, chips (staggered) and CTA cascade up.
 function build_promoDetails(tl, t, s, p) {
   tl.set(s(".pdt-badge"), { autoAlpha: 0, y: -24 }, 0);
   tl.set([s(".pdt-logo"), s(".pdt-title"), s(".pdt-cta")], { autoAlpha: 0, y: 42 }, 0);

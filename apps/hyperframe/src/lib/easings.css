@@ -1,15 +1,3 @@
-/*
- * Easing primitives — match the bezier values used in the prior Remotion
- * setup so motion feels identical across the migration.
- *
- * GSAP equivalents in JS code:
- *   --ease-in-out  → "power2.inOut"   (cubic-bezier(.4,0,.2,1))
- *   --ease-out     → "power2.out"     (cubic-bezier(0,0,.2,1))
- *   --ease-in      → "power2.in"      (cubic-bezier(.4,0,1,1))
- *   --ease-anticipate → "back.inOut(1.55)" (cubic-bezier(.68,-0.55,.27,1.55))
- *   --ease-back    → "back.out(1.7)"  (cubic-bezier(.34,1.56,.64,1))
- */
-
 :root {
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);

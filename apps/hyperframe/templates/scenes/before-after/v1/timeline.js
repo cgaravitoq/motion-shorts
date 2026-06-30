@@ -1,8 +1,3 @@
-// before-after entrance choreography. See title-cards/v1/timeline.js for the contract.
-// Seek-safe vertical wipe: the AFTER reveal layer is clipped to nothing at
-// literal 0, then its clip-path interpolates left->right to reveal it. The
-// divider line tracks the wipe edge via a left 0%->100% tween of the same
-// duration/ease (percentage-based so it stays in sync in both formats).
 function build_beforeAfter(tl, t, s, p) {
   var wipeDur = 1.1;
   var wipeAt = t + 0.85;

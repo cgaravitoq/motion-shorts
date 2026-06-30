@@ -1,6 +1,3 @@
-// code / terminal-window entrance choreography. See title-cards/v1/timeline.js
-// for the contract. The window scales in, then the code lines reveal with a
-// quick typing-like stagger. Selectors are scoped via s(); positions are t+off.
 function build_code(tl, t, s, p) {
   tl.from(s(".cd-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".cd-title"), { y: 36, opacity: 0, duration: 0.58, ease: "power2.out" }, t + 0.4);
