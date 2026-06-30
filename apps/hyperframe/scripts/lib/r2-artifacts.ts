@@ -44,9 +44,11 @@ export const requiredR2EnvKeys = baseR2EnvKeys;
 
 const missingKeys = (env: R2Env, keys: string[]): string[] => keys.filter((key) => !env[key]);
 
-const hasGatewayR2Transport = (env: R2Env): boolean => missingKeys(env, gatewayR2EnvKeys).length === 0;
+const hasGatewayR2Transport = (env: R2Env): boolean =>
+  missingKeys(env, gatewayR2EnvKeys).length === 0;
 
-const hasDirectS3R2Transport = (env: R2Env): boolean => missingKeys(env, directS3R2EnvKeys).length === 0;
+const hasDirectS3R2Transport = (env: R2Env): boolean =>
+  missingKeys(env, directS3R2EnvKeys).length === 0;
 
 const transportErrorMessage =
   "Set either R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or " +
@@ -89,7 +91,10 @@ const findWorkspaceEnvPath = (startDir: string = import.meta.dirname): string | 
 export const loadWorkspaceEnv = ({
   env = Bun.env as R2Env,
   startDir = import.meta.dirname,
-}: { env?: R2Env; startDir?: string } = {}): boolean => {
+}: {
+  env?: R2Env;
+  startDir?: string;
+} = {}): boolean => {
   const envPath = findWorkspaceEnvPath(startDir);
   if (!envPath) return false;
 
@@ -381,9 +386,6 @@ export const buildRemoteUrl = ({
   };
 };
 
-// Real fetch gets timeout + exponential backoff with jitter on transient
-// failures; an injected fetchImpl (tests) is called directly, preserving
-// exact call counts — same contract the old fetchWithTimeout had.
 const doFetch = (
   fetchImpl: FetchLike,
   url: string,
@@ -420,7 +422,6 @@ const readRemoteManifest = async (manifestPath: string): Promise<RemoteManifest>
     );
   }
 
-  // keep the raw parse: validation-only, hydrate paths read fields verbatim
   return manifest as RemoteManifest;
 };
 
@@ -810,8 +811,6 @@ const buildRemoteManifests = ({
     signedUrlTtlSeconds: item.signedUrlTtlSeconds,
   });
 
-  // The published final is a full replacement: each manifest lists exactly
-  // what this publish uploaded, never merged leftovers from earlier versions.
   return {
     renderManifest: {
       ...base,
@@ -862,7 +861,8 @@ export const downloadObjectBytes = async ({
   return Buffer.from(await response.arrayBuffer());
 };
 
-const toError = (cause: unknown): Error => (cause instanceof Error ? cause : new Error(String(cause)));
+const toError = (cause: unknown): Error =>
+  cause instanceof Error ? cause : new Error(String(cause));
 
 export const publishEpisodeArtifacts = async ({
   slug,
@@ -889,9 +889,6 @@ export const publishEpisodeArtifacts = async ({
   const config = assertR2Config(env);
   const artifacts = await collectEpisodeArtifacts({ episodeDir, renderPath, slug });
 
-  // Transactional: every object must upload and verify before a single
-  // manifest byte is written, locally or remotely. A mid-batch failure
-  // leaves the previously published final untouched.
   const uploaded = await runPromiseOrThrow(
     Effect.forEach(
       artifacts,
@@ -936,8 +933,6 @@ export const publishEpisodeArtifacts = async ({
     ),
   );
 
-  // Local copies land only after R2 accepted all three manifests, so local
-  // state never claims a final that is not actually published.
   for (const [name, manifest] of manifestFiles) {
     await fs.writeFile(path.join(episodeDir, name), `${JSON.stringify(manifest, null, 2)}\n`);
   }
@@ -1105,7 +1100,9 @@ export const hydrateEpisodeFinal = async ({
     restored.push(manifestPath);
     runId ??= (JSON.parse(bytes.toString("utf8")) as { runId?: string }).runId ?? null;
     const destinationDir =
-      name === "render.remote.json" ? path.resolve(appRoot, "renders") : path.join(episodeDir, "assets");
+      name === "render.remote.json"
+        ? path.resolve(appRoot, "renders")
+        : path.join(episodeDir, "assets");
     restored.push(
       ...(await hydrateEpisodeArtifacts({
         manifestPath,

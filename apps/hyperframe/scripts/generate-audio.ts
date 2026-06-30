@@ -1,28 +1,12 @@
 #!/usr/bin/env bun
-/**
- * End-to-end voice + captions generator.
- *
- *   bun run scripts/generate-audio.ts <script.txt> [--lang=es|en] [--out=<dir>]
- *                                                   [--stt=elevenlabs|hyperframes-transcribe]
- *                                                   [--voice=<voice-id>]
- *                                                   [--model=<tts-provider-model-id>]
- *
- * Default flow:
- *   1. Read script.txt and abort early if it exceeds the TTS soft cap.
- *   2. Synthesise voice.mp3 via the resolved TTSProvider (ElevenLabs default).
- *   3. Transcribe voice.mp3 with the resolved STTProvider (ElevenLabs Scribe
- *      default; pass `--stt=hyperframes-transcribe` to use the offline
- *      fallback that shells out to `npx hyperframes transcribe`).
- *   4. Write `voice.mp3` + `captions.json` into <out>/ and print a recap.
- */
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import {
   averageCaptionConfidence,
   BGM_DEFAULTS,
-  cacheEntryPaths,
   type CacheMode,
+  cacheEntryPaths,
   computeTtsCacheKey,
   DEFAULT_PACING,
   getAudioDurationSeconds,
@@ -38,17 +22,17 @@ import {
   MAX_BREAK_MS,
   MAX_TTS_CHARS,
   type MergeArtifactsResult,
-  mergeSegmentArtifacts,
   type MergedSegmentArtifact,
-  mixBgm,
   type MixBgmResult,
+  mergeSegmentArtifacts,
+  mixBgm,
   type PacingResult,
-  parseCaptionFormats,
   type ParseScriptResult,
+  parseCaptionFormats,
   parseScript,
   readCachedTtsWithSource,
-  resolveCacheMode,
   resolveBgmPath,
+  resolveCacheMode,
   resolveRoster,
   resolveTTSProviderDefaults,
   summariseSpeakers,
@@ -192,7 +176,6 @@ const main = async () => {
   const voicePath = path.join(outDir, "voice.mp3");
   const captionsPath = path.join(outDir, "captions.json");
 
-  // Validate sidecar formats before any TTS spend so bad input fails fast.
   let captionFormats: ReturnType<typeof parseCaptionFormats>;
   try {
     captionFormats = parseCaptionFormats(values["caption-format"]);
@@ -201,7 +184,6 @@ const main = async () => {
     process.exit(1);
   }
 
-  // Flag parsing helpers — both clamp to a range and surface a clear error.
   const parseRange = (
     raw: string | undefined,
     label: string,
@@ -219,8 +201,6 @@ const main = async () => {
   const stability = parseRange(values.stability, "stability", 0, 1);
   const similarityBoost = parseRange(values["similarity-boost"], "similarity-boost", 0, 1);
   const style = parseRange(values.style, "style", 0, 1);
-  // CLI bound = union of provider ranges. The TTS provider further clamps:
-  // ElevenLabs [0.7, 1.2], Inworld [0.5, 1.5].
   const speed = parseRange(values.speed, "speed", 0.5, 1.5);
   const pauseSentenceMs = parseRange(values["pause-sentence"], "pause-sentence", 0, MAX_BREAK_MS);
   const pauseClauseMs = parseRange(values["pause-clause"], "pause-clause", 0, MAX_BREAK_MS);
@@ -257,8 +237,6 @@ const main = async () => {
     .filter(Boolean)
     .join(" ");
 
-  // Pause injection runs before the TTS call and must match the ElevenLabs
-  // model syntax: v3 uses square-bracket tags; v2/v2.5 use SSML breaks.
   if (hasExplicitPauseControls && ttsProviderNameForDefaults !== "elevenlabs") {
     console.warn(
       `[generate-audio] pause-injection: skipped — provider="${ttsProviderNameForDefaults}" does not support SSML/v3 break tags. --pause-* flags ignored.`,
@@ -279,11 +257,6 @@ const main = async () => {
         })
       : { text: raw, injected: 0, syntax: isV3 ? "eleven-v3-tags" : "ssml-break" };
 
-  // Parse the script for `[speaker:<name>]` markup BEFORE pause injection. A
-  // single-speaker script has no markup → one default segment whose text is
-  // exactly the input; the downstream code path stays byte-identical to the
-  // pre-multi-speaker behavior. Multi-speaker runs synthesise each segment
-  // individually and merge the results.
   let parsedScript: ParseScriptResult;
   try {
     parsedScript = parseScript(text, { roster: resolveRoster() });
@@ -310,11 +283,6 @@ const main = async () => {
     console.log(`[generate-audio] speakers: ${summary}`);
   }
 
-  // For the single-speaker path we keep the legacy variable names so the
-  // downstream stats block reads naturally. `finalText` is the single
-  // post-injection script we'll send to TTS — for multi-speaker runs this
-  // variable represents the concatenated text of every segment, used only
-  // for cost reporting.
   const pacingResult = injectPausesForText(text);
   const finalText = pacingResult.text;
   if (!isMultiSpeaker && pacingResult.injected > 0) {
@@ -325,10 +293,6 @@ const main = async () => {
     );
   }
 
-  // Char-cap check on the post-injection text — that's what ElevenLabs
-  // actually counts. Pause tags can push a borderline script past the cap.
-  // The same cap applies per-segment in the multi-speaker path; we evaluate
-  // it there once the per-segment text is finalised.
   if (!isMultiSpeaker && finalText.length > MAX_TTS_CHARS) {
     const fromBreaks = finalText.length - text.length;
     console.error(
@@ -341,11 +305,6 @@ const main = async () => {
 
   const startedAt = Date.now();
 
-  // ── Cache lookup ───────────────────────────────────────────────────────
-  // Hash the post-pause-injection text — that's what we'd send to the API.
-  // Resolve voiceId at the CLI layer so the cache key matches what the
-  // provider will actually use (otherwise per-language env defaults would
-  // sit outside the key).
   let cacheMode: CacheMode;
   try {
     cacheMode = resolveCacheMode({ flag: values.cache });
@@ -378,11 +337,6 @@ const main = async () => {
   let segmentBoundaryWarnings: MergeArtifactsResult["boundaryWarnings"] = [];
   let multiSpeakerTotalChars = 0;
 
-  // ── Multi-speaker pipeline ─────────────────────────────────────────────
-  // Loop per segment: pause-inject → cache lookup → TTS+STT on miss → cache
-  // write. Then concat audio and merge captions with adjusted offsets. The
-  // legacy cache/TTS/STT block below is skipped because audioBuffer and
-  // captions are already populated when we enter it.
   if (isMultiSpeaker) {
     const ttsProvider = getTTSProvider();
     ttsProviderName = ttsProvider.name;
@@ -394,7 +348,6 @@ const main = async () => {
 
     const segmentArtifacts: MergedSegmentArtifact[] = [];
     let segmentTmpDir: string | null = null;
-    // finally does not run on Ctrl-C — mirror the tmpdir cleanup on signals.
     const onSignal = (signal: NodeJS.Signals) => {
       if (segmentTmpDir) fs.rmSync(segmentTmpDir, { recursive: true, force: true });
       process.exit(signal === "SIGTERM" ? 143 : 130);
@@ -413,8 +366,6 @@ const main = async () => {
           process.exit(1);
         }
         multiSpeakerTotalChars += segText.length;
-        // Resolve the segment's voice: explicit segment voice id wins; the
-        // untagged opening segment falls back to the CLI/env-resolved id.
         const segVoiceId = segment.voiceId ?? resolvedVoiceId;
         if (!segVoiceId && deferredVoiceError) {
           throw new Error(
@@ -469,9 +420,6 @@ const main = async () => {
           ttsMs += Date.now() - ttsStartedAt;
         }
 
-        // Write the segment audio to a temp file so the STT provider (which
-        // accepts a path, not a Buffer) can read it. Also lets us probe the
-        // segment's exact duration via ffprobe for accurate caption offsets.
         const segAudioPath = path.join(segmentTmpDir, `seg-${segment.index}.mp3`);
         fs.writeFileSync(segAudioPath, segAudio);
 
@@ -483,13 +431,14 @@ const main = async () => {
 
         if (segCacheHash && (segCacheStatus === "miss" || segCacheStatus === "refresh")) {
           writeCachedTts(segCacheHash, { audio: segAudio, captions: segCaptions });
-          await writeCachedTtsToR2(segCacheHash, { audio: segAudio, captions: segCaptions }, { cacheMode });
+          await writeCachedTtsToR2(
+            segCacheHash,
+            { audio: segAudio, captions: segCaptions },
+            { cacheMode },
+          );
         }
 
         const segDuration = await getAudioDurationSeconds(segAudioPath);
-        // Fallback when ffprobe is unavailable: use the last caption's end
-        // time so caption offsets remain reasonable, even if mid-segment
-        // silence (no caption) gets clipped from the boundary.
         const fallbackDur =
           segCaptions.length > 0 ? (segCaptions[segCaptions.length - 1]?.end ?? 0) : 0;
         const durationSec = segDuration > 0 ? segDuration : fallbackDur;
@@ -537,7 +486,6 @@ const main = async () => {
     console.log(`[generate-audio] cache refresh hash=${cacheHash.slice(0, 12)} (bypassing read)`);
   }
 
-  // ── TTS ────────────────────────────────────────────────────────────────
   if (!audioBuffer) {
     const ttsProvider = getTTSProvider();
     ttsProviderName = ttsProvider.name;
@@ -564,7 +512,6 @@ const main = async () => {
     console.log(`[generate-audio] wrote ${voicePath} (${audioKiB} KiB, from cache)`);
   }
 
-  // ── STT ────────────────────────────────────────────────────────────────
   if (!captions) {
     const sttProvider = getSTTProvider(values.stt);
     sttProviderName = sttProvider.name;
@@ -584,7 +531,6 @@ const main = async () => {
     );
   }
 
-  // Persist the freshly synthesised pair so subsequent runs hit the cache.
   if (cacheHash && (cacheStatus === "miss" || cacheStatus === "refresh")) {
     writeCachedTts(cacheHash, { audio: audioBuffer, captions });
     await writeCachedTtsToR2(cacheHash, { audio: audioBuffer, captions }, { cacheMode });
@@ -601,10 +547,6 @@ const main = async () => {
     console.log(`[generate-audio] wrote ${sidecarPath}`);
   }
 
-  // ── BGM mix (opt-in) ───────────────────────────────────────────────────
-  // Critical: when --bgm is absent we must not touch voice.mp3 in any way.
-  // Mixing is a post-processing step on top of the cached/synthesised pair;
-  // its parameters are NOT part of the TTS cache key (verified in cache.ts).
   let bgmResult: MixBgmResult | null = null;
   if (values.bgm) {
     let bgmPath: string;
@@ -633,9 +575,6 @@ const main = async () => {
       process.exit(1);
     }
 
-    // Probe voice.mp3 (post any cache-hit / multi-speaker concat). This is the
-    // narration we'll layer BGM under; ducking windows are derived from the
-    // captions we just wrote, which always align with this file.
     const narrationDurationSec = await getAudioDurationSeconds(voicePath);
     if (narrationDurationSec <= 0) {
       console.error(
@@ -644,9 +583,6 @@ const main = async () => {
       process.exit(1);
     }
 
-    // Sidecar: write voice-mixed.mp3 next to voice.mp3 (default — safe).
-    // Replace: back voice.mp3 up to voice.unmixed.mp3 then overwrite voice.mp3
-    //          so downstream renders pick up the mixed track without rewiring.
     const mixedTargetPath =
       bgmOutputMode === "replace"
         ? path.join(outDir, ".voice-mixed.tmp.mp3")
@@ -672,7 +608,6 @@ const main = async () => {
     } catch (err) {
       console.error("generate-audio: ffmpeg BGM mix failed:");
       console.error(err);
-      // Clean up any half-written tmp output before bailing.
       if (fs.existsSync(mixedTargetPath)) fs.rmSync(mixedTargetPath, { force: true });
       process.exit(1);
     }
@@ -692,7 +627,6 @@ const main = async () => {
     }
   }
 
-  // ── Stats ──────────────────────────────────────────────────────────────
   const durationSecs = await getAudioDurationSeconds(voicePath);
   if (durationSecs <= 0) {
     console.warn(
@@ -731,9 +665,6 @@ const main = async () => {
     console.log(`  cache:            ${cacheStatus}`);
   }
   console.log(`  tts provider:     ${ttsProviderName ?? "cache"}`);
-  // Report the text actually sent to ElevenLabs (post pause-injection) so
-  // the credit estimate matches the dashboard. The original script length
-  // is shown alongside for context.
   if (isMultiSpeaker) {
     console.log(
       `  tts char usage:   ${multiSpeakerTotalChars} across ${parsedScript.segments.length} segments`,

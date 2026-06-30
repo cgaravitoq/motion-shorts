@@ -48,9 +48,15 @@ describe("signRequest", () => {
       payloadHash: "UNSIGNED-PAYLOAD",
       now,
     });
-    expect(signed.url).toBe("https://example.r2.cloudflarestorage.com/bucket/folder/file%20name.json");
-    expect(signed.headers.authorization).toContain("AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/auto/s3/aws4_request");
-    expect(signed.headers.authorization).toContain("SignedHeaders=host;x-amz-content-sha256;x-amz-date");
+    expect(signed.url).toBe(
+      "https://example.r2.cloudflarestorage.com/bucket/folder/file%20name.json",
+    );
+    expect(signed.headers.authorization).toContain(
+      "AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/auto/s3/aws4_request",
+    );
+    expect(signed.headers.authorization).toContain(
+      "SignedHeaders=host;x-amz-content-sha256;x-amz-date",
+    );
   });
 
   it("uses one timestamp for default-now signing", () => {

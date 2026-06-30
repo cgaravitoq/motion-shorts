@@ -1,33 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Render a Hyperframes episode without mutating `src/`.
- *
- * Strategy: build a self-contained working copy under `out/episodes/<slug>/`
- * (HTML stamped with the real duration + captions inlined from
- * assets/captions.json), symlink `lib` and `assets` to the originals, and
- * point `bunx hyperframes render` at that copy. `src/episodes/<slug>/` stays
- * read-only — no more git-dirty surprises after a render.
- *
- *   bun run scripts/render-episode.ts <slug> [--format=mp4|mov|webm]
- *                                              [--variant=short|desktop-1080p|desktop-4k|square-1080]
- *                                              [--quality=draft|standard|high]
- *                                              [--output=<path>]
- *                                              [--fps=30]
- *                                              [--tail=<seconds>]
- *                                              [--crf=<value>]
- *                                              [--run-id=<id>]
- *                                              [--upload=r2]
- *                                              [--keep-local]
- *
- * Episode layout expected:
- *   src/episodes/<slug>/index.html         # root 9:16 composition (variant=short)
- *   src/episodes/<slug>/index.desktop.html # optional 16:9 composition (variant=desktop-1080p|desktop-4k)
- *   src/episodes/<slug>/index.square.html  # optional 1:1 composition (variant=square-1080)
- *   src/episodes/<slug>/meta.json          # { id, name, ... }
- *   src/episodes/<slug>/hyperframes.json   # config
- *   src/episodes/<slug>/assets/voice.mp3
- *   src/episodes/<slug>/assets/captions.json
- */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -45,11 +16,6 @@ import {
 
 const LEDGER_PATH = path.resolve(".metrics/runs.ndjson");
 
-// CWD guard — paths in this script (`src/episodes/`, `src/lib/`, `out/`,
-// `brands/`, `renders/`) all resolve relative to process.cwd(). The
-// canonical invocation is `bun run render:episode` from `apps/hyperframe/`
-// (or via `turbo run`, which sets cwd per task). Running from elsewhere
-// silently looks up paths in the wrong place.
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {
   console.error(
@@ -112,9 +78,6 @@ interface VariantRender {
   bitrate30: string;
 }
 
-// Variant resolves to the source HTML filename inside the episode dir. The
-// short default keeps the canonical "index.html" — existing render behavior is
-// byte-identical when --variant is omitted.
 const VARIANT_RENDER: Record<string, VariantRender> = {
   short: { index: "index.html", outputSuffix: "", resolution: "portrait", bitrate30: "10M" },
   "desktop-1080p": {
@@ -157,10 +120,6 @@ const stampStageFps = (html: string, fps: number): string => {
 };
 
 const stampDuration = (html: string, totalSeconds: number, voiceSeconds: number): string => {
-  // Anchor on the canonical identifier (`data-composition-id`), then rewrite
-  // `data-duration` regardless of attribute order. `[^>]*` matches across
-  // newlines (it's a negated char class, not `.`), so multi-line stage tags
-  // emitted by the scaffolder also work.
   const stageTagRe = /<div\b[^>]*\bdata-composition-id="[^"]+"[^>]*>/;
   const stageTag = html.match(stageTagRe)?.[0];
   if (!stageTag) {
@@ -181,8 +140,6 @@ const stampDuration = (html: string, totalSeconds: number, voiceSeconds: number)
   );
   let stamped = html.replace(stageTag, stampedStage);
 
-  // Stamp the voiceover audio's data-duration the same way (best-effort —
-  // some compositions don't have a voiceover track).
   const voiceTagRe = /<audio\b[^>]*\bid="voiceover"[^>]*>/;
   const voiceTag = stamped.match(voiceTagRe)?.[0];
   if (voiceTag && /\bdata-duration="[^"]*"/.test(voiceTag)) {
@@ -218,7 +175,6 @@ const stampBrand = (
   if (placeholderRe.test(html)) {
     return { html: html.replace(placeholderRe, styleBlock), brand };
   }
-  // No placeholder — inject before </head> as a graceful fallback.
   const headCloseRe = /<\/head>/;
   if (!headCloseRe.test(html)) {
     throw new Error(
@@ -248,25 +204,16 @@ const inlineCaptions = (html: string, captionsPath: string): { html: string; cou
         "Add it (empty array as default) so captions can be auto-inlined.",
     );
   }
-  // Escape `</` so a caption text containing the literal sequence `</script`
-  // can't break out of the JSON island. `type="application/json"` already
-  // protects us in modern HTML5 parsers, but the escape is zero-cost defense.
   const safeJson = JSON.stringify(parsed).replace(/<\//g, "<\\/");
   const inlined = html.replace(tagRe, `$1${safeJson}$3`);
   return { html: inlined, count: parsed.length };
 };
 
 const ensureSymlink = (linkPath: string, targetAbs: string): void => {
-  // Recreate every time so re-running with a moved repo doesn't keep a
-  // stale symlink. lstatSync handles broken symlinks (existsSync wouldn't).
-  // `recursive: true` covers the rare case where a real directory was
-  // dropped in place of the symlink.
   try {
     fs.lstatSync(linkPath);
     fs.rmSync(linkPath, { force: true, recursive: true });
-  } catch {
-    // Doesn't exist — nothing to remove.
-  }
+  } catch {}
   const target = path.relative(path.dirname(linkPath), targetAbs);
   fs.symlinkSync(target, linkPath, "dir");
 };
@@ -297,8 +244,6 @@ const main = async (): Promise<void> => {
       "delete-local": { type: "boolean" },
       "local-only": { type: "boolean", default: false },
       "keep-local": { type: "boolean", default: false },
-      // No default for tail: undefined means "not provided", so we can fall
-      // back to meta.json's `tail` field, then to 0.3.
       tail: { type: "string" },
       help: { type: "boolean", short: "h" },
     },
@@ -357,7 +302,6 @@ const main = async (): Promise<void> => {
   }
   const hasVoice = fs.existsSync(audioPath);
 
-  // ── Validate all flags BEFORE any work ────────────────────────────────
   const fmt = values.format as string;
   if (!VALID_FORMATS.includes(fmt)) {
     console.error(`render-episode: --format must be one of ${VALID_FORMATS.join(", ")}`);
@@ -380,7 +324,6 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  // ── Resolve tail: CLI flag > meta.json "tail" > 0.3 ───────────────────
   const meta = JSON.parse(fs.readFileSync(metaPath, "utf8")) as EpisodeMeta;
   let tailSeconds: number;
   let tailSource: string;
@@ -399,7 +342,6 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  // ── Measure voice duration (or fall back to silent render) ───────────
   let voiceSeconds: number;
   let totalSeconds: number;
   if (hasVoice) {
@@ -427,10 +369,6 @@ const main = async (): Promise<void> => {
     );
   }
 
-  // ── Build working copy under out/episodes/<slug>[/<variant>] ──────────
-  // Short variant keeps the historical layout (out/episodes/<slug>/) so the
-  // default render path is byte-identical. Non-default variants nest under
-  // out/episodes/<slug>/<variant>/ so they don't clobber each other.
   const workDir =
     variant === "short"
       ? path.resolve("out/episodes", slug)
@@ -452,20 +390,14 @@ const main = async (): Promise<void> => {
   const { html: finalHtml, count: captionsCount } = inlineCaptions(brandedHtml, captionsPath);
   fs.writeFileSync(path.join(workDir, "index.html"), finalHtml);
 
-  // meta.json — informational; Hyperframes reads from data-attrs.
   meta.duration = totalSeconds;
   meta.voiceSeconds = Number(voiceSeconds.toFixed(2));
   fs.writeFileSync(path.join(workDir, "meta.json"), `${JSON.stringify(meta, null, 2)}\n`);
 
-  // hyperframes.json — copy if present so per-episode config travels.
   if (fs.existsSync(hfConfigPath)) {
     fs.copyFileSync(hfConfigPath, path.join(workDir, "hyperframes.json"));
   }
 
-  // Safety guard — the working copy MUST live under out/, never src/. If a
-  // future refactor accidentally points workDir at episodeDir, the cleanup
-  // commands below + the symlink layout would destroy source files. Cheap
-  // assertion catches that class of bug at the boundary.
   if (path.resolve(workDir) === path.resolve(episodeDir)) {
     console.error(
       `render-episode: refusing to render — workDir resolves to the source dir (${workDir}). This would risk overwriting src/.`,
@@ -479,22 +411,9 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  // Symlink lib + assets to keep the working copy tiny and avoid copying
-  // voice.mp3 (~MBs) every render.
-  //
-  // FOOTGUN: `out/episodes/<slug>/{lib,assets}` are symlinks pointing back
-  // to `src/`. Standard POSIX `rm -rf` removes the symlinks themselves, not
-  // their targets — but commands that follow symlinks (`find -delete`,
-  // `rsync --delete`, some Node `fs.rm` configs) can nuke src/. If you need
-  // to clean a working copy, target the dir explicitly: `rm -rf out/episodes/<slug>`
-  // and do NOT use symlink-following tools on `out/`.
   ensureSymlink(path.join(workDir, "lib"), path.resolve("src/lib"));
   ensureSymlink(path.join(workDir, "assets"), assetsDir);
 
-  // 1x1 transparent GIF served as favicon.ico. Chromium auto-fetches
-  // /favicon.ico on every page load; without this, each render worker logs
-  // a `[non-blocking] 404` line. Pure console noise — has no effect on the
-  // mp4 — but it surfaces on every public-clone render.
   fs.writeFileSync(
     path.join(workDir, "favicon.ico"),
     Buffer.from(
@@ -513,7 +432,6 @@ const main = async (): Promise<void> => {
   const inventory = collectAssetInventory(assetsDir);
   timer.end("materialise");
 
-  // ── Run hyperframes render ────────────────────────────────────────────
   const defaultOut = `renders/${slug}${(VARIANT_RENDER[variant] as VariantRender).outputSuffix}.${fmt}`;
   const outPath = (values.output as string | undefined) ?? defaultOut;
   fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
@@ -605,8 +523,6 @@ const main = async (): Promise<void> => {
 
   const durations = timer.durations();
   const totalMs = timer.totalMs();
-  // Best-effort: ledger writes never fail the render. Telemetry is
-  // observability, not a correctness signal.
   try {
     appendLedger(
       LEDGER_PATH,

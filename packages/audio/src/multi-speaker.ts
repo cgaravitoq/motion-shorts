@@ -1,73 +1,29 @@
-/**
- * Multi-speaker scripts: parse inline `[speaker:<name>]` markup, route each
- * segment through the existing TTS provider, and merge the resulting audio +
- * captions into a single voice.mp3 + captions.json pair.
- *
- * Markup
- * ------
- * Lines may be prefixed with a bracketed speaker tag:
- *
- *   [speaker:alex] Hello, this is Alex.
- *   [speaker:morgan] And this is Morgan.
- *
- * The tag is the FIRST non-whitespace token on the line. Lines without a tag
- * inherit the previous segment's speaker; the very first untagged line is
- * synthesised as a "default" segment (matching today's single-speaker path).
- *
- * The token after `speaker:` is either a roster name (resolved via the roster
- * arg → typically loaded from env / episode meta.json) or, if no roster entry
- * matches, a raw voice id passed through unchanged. This dual behavior keeps
- * one-off shorts ergonomic without forcing every author to set up a roster.
- *
- * Single-speaker passthrough
- * --------------------------
- * A script with zero `[speaker:...]` tags returns a single segment carrying
- * the verbatim text (no normalisation, no trimming beyond what callers
- * already do). The byte-identical guarantee for the single-speaker path
- * lives in tests/__tests__/multi-speaker.test.ts.
- */
 import { env } from "./env";
 import type { HyperframesCaption } from "./stt-types";
 
 export interface SpeakerRoster {
-  /** name → ElevenLabs voice id. Names are case-insensitive on lookup. */
   [name: string]: string;
 }
 
 export interface ScriptSegment {
-  /**
-   * Resolved voice id, OR `undefined` for the default/untagged opening
-   * segment of a single-speaker script. `undefined` means "use whatever the
-   * CLI/env resolves for the language" — i.e. the legacy code path.
-   */
   voiceId: string | undefined;
-  /** Roster name as written in the markup (e.g. "alex"). `undefined` for the default segment. */
   speakerName: string | undefined;
-  /** Trimmed segment text. Never empty. */
   text: string;
-  /** 0-indexed segment order in the script. */
   index: number;
 }
 
 export interface ParseScriptOptions {
-  /** name → voiceId. Optional; markup falls through to raw voice ids if absent. */
   roster?: SpeakerRoster;
 }
 
 export interface ParseScriptResult {
   segments: ScriptSegment[];
-  /** True iff the script contains any `[speaker:...]` tag. Drives the "byte-identical passthrough" branch. */
   hasMarkup: boolean;
-  /** Names referenced by the script that did NOT resolve through the roster (likely typos or raw voice ids). */
   unresolved: string[];
 }
 
 const SPEAKER_TAG_RE = /^\[speaker:([^\]]+)\]\s*/i;
 
-/**
- * Look the name up case-insensitively. We keep the original casing in the
- * roster on purpose — env-loaded rosters tend to mirror user casing.
- */
 const resolveFromRoster = (name: string, roster: SpeakerRoster | undefined): string | undefined => {
   if (!roster) return undefined;
   if (name in roster) return roster[name];
@@ -78,17 +34,6 @@ const resolveFromRoster = (name: string, roster: SpeakerRoster | undefined): str
   return undefined;
 };
 
-/**
- * Parse a script into ordered speaker-tagged segments. Behavior:
- *
- * - No `[speaker:...]` tag anywhere → one segment with the entire script,
- *   voiceId/speakerName = undefined. `hasMarkup = false`.
- * - One or more tags → split at each tag boundary; untagged opening text
- *   (if any) is emitted as a default segment with voiceId = undefined.
- *
- * Empty segments (tag followed by no text on its own line and no continuation)
- * are dropped silently — they don't contribute anything to the render.
- */
 export const parseScript = (raw: string, opts: ParseScriptOptions = {}): ParseScriptResult => {
   if (!SPEAKER_TAG_RE.test(raw) && !raw.includes("[speaker:")) {
     const trimmed = raw.trim();
@@ -154,16 +99,6 @@ export const parseScript = (raw: string, opts: ParseScriptOptions = {}): ParseSc
   };
 };
 
-/**
- * Parse a JSON roster string (env-shaped). Accepts:
- *
- *   {"alex":"voice-id-1","morgan":"voice-id-2"}
- *
- * Returns `undefined` when the input is falsy/empty so callers can pipe
- * env values straight through. Throws a descriptive error on malformed
- * JSON or non-string values — failing loudly here is cheaper than producing
- * a silent single-speaker run on a multi-speaker script.
- */
 export const parseRosterJson = (raw: string | undefined | null): SpeakerRoster | undefined => {
   if (!raw) return undefined;
   const trimmed = raw.trim();
@@ -189,12 +124,6 @@ export const parseRosterJson = (raw: string | undefined | null): SpeakerRoster |
   return out;
 };
 
-/**
- * Resolve a roster by merging env (`MOTION_SHORTS_VOICE_ROSTER`) and an
- * optional caller-provided override (e.g. an episode `meta.json` `voices`
- * map). The override wins on conflict — episode metadata is more specific
- * than a process-wide env default.
- */
 export const resolveRoster = (override?: SpeakerRoster): SpeakerRoster | undefined => {
   const fromEnv = parseRosterJson(env.MOTION_SHORTS_VOICE_ROSTER);
   if (!fromEnv && !override) return undefined;
@@ -202,9 +131,7 @@ export const resolveRoster = (override?: SpeakerRoster): SpeakerRoster | undefin
 };
 
 export interface SpeakerSummaryEntry {
-  /** Roster name or raw voice id from the markup. `(default)` for the untagged opening segment. */
   label: string;
-  /** Number of segments authored under this label. */
   segments: number;
 }
 
@@ -214,16 +141,9 @@ export const summariseSpeakers = (segments: ScriptSegment[]): SpeakerSummaryEntr
     const label = seg.speakerName ?? "(default)";
     counts.set(label, (counts.get(label) ?? 0) + 1);
   }
-  // Preserve first-appearance order so the recap reads in the same order the
-  // script does. Map insertion is already first-appearance-ordered.
   return [...counts.entries()].map(([label, segs]) => ({ label, segments: segs }));
 };
 
-/**
- * Shift caption timestamps by `offsetSeconds`. Negative or NaN offsets are
- * coerced to 0 — callers should never pass them, but defensive zeroing is
- * cheap and keeps the merged output monotonic.
- */
 export const offsetCaptions = (
   captions: HyperframesCaption[],
   offsetSeconds: number,
@@ -240,16 +160,13 @@ export const offsetCaptions = (
 export interface MergedSegmentArtifact {
   audio: Buffer;
   captions: HyperframesCaption[];
-  /** Measured duration of this segment's audio, in seconds. Used to offset captions of later segments. */
   durationSec: number;
-  /** Average word-level confidence over this segment, in [0,1]. `undefined` if no caption carried confidence. */
   averageConfidence: number | undefined;
 }
 
 export interface MergeArtifactsResult {
   audio: Buffer;
   captions: HyperframesCaption[];
-  /** Per-boundary diagnostics: `dropPct` = how much the average confidence drops vs the previous segment. */
   boundaryWarnings: {
     afterSegment: number;
     previousAvg: number;
@@ -258,17 +175,8 @@ export interface MergeArtifactsResult {
   }[];
 }
 
-/** Threshold beyond which a confidence drop at a speaker boundary becomes a warning. */
 export const CAPTION_CONFIDENCE_DROP_WARN = 0.15;
 
-/**
- * Concatenate MP3 buffers and re-time captions so the merged track is
- * continuous. MP3 frames are independent; back-to-back Buffer.concat is
- * the canonical "good enough" approach for ElevenLabs `mp3_44100_128`
- * output. Players that probe duration off the file header (a few do)
- * may show the first segment's duration — render-time ffprobe rescans
- * the whole file and reports correctly.
- */
 export const mergeSegmentArtifacts = (artifacts: MergedSegmentArtifact[]): MergeArtifactsResult => {
   if (artifacts.length === 0) {
     return { audio: Buffer.alloc(0), captions: [], boundaryWarnings: [] };

@@ -1,13 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Validate distribution.json files against the distribution spec and the
- * episode's rendered-mp4 pin.
- *
- *   bun run copy:check                          # all episodes with a distribution.json
- *   bun run copy:check <file> [<file> ...]      # specific files
- *
- * Exits non-zero if any file is invalid.
- */
 import fs from "node:fs";
 import path from "node:path";
 import { validateDistribution } from "./lib/distribution-spec";

@@ -1,18 +1,5 @@
-/**
- * Inject pause controls into a narration script before TTS.
- *
- * ElevenLabs v2/v2.5 models support SSML `<break />` tags. Eleven v3 does not;
- * it uses expressive square-bracket tags like `[short pause]` instead.
- *
- * Refs (verified 2026-05-09):
- * - help.elevenlabs.io/hc/en-us/articles/24352686926609
- * - elevenlabs.io/docs/best-practices/prompting
- */
-
 export interface PacingOptions {
-  /** ms pause after sentence-ending punctuation (`.`, `!`, `?`). Default 400. Set to 0 to disable. */
   sentenceMs?: number;
-  /** ms pause after clause punctuation (`:`, `;`, `—`). Default 250. Set to 0 to disable. */
   clauseMs?: number;
 }
 
@@ -29,7 +16,6 @@ export const DEFAULT_PACING: Required<PacingOptions> = {
   clauseMs: 250,
 };
 
-/** ElevenLabs hard limit per `<break>` tag. */
 export const MAX_BREAK_MS = 3000;
 
 const clamp = (ms: number): number => Math.max(0, Math.min(MAX_BREAK_MS, ms));
@@ -43,15 +29,7 @@ const formatV3Pause = (ms: number): string => {
 
 export const isElevenV3Model = (modelId: string): boolean => modelId.toLowerCase() === "eleven_v3";
 
-/**
- * Returns the script with `<break />` tags inserted. Idempotent over
- * already-tagged input — if the script contains any `<break ...>` already,
- * it's treated as hand-authored and returned untouched.
- */
-export const injectPauses = (
-  text: string,
-  opts: PacingOptions = {},
-): PacingResult => {
+export const injectPauses = (text: string, opts: PacingOptions = {}): PacingResult => {
   if (/<break\b/i.test(text)) {
     return { text, injected: 0, syntax: "ssml-break" };
   }
@@ -63,9 +41,6 @@ export const injectPauses = (
   let result = text;
 
   if (sentenceMs > 0) {
-    // Match `.!?` only when followed by whitespace — protects decimals like
-    // "4.5" (period followed by a digit) and avoids appending a break to the
-    // very last token of the script.
     const tag = formatBreak(sentenceMs);
     result = result.replace(/([.!?])(?=\s)/g, (m) => {
       injected += 1;
@@ -84,15 +59,7 @@ export const injectPauses = (
   return { text: result, injected, syntax: "ssml-break" };
 };
 
-/**
- * Returns the script with Eleven v3 pause tags inserted. Idempotent over
- * already-tagged input — if the script contains manual pause tags or SSML
- * breaks, it's treated as hand-authored and returned untouched.
- */
-export const injectElevenV3Pauses = (
-  text: string,
-  opts: PacingOptions = {},
-): PacingResult => {
+export const injectElevenV3Pauses = (text: string, opts: PacingOptions = {}): PacingResult => {
   if (/<break\b/i.test(text) || /\[(?:short\s+|long\s+)?pause\]/i.test(text)) {
     return { text, injected: 0, syntax: "eleven-v3-tags" };
   }

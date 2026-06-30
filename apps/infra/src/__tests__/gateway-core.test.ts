@@ -9,8 +9,13 @@ const sha256 = async (bytes: Uint8Array): Promise<string> => {
     .join("");
 };
 
-const memoryBucket = (): GatewayBucket & { store: Map<string, { bytes: ArrayBuffer; contentType?: string; meta?: Record<string, string> }> } => {
-  const store = new Map<string, { bytes: ArrayBuffer; contentType?: string; meta?: Record<string, string> }>();
+const memoryBucket = (): GatewayBucket & {
+  store: Map<string, { bytes: ArrayBuffer; contentType?: string; meta?: Record<string, string> }>;
+} => {
+  const store = new Map<
+    string,
+    { bytes: ArrayBuffer; contentType?: string; meta?: Record<string, string> }
+  >();
   return {
     store,
     async get(key) {
@@ -60,7 +65,10 @@ describe("upload-gateway contract", () => {
   it("rejects paths outside /objects/ with 404", async () => {
     const bucket = memoryBucket();
     const response = await run(
-      new Request("https://gw.test/health", { method: "GET", headers: { "x-upload-token": TOKEN } }),
+      new Request("https://gw.test/health", {
+        method: "GET",
+        headers: { "x-upload-token": TOKEN },
+      }),
       bucket,
     );
     expect(response.status).toBe(404);
@@ -138,7 +146,9 @@ describe("upload-gateway contract", () => {
   it("HEAD reports size and content-type without a body", async () => {
     const bucket = memoryBucket();
     const body = new TextEncoder().encode("audio-bytes");
-    await bucket.put(KEY, body.buffer as ArrayBuffer, { httpMetadata: { contentType: "audio/mpeg" } });
+    await bucket.put(KEY, body.buffer as ArrayBuffer, {
+      httpMetadata: { contentType: "audio/mpeg" },
+    });
 
     const found = await run(
       new Request(urlFor(encodedKey), { method: "HEAD", headers: { "x-upload-token": TOKEN } }),
@@ -149,7 +159,10 @@ describe("upload-gateway contract", () => {
     expect(found.headers.get("content-type")).toBe("audio/mpeg");
 
     const missing = await run(
-      new Request("https://gw.test/objects/nope", { method: "HEAD", headers: { "x-upload-token": TOKEN } }),
+      new Request("https://gw.test/objects/nope", {
+        method: "HEAD",
+        headers: { "x-upload-token": TOKEN },
+      }),
       bucket,
     );
     expect(missing.status).toBe(404);

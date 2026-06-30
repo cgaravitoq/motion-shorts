@@ -17,11 +17,7 @@ import {
 
 type CaptureJson = Record<string, unknown>;
 
-type SpawnImpl = (
-  command: string,
-  args: string[],
-  options: SpawnOptions,
-) => ChildProcess;
+type SpawnImpl = (command: string, args: string[], options: SpawnOptions) => ChildProcess;
 
 interface CapturedAsset {
   kind: string;
@@ -202,8 +198,6 @@ const publishabilityFor = (
   const text =
     `${sourceUrl} ${JSON.stringify(captureJson)} ${assets.map((asset) => asset.localPath).join(" ")}`.toLowerCase();
 
-  // Rules of thumb: customer stories usually include named third-party brands,
-  // logos/screenshots imply external rights, and those should default to review.
   if (
     /\/customers?\//i.test(url.pathname) ||
     /customer[-_ ]?(story|stories)|case[-_ ]?study/i.test(text)

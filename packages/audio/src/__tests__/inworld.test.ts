@@ -59,7 +59,11 @@ describe("InworldTTSProvider", () => {
     const { client } = stubClient();
     const provider = new InworldTTSProvider({ apiKey: "test", client });
     expect(
-      provider.resolveDefaults({ lang: "es", voice: "custom-inworld-voice", model: "custom-model" }),
+      provider.resolveDefaults({
+        lang: "es",
+        voice: "custom-inworld-voice",
+        model: "custom-model",
+      }),
     ).toEqual({ voiceId: "custom-inworld-voice", modelId: "custom-model" });
   });
 

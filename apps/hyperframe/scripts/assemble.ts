@@ -1,13 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Assemble an episode's composition from its scene-spec.json.
- *
- *   bun run scripts/assemble.ts <slug> [--format=short|desktop] [--print]
- *
- * Reads  src/episodes/<slug>/scene-spec.json
- * Writes src/episodes/<slug>/index.html          (--format=short, default)
- *        src/episodes/<slug>/index.desktop.html  (--format=desktop, 1920x1080)
- */
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
@@ -15,7 +6,9 @@ import { type AssembledEpisode, assembleEpisode, type EpisodeFormat } from "./li
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {
-  console.error(`assemble: must run from ${expectedCwd}. Hint: cd apps/hyperframe && bun run assemble <slug>`);
+  console.error(
+    `assemble: must run from ${expectedCwd}. Hint: cd apps/hyperframe && bun run assemble <slug>`,
+  );
   process.exit(1);
 }
 

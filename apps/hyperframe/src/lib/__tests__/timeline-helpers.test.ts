@@ -20,8 +20,6 @@ type FakeElement = {
 type HfNamespace = { fitText: (el: FakeElement, opts?: FitTextOpts) => void };
 type FakeWindow = { gsap: { timeline: () => Record<string, never> }; __hf?: HfNamespace };
 
-// Loads timeline-helpers.js inside a vm context with stubs for the DOM globals
-// it touches. Returns the `__hf` namespace plus instrumentation hooks.
 const loadHelpers = ({ scrollWidthFor }: { scrollWidthFor?: () => number }) => {
   const warnings: string[] = [];
   const fakeWindow: FakeWindow = {
@@ -36,7 +34,6 @@ const loadHelpers = ({ scrollWidthFor }: { scrollWidthFor?: () => number }) => {
       warn: (...args: unknown[]) => warnings.push(args.join(" ")),
       error: console.error,
     },
-    // Mirror browser semantics: `global` is the window object in the IIFE.
     global: fakeWindow,
   };
   vm.createContext(context);
@@ -69,8 +66,6 @@ const makeElement = ({
 
 describe("fitText", () => {
   it("caps the shrink loop at 100 iterations on impossible text without hanging", () => {
-    // Element scrollWidth never satisfies the container — naive loop would
-    // iterate until size <= minFontSize, here forced unsatisfiable.
     const el = makeElement({
       text: "x".repeat(10_000),
       scrollWidth: () => 9_999_999,
@@ -81,8 +76,6 @@ describe("fitText", () => {
     hf.fitText(el, { baseFontSize: 1000, minFontSize: 1, maxWidth: 10 });
     const elapsed = Date.now() - started;
 
-    // Cap is 100; size starts at 1000, so final size must be >= 900 — proves
-    // the loop stopped at the cap, not at minFontSize.
     const finalSize = Number.parseFloat(el.style.fontSize);
     expect(finalSize).toBeGreaterThanOrEqual(900);
     expect(finalSize).toBeLessThanOrEqual(1000);

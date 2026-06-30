@@ -1,18 +1,3 @@
-/**
- * scene-instantiator — turns a scene-type + params into a frozen HTML fragment.
- *
- * A scene-type lives at templates/scenes/<type>/v<version>/ with:
- *   manifest.json   typed slot declarations (text | richText | repeat)
- *   fragment.html   inner DOM with __SLOT__ tokens and <!-- repeat:NAME --> blocks
- *   styles.css      class-based styles (shared across instances of this type)
- *   styles.desktop.css  optional 16:9 overrides, emitted only by desktop builds
- *   timeline.js     build_<builder>(tl, t, s, p) entrance choreography
- *
- * Token rules (deterministic, so identical params => identical bytes):
- *   text/richText slot "metricSuffix"  ->  __METRIC_SUFFIX__
- *   repeat slot "cards" count           ->  __CARDS_COUNT__
- *   repeat item field "title"           ->  __ITEM_TITLE__   (inside the block)
- */
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -24,8 +9,6 @@ import {
 } from "@cgaravitoq/spec";
 import { Result } from "effect";
 
-// hubRoot is the apps/hyperframe dir. Defaults to cwd (CLI runs from there);
-// the MCP server passes an absolute path so it works from any cwd.
 const scenesRoot = (hubRoot?: string): string =>
   path.resolve(hubRoot ?? process.cwd(), "templates/scenes");
 
@@ -49,7 +32,6 @@ export function assertSafeHtml(value: unknown, field: string): string {
   return text;
 }
 
-// Image slots bind a path relative to the episode dir (e.g. assets/generated/x.png).
 export function assertSafeImagePath(value: unknown, field: string): string {
   const text = String(value);
   if (text === "") return text;
@@ -77,16 +59,21 @@ function readValidatedManifest(file: string, type: string, version: number): Sce
   const manifest: unknown = JSON.parse(fs.readFileSync(file, "utf8"));
   const decoded = decodeSceneTypeManifest(manifest);
   if (Result.isFailure(decoded)) {
-    throw new ManifestInvalid({ type, version, issues: formatParseError(decoded.failure, "manifest") });
+    throw new ManifestInvalid({
+      type,
+      version,
+      issues: formatParseError(decoded.failure, "manifest"),
+    });
   }
-  // keep the raw parse: the schema pass is validation-only, so instantiation bytes cannot change
   return manifest as SceneTypeManifest;
 }
 
 export function resolveSceneType(type: string, version = 1, hubRoot?: string): ResolvedSceneType {
   const dir = path.join(scenesRoot(hubRoot), type, `v${version}`);
   if (!fs.existsSync(dir)) {
-    throw new Error(`unknown scene-type "${type}@${version}" (looked in ${path.relative(process.cwd(), dir)})`);
+    throw new Error(
+      `unknown scene-type "${type}@${version}" (looked in ${path.relative(process.cwd(), dir)})`,
+    );
   }
   const desktopCssPath = path.join(dir, "styles.desktop.css");
   return {
@@ -134,7 +121,9 @@ function renderRepeat(
   slotDef: RepeatSlotDef,
   items: ReadonlyArray<unknown>,
 ): string {
-  const re = new RegExp(`<!--\\s*repeat:${slotName}\\s*-->([\\s\\S]*?)<!--\\s*/repeat:${slotName}\\s*-->`);
+  const re = new RegExp(
+    `<!--\\s*repeat:${slotName}\\s*-->([\\s\\S]*?)<!--\\s*/repeat:${slotName}\\s*-->`,
+  );
   const match = fragment.match(re);
   if (!match) {
     throw new Error(
@@ -149,10 +138,14 @@ function renderRepeat(
     for (const [field, def] of Object.entries(itemDef)) {
       let raw = record[field];
       if (raw === undefined || raw === null) {
-        if (def.required) throw new Error(`slot "${slotName}"[${idx}] missing required field "${field}"`);
+        if (def.required)
+          throw new Error(`slot "${slotName}"[${idx}] missing required field "${field}"`);
         raw = def.default ?? "";
       }
-      const value = def.kind === "richText" ? assertSafeHtml(raw, `${slotName}[${idx}].${field}`) : escapeHtml(raw);
+      const value =
+        def.kind === "richText"
+          ? assertSafeHtml(raw, `${slotName}[${idx}].${field}`)
+          : escapeHtml(raw);
       row = row.replaceAll(`__ITEM_${tokenize(field)}__`, value);
     }
     return row.trim();
@@ -182,7 +175,9 @@ export function instantiateScene(args: {
     if (def.kind === "repeat") {
       const items = params[name];
       if (!Array.isArray(items)) {
-        throw new Error(`scene-type "${type}" slot "${name}" expects an array, got ${typeof items}`);
+        throw new Error(
+          `scene-type "${type}" slot "${name}" expects an array, got ${typeof items}`,
+        );
       }
       if (items.length < def.min || items.length > def.max) {
         throw new Error(
@@ -206,5 +201,11 @@ export function instantiateScene(args: {
       html = html.replaceAll(`__${tokenize(name)}__`, value);
     }
   }
-  return { html, css: resolved.styles, cssDesktop: resolved.stylesDesktop, timeline: resolved.timeline, manifest };
+  return {
+    html,
+    css: resolved.styles,
+    cssDesktop: resolved.stylesDesktop,
+    timeline: resolved.timeline,
+    manifest,
+  };
 }

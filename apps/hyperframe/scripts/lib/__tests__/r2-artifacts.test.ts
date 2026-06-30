@@ -36,7 +36,6 @@ const keyFromUrl = (url: string) => {
   return decodeURIComponent(parsed.pathname.replace(/^\/bucket-name\//, ""));
 };
 
-// Models real R2 semantics: PUT stores per key, GET on a missing key is a 404.
 const createS3Store = () => {
   const store = new Map<string, Buffer>();
   const fetchImpl: FetchLike = async (url, init = {}) => {

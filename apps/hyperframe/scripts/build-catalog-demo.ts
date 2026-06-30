@@ -1,10 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Generate a living gallery episode that exercises EVERY scene-type with its
- * own sample.json params. Writes src/episodes/scene-catalog/scene-spec.json.
- *
- *   bun run scripts/build-catalog-demo.ts
- */
 import fs from "node:fs";
 import path from "node:path";
 import type { SceneTypeManifest } from "@cgaravitoq/spec";
@@ -23,12 +17,16 @@ const types: CatalogType[] = fs
     const dir = path.join(root, d.name, "v1");
     return {
       type: d.name,
-      manifest: JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8")) as SceneTypeManifest,
-      sample: JSON.parse(fs.readFileSync(path.join(dir, "sample.json"), "utf8")) as Record<string, unknown>,
+      manifest: JSON.parse(
+        fs.readFileSync(path.join(dir, "manifest.json"), "utf8"),
+      ) as SceneTypeManifest,
+      sample: JSON.parse(fs.readFileSync(path.join(dir, "sample.json"), "utf8")) as Record<
+        string,
+        unknown
+      >,
     };
   });
 
-// Order: hook first, outro last, the rest alphabetically.
 const order = (t: CatalogType): number => (t.type === "hook" ? 0 : t.type === "outro" ? 2 : 1);
 types.sort((a, b) => order(a) - order(b) || a.type.localeCompare(b.type));
 
@@ -51,4 +49,6 @@ const spec = {
 const dir = path.resolve("src/episodes/scene-catalog");
 fs.mkdirSync(dir, { recursive: true });
 fs.writeFileSync(path.join(dir, "scene-spec.json"), `${JSON.stringify(spec, null, 2)}\n`);
-console.log(`[catalog-demo] wrote ${path.relative(process.cwd(), path.join(dir, "scene-spec.json"))} with ${scenes.length} scenes: ${scenes.map((s) => s.type).join(", ")}`);
+console.log(
+  `[catalog-demo] wrote ${path.relative(process.cwd(), path.join(dir, "scene-spec.json"))} with ${scenes.length} scenes: ${scenes.map((s) => s.type).join(", ")}`,
+);

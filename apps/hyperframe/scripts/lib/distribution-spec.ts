@@ -1,25 +1,3 @@
-/**
- * distribution-spec — the typed contract for per-episode publishing copy
- * (src/episodes/<slug>/distribution.json). Text fields are paste-ready:
- * hashtags live inline in the copy and the validator counts them there.
- * Hard platform limits fail; house-style ranges only warn. An `approved`
- * platform must pin the exact rendered mp4 (renderRef.sha256) so a
- * re-render resets the review.
- *
- * Shape:
- *   {
- *     slug: "kebab-case",
- *     renderRef?: { sha256, key?, runId? },
- *     platforms: {
- *       youtube?:   { status, es?: { title, description }, en?: { ... } },
- *       instagram?: { status, es?: { caption }, en?: { ... } },
- *       tiktok?:    { status, es?: { caption }, en?: { ... } },
- *       linkedin?:  { status, es?: { post }, en?: { ... } }
- *     }
- *   }
- *   status: "draft" | "approved" | "rejected" (per platform)
- */
-
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 const STATUSES = ["draft", "approved", "rejected"];
 const LANGS = ["es", "en"];
@@ -33,7 +11,6 @@ const countHashtags = (s: string): number => (s.match(HASHTAG_RE) ?? []).length;
 const hashtagSet = (s: string): Set<string> =>
   new Set((s.match(HASHTAG_RE) ?? []).map((h) => h.toLowerCase()));
 
-// Verified platform hard limits (docs/research/distribution-publishing.research.json).
 export const PLATFORM_LIMITS = {
   youtube: { titleChars: 100, descriptionUtf8Bytes: 5000, hashtagsMax: 15, forbidden: /[<>]/ },
   instagram: { captionChars: 2200, hashtagsMax: 30 },
@@ -41,8 +18,6 @@ export const PLATFORM_LIMITS = {
   linkedin: { postChars: 3000 },
 };
 
-// House style (publishing-copies.md): channel platforms use 5-7 hashtags;
-// LinkedIn is personal voice (humanizer profile: at most 3). Same set across ES/EN.
 const HASHTAG_STYLE = {
   youtube: { min: 5, max: 7 },
   instagram: { min: 5, max: 7 },
@@ -80,7 +55,12 @@ const checkHashtagStyle = (
   }
 };
 
-type PlatformCheck = (block: CopyBlock, label: string, errors: string[], warnings: string[]) => void;
+type PlatformCheck = (
+  block: CopyBlock,
+  label: string,
+  errors: string[],
+  warnings: string[],
+) => void;
 
 const PLATFORM_CHECKS: Record<string, PlatformCheck> = {
   youtube(block, label, errors, warnings) {
@@ -231,7 +211,10 @@ export function validateDistribution(
     if (present.length === LANGS.length) {
       const sets = present.map((l) => hashtagSet(platformText(block[l] as CopyBlock)));
       const same =
-        sets[0] && sets[1] && sets[0].size === sets[1].size && [...sets[0]].every((h) => sets[1]?.has(h));
+        sets[0] &&
+        sets[1] &&
+        sets[0].size === sets[1].size &&
+        [...sets[0]].every((h) => sets[1]?.has(h));
       if (!same)
         warnings.push(
           `platform "${name}" uses different hashtag sets in ES and EN (house style: same set)`,

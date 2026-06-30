@@ -1,14 +1,3 @@
-/**
- * assemble-episode — turns a scene-spec into ONE monolithic, render-ready
- * index.html. Deterministic: identical spec => identical bytes (1:1).
- *
- * The assembler OWNS the universal parts (shell CSS, background layers, brand
- * corner, audio/captions tracks, the single paused timeline, global init,
- * inter-scene crossfades, track + window allocation, registry). Each scene-type
- * OWNS only its DOM fragment, scoped CSS, and a build_<x>(tl, t, s, p) entrance
- * fn. Composition is a FLAT timeline of absolute-second offsets (the proven,
- * seek-safe pattern) — no nested timelines.
- */
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -44,10 +33,8 @@ const indent = (text: string, n: number): string => {
     .map((line) => (line ? pad + line : line))
     .join("\n");
 };
-// Prevent a text/JSON value from breaking out of the inline <script>.
 const scriptSafe = (json: string): string => json.replace(/<\//g, "<\\/");
 
-// Background scenes get 4,5,6,8,9,10,... (7 reserved for the brand outro).
 function allocateTracks(scenes: ReadonlyArray<{ manifest: SceneTypeManifest }>): number[] {
   const pool: number[] = [];
   for (let i = 4; pool.length < scenes.length + 2 && i < 90; i++) {
@@ -85,8 +72,6 @@ export function assembleEpisode(
   if (Result.isFailure(decoded)) {
     throw new SceneSpecInvalid({ issues: formatParseError(decoded.failure) });
   }
-  // keep the raw object (the schema pass is validation-only) so JSON key order
-  // — and therefore emitted bytes — cannot drift
   const spec = input as SceneSpec;
   const slug = spec.slug;
 
@@ -115,7 +100,6 @@ export function assembleEpisode(
     return { ...s, version, duration, ...inst };
   });
 
-  // sequential windows
   let cursor = 0;
   const windowed = instantiated.map((sc) => {
     const windowStart = round(cursor);
@@ -129,7 +113,6 @@ export function assembleEpisode(
   const tracks = allocateTracks(windowed);
   const scenes = windowed.map((sc, i) => ({ ...sc, track: tracks[i] as number }));
 
-  // sections
   const sections = scenes
     .map((sc) => {
       const inner = indent(sc.html.trimEnd(), 8);
@@ -138,7 +121,6 @@ export function assembleEpisode(
     })
     .join("\n");
 
-  // distinct scene-type css + builder fns (emitted once each)
   const seen = new Set<string>();
   const cssBlocks: string[] = [];
   const builderBlocks: string[] = [];
@@ -153,11 +135,6 @@ export function assembleEpisode(
     builderBlocks.push(sc.timeline.trim());
   }
 
-  // timeline
-  // The opening scene is excluded from the t=0 hide: a hide + show pair on the
-  // same property at the same instant resolves in reverse insertion order when
-  // the playhead moves backwards (GSAP), which blanked the first scene under
-  // capture engines that pre-seek past it (hyperframes >= 0.6.57 volume probe).
   const laterSel = scenes
     .slice(1)
     .map((sc) => `"#scene-${sc.id}"`)
@@ -210,7 +187,6 @@ export function assembleEpisode(
   );
   const timelineJs = indent(lines.join("\n"), 6);
 
-  // fill shell
   let shellCss = fs.readFileSync(path.join(shellDir(hubRoot), "shell.css"), "utf8");
   if (desktop) {
     shellCss += `\n\n${fs.readFileSync(path.join(shellDir(hubRoot), "shell.desktop.css"), "utf8")}`;

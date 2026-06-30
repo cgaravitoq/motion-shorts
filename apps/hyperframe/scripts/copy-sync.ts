@@ -1,14 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Push an episode's distribution.json to R2 and update the source manifest.
- *
- *   bun run copy:sync <slug>
- *
- * Copy approvals happen after the render was published, so the sidecar
- * drifts from the R2 final until re-synced. This uploads ONLY
- * distribution.json (PUT-overwrite) and patches source.remote.json locally
- * and in R2 — no re-render, no full re-publish.
- */
 import fs from "node:fs";
 import path from "node:path";
 import {

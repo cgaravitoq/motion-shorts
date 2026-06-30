@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PACING, MAX_BREAK_MS, injectElevenV3Pauses, injectPauses } from "../script-pacing";
+import { DEFAULT_PACING, injectElevenV3Pauses, injectPauses, MAX_BREAK_MS } from "../script-pacing";
 
 describe("injectPauses", () => {
   it("returns the input unchanged when the script already contains a <break> tag", () => {
@@ -11,7 +11,6 @@ describe("injectPauses", () => {
 
   it("injects a sentence-end break after `.`, `!`, `?` followed by whitespace", () => {
     const result = injectPauses("Uno. Dos! Tres? Cuatro.");
-    // The trailing `Cuatro.` has no whitespace after — skipped.
     expect(result.injected).toBe(3);
     expect(result.syntax).toBe("ssml-break");
     expect(result.text).toMatch(/Uno\. <break time="0\.40s" \/> Dos! <break/);
@@ -19,8 +18,8 @@ describe("injectPauses", () => {
 
   it("does NOT split decimals (period followed by a digit, no whitespace)", () => {
     const result = injectPauses("OpenAI 4.5 sube a 10000 RPS. Y luego cae.");
-    expect(result.injected).toBe(1); // only the first sentence-end period
-    expect(result.text).toContain("4.5 sube"); // decimal preserved
+    expect(result.injected).toBe(1);
+    expect(result.text).toContain("4.5 sube");
   });
 
   it("injects a clause break after `:`, `;`, `—` followed by whitespace", () => {
@@ -50,7 +49,7 @@ describe("injectPauses", () => {
 
   it("disables clause injection when clauseMs=0", () => {
     const result = injectPauses("Uno: dos. Tres.", { clauseMs: 0 });
-    expect(result.injected).toBe(1); // only the sentence break, not the colon
+    expect(result.injected).toBe(1);
   });
 
   it("clamps break durations to [0, MAX_BREAK_MS]", () => {
@@ -58,13 +57,13 @@ describe("injectPauses", () => {
     expect(huge.text).toContain(`<break time="${(MAX_BREAK_MS / 1000).toFixed(2)}s" />`);
 
     const negative = injectPauses("Uno. Dos.", { sentenceMs: -100 });
-    expect(negative.injected).toBe(0); // clamps to 0 → disabled
+    expect(negative.injected).toBe(0);
   });
 
   it("handles multi-paragraph text (newlines count as whitespace)", () => {
     const text = "Frase uno.\n\nFrase dos.\n";
     const result = injectPauses(text);
-    expect(result.injected).toBe(2); // both periods are followed by whitespace
+    expect(result.injected).toBe(2);
   });
 
   it("DEFAULT_PACING is sentence=400ms, clause=250ms", () => {

@@ -1,32 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Desktop 16:9 safe-zone linter for `index.desktop.html` episode variants.
- *
- * Rationale: Hyperframes' upstream `bunx hyperframes lint` doesn't know about
- * the 16:9 desktop variant we ship alongside the canonical 9:16 short. Rather
- * than forking the upstream package, we add a local script — same pattern as
- * `lint-seek-safe.ts`. Scope-tier-1 (this file): stage box dimension check,
- * title-safe inset for `data-critical` elements, YouTube end-screen +
- * CTA dead-zone violations.
- *
- * Scope-tier-2: action-safe (90%) warnings, lower-third collision warnings,
- * and desktop readability font-size errors.
- *
- * Episodes without `index.desktop.html` are vacuously green — the linter
- * skips them rather than failing.
- *
- * Stage contract (per docs/formats.md):
- *   <div class="stage" data-format="desktop-1080p"
- *        data-width="1920" data-height="1080" data-fps="30|60">
- *
- * Critical elements inside the stage MUST stay within title-safe (inner 80%):
- *   left/right inset >= 192px (1920 * 0.10)
- *   top/bottom inset >= 108px (1080 * 0.10)
- *
- * YouTube dead zones (no critical content):
- *   end-screen bar: bottom 120 px (left:0, right:0, bottom:0, height:120)
- *   CTA/info-card:  bottom-right 160×160 px
- */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
@@ -34,11 +6,11 @@ const DESKTOP_WIDTH = 1920;
 const DESKTOP_HEIGHT = 1080;
 const DESKTOP_FPS_VALUES = ["30", "60"];
 
-const TITLE_SAFE_INSET_X = Math.round(DESKTOP_WIDTH * 0.1); // 192
-const TITLE_SAFE_INSET_Y = Math.round(DESKTOP_HEIGHT * 0.1); // 108
-const ACTION_SAFE_INSET_X = Math.round(DESKTOP_WIDTH * 0.05); // 96
-const ACTION_SAFE_INSET_Y = Math.round(DESKTOP_HEIGHT * 0.05); // 54
-const LOWER_THIRD_HEIGHT = Math.round(DESKTOP_HEIGHT * 0.25); // 270
+const TITLE_SAFE_INSET_X = Math.round(DESKTOP_WIDTH * 0.1);
+const TITLE_SAFE_INSET_Y = Math.round(DESKTOP_HEIGHT * 0.1);
+const ACTION_SAFE_INSET_X = Math.round(DESKTOP_WIDTH * 0.05);
+const ACTION_SAFE_INSET_Y = Math.round(DESKTOP_HEIGHT * 0.05);
+const LOWER_THIRD_HEIGHT = Math.round(DESKTOP_HEIGHT * 0.25);
 
 const ENDSCREEN_BAND_HEIGHT = 120;
 const CTA_SIZE = 160;
@@ -103,10 +75,6 @@ interface Target {
   path: string;
 }
 
-/**
- * Extract attributes from a single HTML opening tag string.
- * Returns a Map of lowercased name -> raw value (unquoted).
- */
 function parseAttrs(tag: string): Attrs {
   const attrs: Attrs = new Map();
   const re = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/g;
@@ -118,10 +86,6 @@ function parseAttrs(tag: string): Attrs {
   return attrs;
 }
 
-/**
- * Find the stage <div data-composition-id=...> opening tag and parse its attrs.
- * Returns { tag, attrs, offset } or null when not found.
- */
 function findStageTag(html: string): StageTag | null {
   const re = /<div\b[^>]*\bdata-composition-id="[^"]+"[^>]*>/;
   const m = html.match(re);
@@ -133,10 +97,6 @@ function offsetToLine(html: string, offset: number): number {
   return html.slice(0, offset).split("\n").length;
 }
 
-/**
- * Find every element opening tag that has data-critical="true".
- * Returns [{ tag, attrs, line, offset }].
- */
 function findCriticalElements(html: string): CriticalElement[] {
   const out: CriticalElement[] = [];
   const re = /<[a-zA-Z][^>]*\bdata-critical=["']true["'][^>]*>/g;
@@ -166,9 +126,6 @@ function findTrackedElements(html: string): TrackedElement[] {
   return out;
 }
 
-/**
- * Parse a CSS-ish inline-style attribute into a Map of lowercased prop -> value.
- */
 function parseInlineStyle(style: string | undefined): Style {
   const out: Style = new Map();
   if (!style) return out;
@@ -222,14 +179,11 @@ function computedStyleFor(element: TrackedElement, styleRules: StyleRule[]): Sty
     if (!selectorMatchesElement(rule.selector, element)) continue;
     for (const [prop, value] of rule.declarations) out.set(prop, value);
   }
-  for (const [prop, value] of parseInlineStyle(element.attrs.get("style") || "")) out.set(prop, value);
+  for (const [prop, value] of parseInlineStyle(element.attrs.get("style") || ""))
+    out.set(prop, value);
   return out;
 }
 
-/**
- * Parse a CSS length value (px, %, calc(...)) into a pixel number relative to a
- * given axis size. Returns NaN for things we cannot evaluate statically.
- */
 function lengthToPx(value: string | undefined | null, axisSize: number): number {
   if (value === undefined || value === null) return Number.NaN;
   const v = String(value).trim().toLowerCase();
@@ -239,8 +193,6 @@ function lengthToPx(value: string | undefined | null, axisSize: number): number 
     const pct = Number.parseFloat(v);
     return Number.isFinite(pct) ? (pct / 100) * axisSize : Number.NaN;
   }
-  // Bare number — treat as px (CSS does NOT, but inline styles in our templates
-  // almost always end in px; a bare number is most likely a copy-paste bug).
   const n = Number.parseFloat(v);
   return Number.isFinite(n) ? n : Number.NaN;
 }
@@ -248,7 +200,6 @@ function lengthToPx(value: string | undefined | null, axisSize: number): number 
 function fontSizeToPx(value: string | undefined | null): number {
   if (value === undefined || value === null) return Number.NaN;
   const v = String(value).trim().toLowerCase();
-  // TODO: Tier-2 intentionally evaluates px-only font sizes; rem/em/vw/vh need cascade + viewport semantics.
   if (!v.endsWith("px")) return Number.NaN;
   const n = Number.parseFloat(v);
   return Number.isFinite(n) ? n : Number.NaN;
@@ -261,7 +212,8 @@ function expandInsetShorthand(style: Style): Style {
   const [top, right = top, bottom = top, left = right] = tokens;
   const sides: Record<string, string | undefined> = { top, right, bottom, left };
   for (const [side, value] of Object.entries(sides)) {
-    if (!out.has(side) && value !== undefined && value.toLowerCase() !== "auto") out.set(side, value);
+    if (!out.has(side) && value !== undefined && value.toLowerCase() !== "auto")
+      out.set(side, value);
   }
   return out;
 }
@@ -303,7 +255,12 @@ function hasClassMatch(attrs: Attrs, re: RegExp): boolean {
 
 function isExemptLowerThird(element: TrackedElement): boolean {
   const id = element.attrs.get("id") || "";
-  return id === "captions" || id === "brand-corner" || classList(element.attrs).includes("caption") || classList(element.attrs).includes("lower-third-safe");
+  return (
+    id === "captions" ||
+    id === "brand-corner" ||
+    classList(element.attrs).includes("caption") ||
+    classList(element.attrs).includes("lower-third-safe")
+  );
 }
 
 function isExemptActionSafe(element: TrackedElement): boolean {
@@ -317,19 +274,18 @@ function isExemptActionSafe(element: TrackedElement): boolean {
 }
 
 function isTrackedText(element: TrackedElement): boolean {
-  return ["h1", "h2", "h3"].includes(element.tagName) || hasClassMatch(element.attrs, /headline|title|caption|copy|text|subcopy|label/i);
+  return (
+    ["h1", "h2", "h3"].includes(element.tagName) ||
+    hasClassMatch(element.attrs, /headline|title|caption|copy|text|subcopy|label/i)
+  );
 }
 
 function isHeadline(element: TrackedElement): boolean {
-  return ["h1", "h2"].includes(element.tagName) || hasClassMatch(element.attrs, /headline|hero|title/i);
+  return (
+    ["h1", "h2"].includes(element.tagName) || hasClassMatch(element.attrs, /headline|hero|title/i)
+  );
 }
 
-/**
- * Best-effort bounding box for a critical element from inline style attribute.
- * Returns { left, top, right, bottom, width, height } where each value is in
- * stage pixels OR NaN when undetermined. We deliberately keep this conservative:
- * if a coordinate is undetermined, the rule that depends on it is skipped.
- */
 function inlineBox(attrs: Attrs): Box {
   const style = parseInlineStyle(attrs.get("style") || "");
   const left = lengthToPx(style.get("left"), DESKTOP_WIDTH);
@@ -353,8 +309,7 @@ type RuleId =
 const RULES: Record<RuleId, RuleMeta> = {
   "stage-dimensions": {
     severity: "error",
-    message:
-      `desktop-1080p stage must declare data-width="${DESKTOP_WIDTH}", data-height="${DESKTOP_HEIGHT}", data-fps="30" or "60", data-format="desktop-1080p".`,
+    message: `desktop-1080p stage must declare data-width="${DESKTOP_WIDTH}", data-height="${DESKTOP_HEIGHT}", data-fps="30" or "60", data-format="desktop-1080p".`,
   },
   "title-safe-inset": {
     severity: "error",
@@ -418,10 +373,6 @@ function checkCriticalElement(element: CriticalElement): Violation[] {
   const box = inlineBox(attrs);
   const violations: Violation[] = [];
 
-  // Title-safe inset: at least one explicit inset side per axis must satisfy
-  // the band. If neither side is determinable we skip — author can mark
-  // `data-critical` on layout containers without inline coords and the linter
-  // will not produce false positives.
   const xOK =
     (Number.isFinite(box.left) && box.left >= TITLE_SAFE_INSET_X) ||
     (Number.isFinite(box.right) && box.right >= TITLE_SAFE_INSET_X);
@@ -450,8 +401,6 @@ function checkCriticalElement(element: CriticalElement): Violation[] {
     });
   }
 
-  // YouTube end-screen dead zone — bottom 120 px.
-  // Element overlaps if its bottom inset is < 120 OR (height + top) > stageH - 120.
   let overlapsEndscreen = false;
   if (Number.isFinite(box.bottom) && box.bottom < ENDSCREEN_BAND_HEIGHT) {
     overlapsEndscreen = true;
@@ -468,14 +417,16 @@ function checkCriticalElement(element: CriticalElement): Violation[] {
     });
   }
 
-  // YouTube CTA/info-card dead zone — bottom-right 160×160 px.
-  // Element overlaps if (right < 160 AND bottom < 160) OR equivalent via
-  // explicit coordinates that put any corner inside the box.
   let overlapsCta = false;
   if (Number.isFinite(box.right) && Number.isFinite(box.bottom)) {
     if (box.right < CTA_SIZE && box.bottom < CTA_SIZE) overlapsCta = true;
   }
-  if (Number.isFinite(box.left) && Number.isFinite(box.width) && Number.isFinite(box.top) && Number.isFinite(box.height)) {
+  if (
+    Number.isFinite(box.left) &&
+    Number.isFinite(box.width) &&
+    Number.isFinite(box.top) &&
+    Number.isFinite(box.height)
+  ) {
     const elRight = box.left + box.width;
     const elBottom = box.top + box.height;
     if (elRight > DESKTOP_WIDTH - CTA_SIZE && elBottom > DESKTOP_HEIGHT - CTA_SIZE) {
@@ -500,19 +451,49 @@ function checkTrackedElement(element: TrackedElement, styleRules: StyleRule[]): 
   const violations: Violation[] = [];
   const id = element.attrs.get("id") || element.tagName;
 
-  // Full-frame structural background/scene layers may intentionally touch the stage edge.
-  const positioningProps = ["top", "left", "right", "bottom", "inset", "width", "height", "transform"];
+  const positioningProps = [
+    "top",
+    "left",
+    "right",
+    "bottom",
+    "inset",
+    "width",
+    "height",
+    "transform",
+  ];
   if (!isExemptActionSafe(element) && positioningProps.some((prop) => style.has(prop))) {
     const box = cssBox(style);
     const translate = translateToPx(style.get("transform"));
-    const left = Number.isFinite(box.left) && Number.isFinite(translate.x) ? box.left + translate.x : Number.NaN;
-    const top = Number.isFinite(box.top) && Number.isFinite(translate.y) ? box.top + translate.y : Number.NaN;
-    const right = Number.isFinite(box.right) && Number.isFinite(translate.x) ? box.right - translate.x : Number.NaN;
-    const bottom = Number.isFinite(box.bottom) && Number.isFinite(translate.y) ? box.bottom - translate.y : Number.NaN;
-    const computedRight = Number.isFinite(left) && Number.isFinite(box.width) ? DESKTOP_WIDTH - (left + box.width) : right;
-    const computedBottom = Number.isFinite(top) && Number.isFinite(box.height) ? DESKTOP_HEIGHT - (top + box.height) : bottom;
-    const computedLeft = Number.isFinite(right) && Number.isFinite(box.width) ? DESKTOP_WIDTH - (right + box.width) : left;
-    const computedTop = Number.isFinite(bottom) && Number.isFinite(box.height) ? DESKTOP_HEIGHT - (bottom + box.height) : top;
+    const left =
+      Number.isFinite(box.left) && Number.isFinite(translate.x)
+        ? box.left + translate.x
+        : Number.NaN;
+    const top =
+      Number.isFinite(box.top) && Number.isFinite(translate.y) ? box.top + translate.y : Number.NaN;
+    const right =
+      Number.isFinite(box.right) && Number.isFinite(translate.x)
+        ? box.right - translate.x
+        : Number.NaN;
+    const bottom =
+      Number.isFinite(box.bottom) && Number.isFinite(translate.y)
+        ? box.bottom - translate.y
+        : Number.NaN;
+    const computedRight =
+      Number.isFinite(left) && Number.isFinite(box.width)
+        ? DESKTOP_WIDTH - (left + box.width)
+        : right;
+    const computedBottom =
+      Number.isFinite(top) && Number.isFinite(box.height)
+        ? DESKTOP_HEIGHT - (top + box.height)
+        : bottom;
+    const computedLeft =
+      Number.isFinite(right) && Number.isFinite(box.width)
+        ? DESKTOP_WIDTH - (right + box.width)
+        : left;
+    const computedTop =
+      Number.isFinite(bottom) && Number.isFinite(box.height)
+        ? DESKTOP_HEIGHT - (bottom + box.height)
+        : top;
 
     if (
       (Number.isFinite(computedLeft) && computedLeft < ACTION_SAFE_INSET_X) ||
@@ -534,8 +515,12 @@ function checkTrackedElement(element: TrackedElement, styleRules: StyleRule[]): 
   if (!isExemptLowerThird(element) && isTrackedText(element)) {
     const box = cssBox(style);
     const translate = translateToPx(style.get("transform"));
-    const bottom = Number.isFinite(box.bottom) && Number.isFinite(translate.y) ? box.bottom - translate.y : Number.NaN;
-    const top = Number.isFinite(box.top) && Number.isFinite(translate.y) ? box.top + translate.y : Number.NaN;
+    const bottom =
+      Number.isFinite(box.bottom) && Number.isFinite(translate.y)
+        ? box.bottom - translate.y
+        : Number.NaN;
+    const top =
+      Number.isFinite(box.top) && Number.isFinite(translate.y) ? box.top + translate.y : Number.NaN;
     const effectiveBottom = Number.isFinite(bottom)
       ? bottom
       : Number.isFinite(top) && Number.isFinite(box.height)
@@ -546,7 +531,8 @@ function checkTrackedElement(element: TrackedElement, styleRules: StyleRule[]): 
         ruleId: "lower-third-collision",
         severity: RULES["lower-third-collision"].severity,
         message: `${RULES["lower-third-collision"].message} Found bottom=${effectiveBottom}px on ${id}.`,
-        suggestion: "Move tracked text above the lower third or add class=\"lower-third-safe\" for intentional overlays.",
+        suggestion:
+          'Move tracked text above the lower third or add class="lower-third-safe" for intentional overlays.',
         line: element.line,
         col: 1,
       });
@@ -571,9 +557,6 @@ function checkTrackedElement(element: TrackedElement, styleRules: StyleRule[]): 
   return violations;
 }
 
-/**
- * Lint a single desktop-variant HTML file. Returns an array of violations.
- */
 export function lintDesktopHtml(html: string): Violation[] {
   const violations: Violation[] = [];
   const stage = findStageTag(html);
@@ -612,7 +595,7 @@ function findDesktopEpisodes(episodesDir: string): Target[] {
     const dir = path.join(episodesDir, name);
     if (!statSync(dir).isDirectory()) continue;
     const html = path.join(dir, DESKTOP_INDEX);
-    if (!existsSync(html)) continue; // vacuously green — no desktop variant
+    if (!existsSync(html)) continue;
     out.push({ slug: name, path: html });
   }
   return out;

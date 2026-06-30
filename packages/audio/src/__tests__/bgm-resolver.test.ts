@@ -53,13 +53,14 @@ describe("resolveBgmPath", () => {
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   });
 
-  it.each(["/abs/path.mp3", "./relative.mp3", "relative/path.mp3"])(
-    "resolves local path %s without R2",
-    async (input) => {
-      await expect(resolveBgmPath(input)).resolves.toBe(path.resolve(input));
-      expect(r2Mocks.getObject).not.toHaveBeenCalled();
-    },
-  );
+  it.each([
+    "/abs/path.mp3",
+    "./relative.mp3",
+    "relative/path.mp3",
+  ])("resolves local path %s without R2", async (input) => {
+    await expect(resolveBgmPath(input)).resolves.toBe(path.resolve(input));
+    expect(r2Mocks.getObject).not.toHaveBeenCalled();
+  });
 
   it("returns the cache path on bgm cache hit without R2", async () => {
     const cachedPath = path.join(tmpRoot, "warm-cinematic.mp3");
@@ -73,7 +74,10 @@ describe("resolveBgmPath", () => {
   it("hydrates a bgm cache miss from R2", async () => {
     mockEnv.R2_BUCKET = "motion-shorts";
     r2Mocks.isR2Configured.mockReturnValue(true);
-    r2Mocks.getObject.mockResolvedValue({ body: Buffer.from("r2-audio"), contentType: "audio/mpeg" });
+    r2Mocks.getObject.mockResolvedValue({
+      body: Buffer.from("r2-audio"),
+      contentType: "audio/mpeg",
+    });
 
     const resolved = await resolveBgmPath("bgm:warm-cinematic");
 
@@ -86,25 +90,32 @@ describe("resolveBgmPath", () => {
     });
   });
 
-  it.each(["bgm:../../etc/passwd", "bgm:foo/bar", "bgm:.."])(
-    "rejects unsafe bgm track name %s before hydrating",
-    async (input) => {
-      mockEnv.R2_BUCKET = "motion-shorts";
-      r2Mocks.isR2Configured.mockReturnValue(true);
-      r2Mocks.getObject.mockResolvedValue({ body: Buffer.from("r2-audio"), contentType: "audio/mpeg" });
+  it.each([
+    "bgm:../../etc/passwd",
+    "bgm:foo/bar",
+    "bgm:..",
+  ])("rejects unsafe bgm track name %s before hydrating", async (input) => {
+    mockEnv.R2_BUCKET = "motion-shorts";
+    r2Mocks.isR2Configured.mockReturnValue(true);
+    r2Mocks.getObject.mockResolvedValue({
+      body: Buffer.from("r2-audio"),
+      contentType: "audio/mpeg",
+    });
 
-      await expect(resolveBgmPath(input)).rejects.toThrow(
-        /Invalid BGM track name .* Allowed characters: letters, digits, dot, dash, underscore\./,
-      );
-      expect(r2Mocks.getObject).not.toHaveBeenCalled();
-      expect(fs.readdirSync(tmpRoot)).toEqual([]);
-    },
-  );
+    await expect(resolveBgmPath(input)).rejects.toThrow(
+      /Invalid BGM track name .* Allowed characters: letters, digits, dot, dash, underscore\./,
+    );
+    expect(r2Mocks.getObject).not.toHaveBeenCalled();
+    expect(fs.readdirSync(tmpRoot)).toEqual([]);
+  });
 
   it("allows dotted safe bgm track names", async () => {
     mockEnv.R2_BUCKET = "motion-shorts";
     r2Mocks.isR2Configured.mockReturnValue(true);
-    r2Mocks.getObject.mockResolvedValue({ body: Buffer.from("r2-audio"), contentType: "audio/mpeg" });
+    r2Mocks.getObject.mockResolvedValue({
+      body: Buffer.from("r2-audio"),
+      contentType: "audio/mpeg",
+    });
 
     const resolved = await resolveBgmPath("bgm:warm-cinematic.v2");
 

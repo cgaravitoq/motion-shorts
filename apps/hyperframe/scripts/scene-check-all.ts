@@ -1,13 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Validate scene-spec.json files against the scene-type manifests.
- *
- *   bun run scripts/scene-check-all.ts                 # all episodes
- *   bun run scripts/scene-check-all.ts <spec> [<spec>] # specific spec files
- *
- * Exits non-zero if any spec is invalid. Used by the pre-commit hook on staged
- * scene-spec.json files.
- */
 import fs from "node:fs";
 import path from "node:path";
 import { validateSceneSpec } from "./lib/scene-spec";

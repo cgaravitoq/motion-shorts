@@ -2,15 +2,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
-// AGENTS.md rule 7 + docs/rules.md rule 7: Hyperframes seeks the timeline
-// frame-by-frame and never plays it. Tween-level callbacks (onStart, onComplete,
-// onRepeat), tl.call(), and any async-callback construction (setTimeout,
-// setInterval, requestAnimationFrame) do not fire during seek. The timeline
-// must be `paused: true` and registered in window.__timelines["<id>"].
-//
-// This linter scans inline <script> blocks inside each episode's index.html
-// (rule 1: monolithic single-file) and flags violations before render time.
-
 type Severity = "error" | "warning";
 
 interface Rule {
@@ -34,15 +25,12 @@ const RULES: Record<string, Rule> = {
     severity: "error",
     message:
       "Tween-level callback does not fire during seek (Hyperframes frame-seeks, never plays). Use tl.set(target, props, t) for discrete transitions.",
-    // Match tween-config callback keys. onUpdate is seek-safe and excluded.
     pattern: /\b(onStart|onComplete|onRepeat|onReverseComplete)\s*:/g,
   },
   "tl-call": {
     severity: "error",
     message:
       "tl.call() does not fire during seek. Use tl.set(target, props, t) (zero-duration tween) for discrete transitions.",
-    // .call( on a chained timeline expression. Avoid Function.prototype.call false
-    // positives by anchoring to identifiers that look like timeline references.
     pattern: /\b(?:tl|timeline|master|mainTimeline)\s*\.\s*call\s*\(/g,
   },
   "repeat-infinite": {
@@ -56,7 +44,6 @@ const RULES: Record<string, Rule> = {
     message:
       "repeat: <n> with n > 0 is seek-safe but rarely intended for shorts; double-check this is deliberate.",
     pattern: /\brepeat\s*:\s*(\d+)\b/g,
-    // Filter out repeat: 0 (no-op) — only flag positive integers.
     filter: (match) => Number.parseInt(match[1] ?? "", 10) > 0,
   },
   "async-callback": {
@@ -73,11 +60,6 @@ interface InlineScript {
   startLine: number;
 }
 
-/**
- * Extract inline <script> blocks from HTML text.
- * Skips scripts with `src=` (external) and `type="application/json"` (captions-data).
- * Returns { content, startOffset, startLine } per block.
- */
 export function extractInlineScripts(html: string): InlineScript[] {
   const blocks: InlineScript[] = [];
   const openRe = /<script\b([^>]*)>/gi;
@@ -95,10 +77,6 @@ export function extractInlineScripts(html: string): InlineScript[] {
   return blocks;
 }
 
-/**
- * Replace comment characters with spaces so regex offsets remain stable but
- * comments cannot match patterns.
- */
 type StripState = "code" | "line-comment" | "block-comment" | "single" | "double" | "template";
 
 export function stripComments(source: string): string {
@@ -193,10 +171,6 @@ function offsetToLineCol(source: string, offset: number): { line: number; col: n
   return { line, col };
 }
 
-/**
- * Scan a single inline-script block (already comment-stripped) for rule violations.
- * Returns an array of { ruleId, severity, message, line, col } relative to the file.
- */
 function scanBlock(blockText: string, blockStartOffset: number, fullHtml: string): Violation[] {
   const violations: Violation[] = [];
   for (const [ruleId, rule] of Object.entries(RULES)) {
@@ -221,11 +195,6 @@ function scanBlock(blockText: string, blockStartOffset: number, fullHtml: string
 const TIMELINE_CONSTRUCTOR_RE = /\bgsap\s*\.\s*timeline\s*\(\s*(\{[^}]*\}|)\s*\)/g;
 const REGISTRY_RE = /\bwindow\s*\.\s*__timelines\s*\[/;
 
-/**
- * Whole-script checks: paused:true on gsap.timeline(), and registry assignment.
- * These are episode-wide (one timeline per file) so we check on the joined
- * stripped source of all inline scripts.
- */
 interface StrippedScript {
   startOffset: number;
   stripped: string;
@@ -239,7 +208,6 @@ function scanWholeFile(strippedScripts: StrippedScript[], lineMap: LineMap): Vio
   const violations: Violation[] = [];
   const joined = strippedScripts.map((b) => b.stripped).join("\n");
 
-  // Check every gsap.timeline(...) call has paused: true in its config object.
   const re = new RegExp(TIMELINE_CONSTRUCTOR_RE.source, TIMELINE_CONSTRUCTOR_RE.flags);
   let foundTimeline = false;
   for (const m of joined.matchAll(re)) {
@@ -287,15 +255,11 @@ function mapJoinedOffset(
       const localOffset = joinedOffset - cursor;
       return offsetToLineCol(lineMap.fullHtml, blk.startOffset + localOffset);
     }
-    // +1 for the "\n" we inserted between blocks during join.
     cursor += length + 1;
   }
   return { line: 1, col: 1 };
 }
 
-/**
- * Lint a single HTML file. Returns an array of violation records.
- */
 export function lintHtml(html: string): Violation[] {
   const blocks = extractInlineScripts(html);
   const strippedScripts: StrippedScript[] = blocks.map((b) => ({
@@ -309,7 +273,6 @@ export function lintHtml(html: string): Violation[] {
   }
   violations.push(...scanWholeFile(strippedScripts, { fullHtml: html }));
 
-  // Sort by line, col for stable output.
   violations.sort((a, b) => a.line - b.line || a.col - b.col);
   return violations;
 }
@@ -327,8 +290,6 @@ function findEpisodes(episodesDir: string): Target[] {
     if (!statSync(dir).isDirectory()) continue;
     const html = path.join(dir, "index.html");
     if (existsSync(html)) out.push({ slug: name, path: html });
-    // 16:9 desktop variant — same monolithic single-file contract, must also
-    // be seek-safe. Episodes without one are silently skipped.
     const desktopHtml = path.join(dir, "index.desktop.html");
     if (existsSync(desktopHtml)) out.push({ slug: `${name} (desktop)`, path: desktopHtml });
   }

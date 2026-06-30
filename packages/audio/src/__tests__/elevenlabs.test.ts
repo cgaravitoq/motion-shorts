@@ -24,8 +24,6 @@ const makeStream = (bytes: number[]): ReadableStream<Uint8Array> =>
 
 const stubClient = (stream: ReadableStream<Uint8Array>) => {
   const convert = vi.fn().mockResolvedValue(stream);
-  // The provider only touches `textToSpeech.convert`, so a partial stub cast
-  // through `unknown` keeps tests honest without recreating the SDK surface.
   const client = { textToSpeech: { convert } } as unknown as ElevenLabsClient;
   return { client, convert };
 };
@@ -47,7 +45,7 @@ describe("ElevenLabsTTSProvider", () => {
   });
 
   it("synthesize() returns a Buffer with the bytes streamed from the SDK", async () => {
-    const { client, convert } = stubClient(makeStream([0x49, 0x44, 0x33])); // "ID3" mp3 header
+    const { client, convert } = stubClient(makeStream([0x49, 0x44, 0x33]));
     const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
 
     const buffer = await provider.synthesize("hola mundo", { lang: "es" });
@@ -103,7 +101,9 @@ describe("ElevenLabsTTSProvider", () => {
   it("resolveDefaults honours explicit voice and model", () => {
     const { client } = stubClient(makeStream([0]));
     const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
-    expect(provider.resolveDefaults({ lang: "es", voice: "custom-voice-id", model: "custom-model" })).toEqual({
+    expect(
+      provider.resolveDefaults({ lang: "es", voice: "custom-voice-id", model: "custom-model" }),
+    ).toEqual({
       voiceId: "custom-voice-id",
       modelId: "custom-model",
     });
@@ -169,8 +169,6 @@ describe("ElevenLabsTTSProvider", () => {
       }),
     );
     const provider = new ElevenLabsTTSProvider({ apiKey: "test", client });
-    await expect(provider.synthesize("hola", { lang: "es" })).rejects.toThrow(
-      /empty audio stream/,
-    );
+    await expect(provider.synthesize("hola", { lang: "es" })).rejects.toThrow(/empty audio stream/);
   });
 });

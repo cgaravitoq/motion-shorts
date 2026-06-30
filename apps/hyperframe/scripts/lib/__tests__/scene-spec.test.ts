@@ -18,8 +18,6 @@ type FixtureSpec = {
   scenes: [FixtureScene, FixtureScene, FixtureScene];
 };
 
-// Inline fixture against the TRACKED scene-type manifests (templates/scenes):
-// episodes under src/episodes are local working copies, never in git/CI.
 const realSpec = (): FixtureSpec => ({
   slug: "contract-fixture",
   lang: "es",

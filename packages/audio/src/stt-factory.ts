@@ -9,8 +9,6 @@ const isKnown = (name: string): name is STTProviderName =>
   name === "elevenlabs" || name === "hyperframes-transcribe";
 
 export const getSTTProvider = (name?: string): STTProvider => {
-  // `||` (not `??`) so an empty STT_PROVIDER env entry falls back instead of
-  // failing — `dotenv` and `vi.stubEnv("...", "")` both produce empty strings.
   const resolved = (name || env.STT_PROVIDER).toLowerCase();
   if (!isKnown(resolved)) {
     throw new Error(

@@ -36,10 +36,6 @@ export function loadBrandPack(root: string, brandSlug: string, caller: string): 
   return brand;
 }
 
-// Object.entries on JSON.parse output preserves the file's key insertion
-// order, so identical brand.json bytes => identical CSS block bytes. Font
-// files resolve relative to the episode's index.html (assets/<file>), so the
-// woff2 must live in the consuming episode's assets/ directory.
 export function brandVarsStyleBlock(brand: BrandPack): string {
   const cssVars = Object.entries(brand.palette ?? {})
     .map(([key, value]) => `  --brand-${key}: ${value};`)

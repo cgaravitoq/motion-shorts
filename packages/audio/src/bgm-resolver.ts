@@ -1,7 +1,7 @@
-import { getObject, isR2Configured } from "@cgaravitoq/r2-client";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { getObject, isR2Configured } from "@cgaravitoq/r2-client";
 import { env } from "./env";
 
 const DEFAULT_BGM_CACHE_SUBDIR = path.join("motion-shorts", "bgm");
@@ -34,18 +34,18 @@ const requireBgmR2Config = (trackName: string, key: string): string => {
   return bucket;
 };
 
-/**
- * Resolve a --bgm argument to a local file path.
- *
- * - "bgm:<name>" → hydrate from R2 bgm/<name>.mp3 into ~/.cache/motion-shorts/bgm/<name>.mp3
- * - "./path" or "/abs/path" or "path/relative.mp3" → return path unchanged (after resolve)
- */
 export async function resolveBgmPath(arg: string): Promise<string> {
   if (!arg.startsWith("bgm:")) return path.resolve(arg);
 
   const trackName = arg.slice("bgm:".length).trim();
-  if (!trackName) throw new Error("BGM track name is required after bgm:. Example: --bgm=bgm:warm-cinematic");
-  if (!/^[A-Za-z0-9._-]+$/.test(trackName) || trackName === "." || trackName.startsWith(".") || trackName.includes("..")) {
+  if (!trackName)
+    throw new Error("BGM track name is required after bgm:. Example: --bgm=bgm:warm-cinematic");
+  if (
+    !/^[A-Za-z0-9._-]+$/.test(trackName) ||
+    trackName === "." ||
+    trackName.startsWith(".") ||
+    trackName.includes("..")
+  ) {
     throw new Error(
       `Invalid BGM track name "${trackName}". Allowed characters: letters, digits, dot, dash, underscore.`,
     );
@@ -61,7 +61,6 @@ export async function resolveBgmPath(arg: string): Promise<string> {
 
   fs.mkdirSync(path.dirname(cachePath), { recursive: true });
   const tmpPath = `${cachePath}.tmp`;
-  // Write then rename so interrupted downloads never leave a partial cache hit behind.
   fs.writeFileSync(tmpPath, object.body);
   fs.renameSync(tmpPath, cachePath);
   return cachePath;

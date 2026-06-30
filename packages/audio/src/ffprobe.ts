@@ -3,16 +3,6 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-/**
- * Read a media file's duration in seconds via ffprobe.
- * Returns -1 when ffprobe is unavailable or the probe fails. Logs a warning
- * with stderr so a missing ffmpeg or a corrupt input is debuggable instead
- * of a silent -1.
- *
- * Async + non-blocking: uses execFile (not spawnSync) so server-side
- * consumers don't stall the event loop. Argument array (no shell) keeps
- * paths with `"`, `;`, `$()`, etc. safe.
- */
 export const getAudioDurationSeconds = async (audioPath: string): Promise<number> => {
   try {
     const { stdout } = await execFileAsync("ffprobe", [
