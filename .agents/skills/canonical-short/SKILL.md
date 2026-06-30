@@ -39,7 +39,7 @@ Seventeen scene-types live under `templates/scenes/<type>/v1/`:
 
 Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `line-chart.series` 1-3, `progress-ring.rings` 1-3, `decision-tree.branches` 2-3, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12).
 
-To learn the exact slots for a type, run `get_scene_type` (MCP) or read `templates/scenes/<type>/v1/manifest.json`. To list/preview all types: `bun run scene:gallery` (or MCP `list_scene_types`). Don't guess slot names — read the manifest.
+To learn the exact slots for a type, read `templates/scenes/<type>/v1/manifest.json`. To list/preview all types: `bun run scene:gallery`. Don't guess slot names — read the manifest.
 
 ### Visual-first by default
 
@@ -52,7 +52,7 @@ People retain what they see, and the narration + captions already deliver the wo
 
 ## Intent → scene skeleton
 
-Classify the short into exactly one intent — its primary visual job — then start from that intent's skeleton. `recommend_scene_types({ intent })` (MCP) returns the same spine at runtime plus every scene-type tagged for the intent; this table is the at-a-glance source.
+Classify the short into exactly one intent — its primary visual job — then start from that intent's skeleton. `bun run scene:gallery` lists every scene-type and browsing `templates/scenes/` shows which fit each intent; this table is the at-a-glance source.
 
 | Intent | When | Starter skeleton |
 |--------|------|------------------|
@@ -74,8 +74,8 @@ Classify the short into exactly one intent — its primary visual job — then s
    |
 3. Generate audio (bun run audio ...)         -- Gate 2: AUDIBLE CHECK, user approves voice.mp3
    |
-4. Scaffold + author scene-spec.json          -- recommend_scene_types -> new:episode --intent
-   |                                              -> fill slots (per get_scene_type) -> assemble
+4. Scaffold + author scene-spec.json          -- scene:gallery -> new:episode --intent
+   |                                              -> fill slots (per manifest.json) -> assemble
    |
 5. PER-SCENE visual QA (bun run scripts/scene-qa.ts)  -- Gate 3 (looped): user approves/rejects
    |                                              EACH scene; iterate only rejected scenes
@@ -87,7 +87,7 @@ Classify the short into exactly one intent — its primary visual job — then s
 
 **Gate 3 replaces the old "render the whole mp4 then eyeball" gate.** Reject loops re-QA only the changed scenes (`--scenes=<id>`), never the whole short.
 
-**Every gate is reviewed inside the session — the user never opens repo folders.** Gate 1: paste the candidate scripts inline in the chat, including `<break>` tags, so pacing is visible. Gate 2: deliver `voice.mp3` into the chat (plus the STT transcript as a pronunciation proxy). Gate 3: send `renders/<slug>-qa/contact-sheet.jpg` into the chat (the MCP `scene_qa` tool returns it as an inline image). Gate 4: deliver the mp4 into the chat.
+**Every gate is reviewed inside the session — the user never opens repo folders.** Gate 1: paste the candidate scripts inline in the chat, including `<break>` tags, so pacing is visible. Gate 2: deliver `voice.mp3` into the chat (plus the STT transcript as a pronunciation proxy). Gate 3: send `renders/<slug>-qa/contact-sheet.jpg` into the chat (`bun run scripts/scene-qa.ts <slug>` writes it). Gate 4: deliver the mp4 into the chat.
 
 ## Voice + TTS gotchas
 
@@ -130,7 +130,7 @@ After `bun run audio`, run `ffplay -nodisp -autoexit public/voice/<slug>/voice.m
 
 ## Authoring the scene-spec
 
-1. **Choose intent.** Map the topic to one of `informative | data | workflow | social | brand | vfx`. Use MCP `recommend_scene_types(intent)` (or `bun run scene:gallery`) to see which scene-types fit and the suggested ordering.
+1. **Choose intent.** Map the topic to one of `informative | data | workflow | social | brand | vfx`. Use `bun run scene:gallery` to see which scene-types fit and the suggested ordering.
 
 2. **Scaffold the episode:**
 
@@ -145,7 +145,7 @@ After `bun run audio`, run `ffplay -nodisp -autoexit public/voice/<slug>/voice.m
    - `type` — one of the scene-types
    - `duration` — seconds (optional; omit to use the type default)
    - `status` — `"draft"` | `"approved"` (drives the HITL loop)
-   - `slots` — the typed params (read `get_scene_type`/manifest for the exact shape and ranges)
+   - `slots` — the typed params (read `templates/scenes/<type>/v1/manifest.json` for the exact shape and ranges)
 
    ```json
    {
@@ -193,7 +193,7 @@ bun run scripts/scene-qa.ts <slug> --scenes=hook,pieces   # only changed scenes
 
 This re-assembles, captures one settled "final" frame per scene (use `--frames=3` only to debug motion with entry/mid/late), runs `hyperframes inspect` for overflow/overlap, and writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json` + a single **`contact-sheet.jpg`** grid of every sampled scene. **No full mp4 render.**
 
-**Review happens in the chat, never in folders.** Send `contact-sheet.jpg` into the conversation (CLI session: deliver the file; MCP client: the `scene_qa` tool already returns it as an inline image) together with the inspect verdict. The user approves or rejects EACH scene from that one image. For rejected scenes: edit that scene's slots in `scene-spec.json` -> `bun run assemble <slug>` -> `bun run scripts/scene-qa.ts <slug> --scenes=<id>` (other scenes' frames and report entries are preserved and merged). Loop until all scenes are approved (mark `status: "approved"` as you go).
+**Review happens in the chat, never in folders.** Send `contact-sheet.jpg` into the conversation (deliver the file `bun run scripts/scene-qa.ts <slug>` wrote) together with the inspect verdict. The user approves or rejects EACH scene from that one image. For rejected scenes: edit that scene's slots in `scene-spec.json` -> `bun run assemble <slug>` -> `bun run scripts/scene-qa.ts <slug> --scenes=<id>` (other scenes' frames and report entries are preserved and merged). Loop until all scenes are approved (mark `status: "approved"` as you go).
 
 ## Final render (Gate 4)
 
@@ -218,8 +218,8 @@ The assembler now owns the timeline, palette, captions, and typography, so these
 - [ ] `examples/<slug>.txt` written, ES, target ~35s; user picked one of 3 script options (Gate 1)
 - [ ] `bun run audio` ran; playback listened (`ffplay`/`afplay`), no mispronunciations; user approved voice.mp3 (Gate 2)
 - [ ] `voice.mp3` + `captions.json` present under `src/episodes/<slug>/assets/`
-- [ ] Intent chosen; scene-types selected via `recommend_scene_types` / `scene:gallery`
-- [ ] `scene-spec.json` authored; slots match `get_scene_type` manifests (names + ranges)
+- [ ] Intent chosen; scene-types selected via `bun run scene:gallery`
+- [ ] `scene-spec.json` authored; slots match `templates/scenes/<type>/v1/manifest.json` (names + ranges)
 - [ ] Last scene is `type: "outro"`; palette set; total runtime 30-50s
 - [ ] `bun run scene:check` passes (spec valid)
 - [ ] `bun run assemble <slug>` ran after the last spec edit (index.html regenerated, not hand-edited)

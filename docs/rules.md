@@ -151,11 +151,7 @@ Gates:
 3. **per-scene visual** — approve/reject each scene; iterate only the rejected ones via `assemble` + `scene-qa --scenes`
 4. final render
 
-## 16. MCP tools
-
-`apps/mcp` exposes: `list_scene_types`, `get_scene_type`, `recommend_scene_types(intent)`, `validate_scene_spec(spec)`, `assemble_episode(spec)`, `scene_qa(slug, [scenes])`, `lint_html`, `generate_audio`, `render_composition`.
-
-## 17. Gitignored outputs
+## 16. Gitignored outputs
 
 Don't commit `out/`, `renders/`, `node_modules/`, `.turbo/`. `bun.lock` IS committed (pinned).
 R2 + remote manifests are canonical for final accepted render/media artifacts. Review renders stay local by default; pass `--upload=r2` only when the output should be persisted remotely. After verified upload, local render outputs are deleted by default unless `--keep-local` is passed. Fresh clones of remote-only episodes should run `bun run hydrate:episode <slug>` from `apps/hyperframe/` before previewing or rendering.

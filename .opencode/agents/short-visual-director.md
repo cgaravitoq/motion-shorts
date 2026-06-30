@@ -53,8 +53,8 @@ People retain what they SEE, and the narration + captions already carry the word
 
 1. Classify the selected concept into exactly one intent (informative | data | workflow | social | brand | vfx) — see the **Intent → scene skeleton** table in `canonical-short`.
 2. Pick scene-types, their order, and durations — applying **Visual-first by default** (above):
-   - `recommend_scene_types(intent)` (MCP), or `bun run scene:gallery` from `apps/hyperframe/` to browse all 24 types.
-   - For each chosen type, `get_scene_type(<type>)` (MCP) or read `apps/hyperframe/templates/scenes/<type>/v1/manifest.json` to learn its exact slots + ranges.
+   - `bun run scene:gallery` from `apps/hyperframe/` to browse all scene-types.
+   - For each chosen type, read `apps/hyperframe/templates/scenes/<type>/v1/manifest.json` to learn its exact slots + ranges.
 3. Decide whether `generated-raster-assets` is required (dense screenshots, product surfaces, handoff bundles, connector-heavy scenes). Create any episode visual assets (SVG hook motifs, diagram art, generated rasters) under `apps/hyperframe/src/episodes/<slug>/assets/` and bind their paths in the matching scene slots. Asset SVG/raster files are fine to write; the generated `index.html` is not.
 4. Write a COMPLETE `apps/hyperframe/src/episodes/<slug>/scene-spec.json`: structure (slug, lang, width/height, palette) + the scene list, mapping the approved-script copy into each scene-type's typed slots. End with the `outro` scene. Time scene durations to the word-level timestamps in `assets/captions.json`.
 5. Validate, then assemble, from `apps/hyperframe/`:

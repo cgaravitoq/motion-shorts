@@ -1,11 +1,3 @@
-[mcp_servers.motion-shorts]
-args = [
-    "run",
-    "apps/mcp/src/index.ts",
-]
-command = "bun"
-enabled = true
-
 [mcp_servers.notion]
 enabled = true
 url = "https://mcp.notion.com/mcp"

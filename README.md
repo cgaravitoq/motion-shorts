@@ -87,7 +87,7 @@ cp .env.example .env                                   # set ELEVENLABS_API_KEY
 ```
 
 This repo is local-first. Specs are assembled, QA'd, and rendered through the
-scene-hub scripts, the Hyperframes CLI, or the local stdio MCP server; there is
+scene-hub scripts and the Hyperframes CLI; there is
 no maintained production API or worker stack.
 
 ## Scene-hub commands
@@ -263,10 +263,6 @@ packages/spec/           @cgaravitoq/spec — Effect-Schema single source of
                          truth for scene-spec + remote manifests, imported
                          across the engine.
 packages/r2-client/      R2 upload/manifest helper for render + audio artifacts.
-apps/mcp/                Local stdio MCP server: list_scene_types,
-                         get_scene_type, recommend_scene_types,
-                         validate_scene_spec, assemble_episode, scene_qa,
-                         lint_html, generate_audio, render_composition.
 
 .agents/skills/          Source skill files (audio-pipeline, canonical-short,
                          new-episode, produce-from-source, short-*)

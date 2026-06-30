@@ -97,9 +97,9 @@ These are the only building blocks. `hook` opens; `outro` is the pinned brand si
 | `promo-signal-device` | Carousel slide: phone mock with pulsing action | 4.5 | — | `badge*`, `badgeIcon*`, `title*` (rich), `label*`, `body*` (rich), `deviceImage*`, `actionImage*` |
 | `promo-product-outro` | Carousel closer: headline + product shot bleed | 5 | — | `title*` (rich), `body*` (rich), `artImage*`, `logoImage*` |
 
-`*` = required, `?` = optional. "(rich)" slots accept inline HTML (`<strong>`, `<em>`, `<br>`); everything else is escaped as plain text. The same `*`/`?`/`[min-max]` summary is what `recommend_scene_types` and `scene:check` print.
+`*` = required, `?` = optional. "(rich)" slots accept inline HTML (`<strong>`, `<em>`, `<br>`); everything else is escaped as plain text. The same `*`/`?`/`[min-max]` summary is what `scene:check` prints.
 
-The full slot schema for any type is its `manifest.json`. Read it (or call the MCP `get_scene_type`) before authoring a spec.
+The full slot schema for any type is its `manifest.json`. Read it before authoring a spec.
 
 ## scene-spec.json shape
 
@@ -224,10 +224,6 @@ bun run render:episode <slug> --format=mp4 [--keep-local]
 ```
 
 The intent skeletons (`scene-router.ts`) seed `new:episode`: e.g. `workflow` → `hook, fanout, flow, decision-tree, outro`; `data` → `hook, bars, line-chart, big-stat, outro`. `hook` and `outro` are structural and always present.
-
-## MCP equivalents (`apps/mcp`)
-
-`list_scene_types`, `get_scene_type`, `recommend_scene_types(intent)`, `validate_scene_spec(spec)`, `assemble_episode(spec)`, `scene_qa(slug, [scenes])`, plus `lint_html`, `generate_audio`, `render_composition`.
 
 ## Hard constraints (renders break if violated)
 
