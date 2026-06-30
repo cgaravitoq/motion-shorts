@@ -50,8 +50,10 @@ const hasGatewayR2Transport = (env: R2Env): boolean =>
 const hasDirectS3R2Transport = (env: R2Env): boolean =>
   missingKeys(env, directS3R2EnvKeys).length === 0;
 
+const hasCloudflareApiTransport = (env: R2Env): boolean => Boolean(env.CLOUDFLARE_API_TOKEN);
+
 const transportErrorMessage =
-  "Set either R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or " +
+  "Set one of: CLOUDFLARE_API_TOKEN, or R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or " +
   "R2_ACCESS_KEY_ID_WRITE + R2_SECRET_ACCESS_KEY_WRITE.";
 
 const parseDotenv = (source: string): Array<[string, string]> => {
@@ -119,6 +121,7 @@ export interface R2ArtifactsConfig {
   requestTimeoutMs: number;
   uploadGatewayUrl: string;
   uploadGatewayToken: string;
+  cloudflareApiToken: string;
 }
 
 export const assertR2Config = (env: R2Env = Bun.env as R2Env): R2ArtifactsConfig => {
@@ -126,7 +129,8 @@ export const assertR2Config = (env: R2Env = Bun.env as R2Env): R2ArtifactsConfig
     loadWorkspaceEnv({ env });
   }
   const missingBase = missingKeys(env, baseR2EnvKeys);
-  const hasTransport = hasGatewayR2Transport(env) || hasDirectS3R2Transport(env);
+  const hasTransport =
+    hasGatewayR2Transport(env) || hasCloudflareApiTransport(env) || hasDirectS3R2Transport(env);
   if (missingBase.length > 0 || !hasTransport) {
     const parts = [];
     if (missingBase.length > 0) {
@@ -160,6 +164,7 @@ export const assertR2Config = (env: R2Env = Bun.env as R2Env): R2ArtifactsConfig
     requestTimeoutMs: Number.parseInt(env.R2_REQUEST_TIMEOUT_MS || "60000", 10),
     uploadGatewayUrl: env.R2_UPLOAD_GATEWAY_URL?.replace(/\/$/, "") || "",
     uploadGatewayToken: env.R2_UPLOAD_GATEWAY_TOKEN || "",
+    cloudflareApiToken: env.CLOUDFLARE_API_TOKEN || "",
   };
 };
 
@@ -168,7 +173,7 @@ export const missingR2EnvKeys = (env: R2Env = Bun.env as R2Env): string[] => {
     loadWorkspaceEnv({ env });
   }
   const missingBase = missingKeys(env, baseR2EnvKeys);
-  if (hasGatewayR2Transport(env) || hasDirectS3R2Transport(env)) {
+  if (hasGatewayR2Transport(env) || hasCloudflareApiTransport(env) || hasDirectS3R2Transport(env)) {
     return missingBase;
   }
 
@@ -583,7 +588,7 @@ const downloadAndVerifyObjectViaGateway = async ({
   return bytes;
 };
 
-export const uploadAndVerifyObject = async ({
+const uploadAndVerifyObjectViaS3 = async ({
   config,
   filePath,
   key,
@@ -591,17 +596,6 @@ export const uploadAndVerifyObject = async ({
   contentType,
   fetchImpl = fetch,
 }: UploadObjectArgs): Promise<UploadedObjectInfo> => {
-  if (config.uploadGatewayUrl) {
-    return uploadAndVerifyObjectViaGateway({
-      config,
-      filePath,
-      key,
-      bytes: bodyBytes,
-      contentType,
-      fetchImpl,
-    });
-  }
-
   const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
   const hash = createHash("sha256").update(bytes).digest("hex");
   const headers = {
@@ -656,6 +650,96 @@ export const uploadAndVerifyObject = async ({
     contentType: headers["content-type"],
     ...buildRemoteUrl({ config, key }),
   };
+};
+
+const cloudflareApiObjectUrl = (config: R2ArtifactsConfig, key: string): string =>
+  `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/r2/buckets/${config.bucket}/objects/${key
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/")}`;
+
+const uploadAndVerifyObjectViaCloudflareApi = async ({
+  config,
+  filePath,
+  key,
+  bytes: bodyBytes,
+  contentType,
+  fetchImpl = fetch,
+}: UploadObjectArgs): Promise<UploadedObjectInfo> => {
+  const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
+  const hash = createHash("sha256").update(bytes).digest("hex");
+  const ct = contentType ?? contentTypeFor(filePath ?? key);
+  const url = cloudflareApiObjectUrl(config, key);
+  const auth = `Bearer ${config.cloudflareApiToken}`;
+  const putResponse = await doFetch(
+    fetchImpl,
+    url,
+    {
+      method: "PUT",
+      headers: { authorization: auth, "content-type": ct },
+      body: bytes as Uint8Array<ArrayBuffer>,
+    },
+    config.requestTimeoutMs,
+  );
+  if (!putResponse.ok) {
+    throw new Error(
+      `R2 Cloudflare-API PUT failed for ${key}: ${putResponse.status} ${putResponse.statusText}`,
+    );
+  }
+  const getResponse = await doFetch(
+    fetchImpl,
+    url,
+    { method: "GET", headers: { authorization: auth } },
+    config.requestTimeoutMs,
+  );
+  if (!getResponse.ok) {
+    throw new Error(
+      `R2 Cloudflare-API verification GET failed for ${key}: ${getResponse.status} ${getResponse.statusText}`,
+    );
+  }
+  const remoteBytes = Buffer.from(await getResponse.arrayBuffer());
+  const remoteHash = createHash("sha256").update(remoteBytes).digest("hex");
+  if (remoteBytes.byteLength !== bytes.byteLength || remoteHash !== hash) {
+    throw new Error(`R2 Cloudflare-API verification mismatch for ${key}`);
+  }
+  return {
+    key,
+    bytes: bytes.byteLength,
+    sha256: hash,
+    contentType: ct,
+    ...buildRemoteUrl({ config, key }),
+  };
+};
+
+export const uploadAndVerifyObject = async (
+  args: UploadObjectArgs,
+): Promise<UploadedObjectInfo> => {
+  const { config, key } = args;
+  const attempts: Array<[string, boolean, () => Promise<UploadedObjectInfo>]> = [
+    ["gateway", Boolean(config.uploadGatewayUrl), () => uploadAndVerifyObjectViaGateway(args)],
+    [
+      "cloudflare-api",
+      Boolean(config.cloudflareApiToken),
+      () => uploadAndVerifyObjectViaCloudflareApi(args),
+    ],
+    [
+      "s3",
+      Boolean(config.accessKeyId && config.secretAccessKey),
+      () => uploadAndVerifyObjectViaS3(args),
+    ],
+  ];
+  const errors: string[] = [];
+  for (const [name, enabled, run] of attempts) {
+    if (!enabled) continue;
+    try {
+      return await run();
+    } catch (err) {
+      errors.push(`${name}: ${(err as Error).message}`);
+    }
+  }
+  throw new Error(
+    `R2 upload failed for ${key}. ${errors.length ? `Tried — ${errors.join(" | ")}` : "No R2 transport configured."}`,
+  );
 };
 
 const categoryForExt = (ext: string): string => {
@@ -836,29 +920,48 @@ export const downloadObjectBytes = async ({
   key: string;
   fetchImpl?: FetchLike;
 }): Promise<Buffer | null> => {
-  const request = config.uploadGatewayUrl
-    ? {
-        url: gatewayObjectUrl(config, key),
-        headers: { "x-upload-token": config.uploadGatewayToken },
-      }
-    : signR2Request({
-        config,
-        method: "GET",
-        key,
-        payloadHash: "UNSIGNED-PAYLOAD",
-        expiresSeconds: config.signedUrlTtlSeconds,
-      });
-  const response = await doFetch(
-    fetchImpl,
-    request.url,
-    { method: "GET", headers: request.headers },
-    config.requestTimeoutMs,
-  );
-  if (response.status === 404) return null;
-  if (!response.ok) {
-    throw new Error(`R2 GET failed for ${key}: ${response.status} ${response.statusText}`);
+  const transports: Array<{ url: string; headers: Record<string, string> }> = [];
+  if (config.uploadGatewayUrl) {
+    transports.push({
+      url: gatewayObjectUrl(config, key),
+      headers: { "x-upload-token": config.uploadGatewayToken },
+    });
   }
-  return Buffer.from(await response.arrayBuffer());
+  if (config.cloudflareApiToken) {
+    transports.push({
+      url: cloudflareApiObjectUrl(config, key),
+      headers: { authorization: `Bearer ${config.cloudflareApiToken}` },
+    });
+  }
+  if (config.accessKeyId && config.secretAccessKey) {
+    const signed = signR2Request({
+      config,
+      method: "GET",
+      key,
+      payloadHash: "UNSIGNED-PAYLOAD",
+      expiresSeconds: config.signedUrlTtlSeconds,
+    });
+    transports.push({ url: signed.url, headers: signed.headers });
+  }
+
+  // Try each transport in order; first 200 wins. A 404 (or transport error) is
+  // not trusted as "absent" until every transport has been tried — the gateway
+  // 404s when its Worker is down, which must not be read as "object missing".
+  for (const t of transports) {
+    let response: Response;
+    try {
+      response = await doFetch(
+        fetchImpl,
+        t.url,
+        { method: "GET", headers: t.headers },
+        config.requestTimeoutMs,
+      );
+    } catch {
+      continue;
+    }
+    if (response.ok) return Buffer.from(await response.arrayBuffer());
+  }
+  return null;
 };
 
 const toError = (cause: unknown): Error =>
