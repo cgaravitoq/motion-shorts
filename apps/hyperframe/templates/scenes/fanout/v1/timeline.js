@@ -85,7 +85,7 @@ function build_fanout(tl, t, s, p) {
       const node = nodes[i];
       if (node) node.style.left = `${wx}px`;
     });
-    tl.set(nodes, { xPercent: -50 }, 0);
+    tl.set(nodes, { xPercent: -50, yPercent: -50 }, 0);
   }
 
   const outWires = gsap.utils.toArray(s(".fo-wire--out"));
