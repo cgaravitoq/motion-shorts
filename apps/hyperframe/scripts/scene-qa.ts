@@ -25,6 +25,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { assembleEpisode, type SceneMapEntry } from "./lib/assemble-episode";
+import { materialiseEpisode } from "./lib/materialise-episode";
 
 interface Sample {
   phase: string;
@@ -91,8 +92,6 @@ const built = assembleEpisode(spec);
 fs.writeFileSync(path.join(episodeDir, "index.html"), built.html);
 
 // ── materialise (catalog-free, src/ untouched) ────────────────────────────
-const workDir = path.resolve("out/episodes", slug);
-fs.mkdirSync(workDir, { recursive: true });
 let html = built.html;
 const captionsPath = path.join(episodeDir, "assets", "captions.json");
 if (fs.existsSync(captionsPath)) {
@@ -105,21 +104,12 @@ if (fs.existsSync(captionsPath)) {
     );
   }
 }
-fs.writeFileSync(path.join(workDir, "index.html"), html);
-
-const ensureSymlink = (linkPath: string, targetAbs: string): void => {
-  try {
-    fs.lstatSync(linkPath);
-    fs.rmSync(linkPath, { force: true, recursive: true });
-  } catch {}
-  if (fs.existsSync(targetAbs)) fs.symlinkSync(path.relative(path.dirname(linkPath), targetAbs), linkPath, "dir");
-};
-ensureSymlink(path.join(workDir, "lib"), path.resolve("src/lib"));
-ensureSymlink(path.join(workDir, "assets"), path.join(episodeDir, "assets"));
-fs.writeFileSync(
-  path.join(workDir, "favicon.ico"),
-  Buffer.from("47494638396101000100800000ffffff00000021f90401000000002c00000000010001000002024401003b", "hex"),
-);
+const workDir = materialiseEpisode({
+  workDir: path.resolve("out/episodes", slug),
+  html,
+  libTarget: path.resolve("src/lib"),
+  assetsTarget: path.join(episodeDir, "assets"),
+});
 
 // ── pick scenes + sample timestamps ───────────────────────────────────────
 const wanted = values.scenes ? new Set(values.scenes.split(",").map((s) => s.trim())) : null;

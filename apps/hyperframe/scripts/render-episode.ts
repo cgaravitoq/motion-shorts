@@ -33,6 +33,7 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { getAudioDurationSeconds } from "@cgaravitoq/audio";
 import { type BrandPack, brandVarsStyleBlock, loadBrandPack } from "./lib/brand-pack";
+import { materialiseEpisode } from "./lib/materialise-episode";
 import { publishEpisodeArtifacts, resolveR2PublishOptions } from "./lib/r2-artifacts";
 import {
   appendLedger,
@@ -237,21 +238,6 @@ const inlineCaptions = (html: string, captionsPath: string): { html: string; cou
   return { html: inlined, count: parsed.length };
 };
 
-const ensureSymlink = (linkPath: string, targetAbs: string): void => {
-  // Recreate every time so re-running with a moved repo doesn't keep a
-  // stale symlink. lstatSync handles broken symlinks (existsSync wouldn't).
-  // `recursive: true` covers the rare case where a real directory was
-  // dropped in place of the symlink.
-  try {
-    fs.lstatSync(linkPath);
-    fs.rmSync(linkPath, { force: true, recursive: true });
-  } catch {
-    // Doesn't exist — nothing to remove.
-  }
-  const target = path.relative(path.dirname(linkPath), targetAbs);
-  fs.symlinkSync(target, linkPath, "dir");
-};
-
 interface EpisodeMeta {
   brand?: string;
   tail?: number;
@@ -414,7 +400,6 @@ const main = async (): Promise<void> => {
     variant === "short"
       ? path.resolve("out/episodes", slug)
       : path.resolve("out/episodes", slug, variant);
-  fs.mkdirSync(workDir, { recursive: true });
 
   const srcHtml = fs.readFileSync(indexPath, "utf8");
   const stampedDuration = hasVoice
@@ -429,22 +414,12 @@ const main = async (): Promise<void> => {
     );
   }
   const { html: finalHtml, count: captionsCount } = inlineCaptions(brandedHtml, captionsPath);
-  fs.writeFileSync(path.join(workDir, "index.html"), finalHtml);
-
-  // meta.json — informational; Hyperframes reads from data-attrs.
-  meta.duration = totalSeconds;
-  meta.voiceSeconds = Number(voiceSeconds.toFixed(2));
-  fs.writeFileSync(path.join(workDir, "meta.json"), `${JSON.stringify(meta, null, 2)}\n`);
-
-  // hyperframes.json — copy if present so per-episode config travels.
-  if (fs.existsSync(hfConfigPath)) {
-    fs.copyFileSync(hfConfigPath, path.join(workDir, "hyperframes.json"));
-  }
 
   // Safety guard — the working copy MUST live under out/, never src/. If a
   // future refactor accidentally points workDir at episodeDir, the cleanup
   // commands below + the symlink layout would destroy source files. Cheap
-  // assertion catches that class of bug at the boundary.
+  // assertion catches that class of bug at the boundary, BEFORE we write
+  // anything or lay down symlinks.
   if (path.resolve(workDir) === path.resolve(episodeDir)) {
     console.error(
       `render-episode: refusing to render — workDir resolves to the source dir (${workDir}). This would risk overwriting src/.`,
@@ -458,29 +433,25 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  // Symlink lib + assets to keep the working copy tiny and avoid copying
+  // Materialise the shared scaffold: index.html + lib/assets symlinks +
+  // favicon. Symlinks keep the working copy tiny and avoid copying
   // voice.mp3 (~MBs) every render.
-  //
-  // FOOTGUN: `out/episodes/<slug>/{lib,assets}` are symlinks pointing back
-  // to `src/`. Standard POSIX `rm -rf` removes the symlinks themselves, not
-  // their targets — but commands that follow symlinks (`find -delete`,
-  // `rsync --delete`, some Node `fs.rm` configs) can nuke src/. If you need
-  // to clean a working copy, target the dir explicitly: `rm -rf out/episodes/<slug>`
-  // and do NOT use symlink-following tools on `out/`.
-  ensureSymlink(path.join(workDir, "lib"), path.resolve("src/lib"));
-  ensureSymlink(path.join(workDir, "assets"), assetsDir);
+  materialiseEpisode({
+    workDir,
+    html: finalHtml,
+    libTarget: path.resolve("src/lib"),
+    assetsTarget: assetsDir,
+  });
 
-  // 1x1 transparent GIF served as favicon.ico. Chromium auto-fetches
-  // /favicon.ico on every page load; without this, each render worker logs
-  // a `[non-blocking] 404` line. Pure console noise — has no effect on the
-  // mp4 — but it surfaces on every public-clone render.
-  fs.writeFileSync(
-    path.join(workDir, "favicon.ico"),
-    Buffer.from(
-      "47494638396101000100800000ffffff00000021f90401000000002c00000000010001000002024401003b",
-      "hex",
-    ),
-  );
+  // meta.json — informational; Hyperframes reads from data-attrs.
+  meta.duration = totalSeconds;
+  meta.voiceSeconds = Number(voiceSeconds.toFixed(2));
+  fs.writeFileSync(path.join(workDir, "meta.json"), `${JSON.stringify(meta, null, 2)}\n`);
+
+  // hyperframes.json — copy if present so per-episode config travels.
+  if (fs.existsSync(hfConfigPath)) {
+    fs.copyFileSync(hfConfigPath, path.join(workDir, "hyperframes.json"));
+  }
 
   const durationLog = hasVoice
     ? `${totalSeconds}s [voice=${voiceSeconds.toFixed(2)}s + tail=${tailSeconds}s from ${tailSource}]`
