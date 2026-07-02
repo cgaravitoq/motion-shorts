@@ -1,6 +1,3 @@
-// promo-signal-device entrance + play-pulse choreography. Seek-safe only
-// (from/to/set; no callbacks). The phone rises from the frame edge, the
-// action button pops in and pulses twice like a video inviting the tap.
 function build_promoSignalDevice(tl, t, s, p) {
   tl.set(s(".psd-badge"), { autoAlpha: 0, y: -24 }, 0);
   tl.set(s(".psd-title"), { autoAlpha: 0, y: 46 }, 0);
@@ -15,7 +12,6 @@ function build_promoSignalDevice(tl, t, s, p) {
   tl.to(s(".psd-device"), { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" }, t + 0.8);
   tl.to(s(".psd-action"), { autoAlpha: 1, scale: 1, duration: 0.55, ease: "back.out(2.4)" }, t + 1.5);
 
-  // double pulse, inviting the tap
   tl.to(s(".psd-action"), { scale: 1.14, duration: 0.32, ease: "sine.inOut" }, t + 2.4);
   tl.to(s(".psd-action"), { scale: 1, duration: 0.36, ease: "sine.inOut" }, t + 2.72);
   tl.to(s(".psd-action"), { scale: 1.14, duration: 0.32, ease: "sine.inOut" }, t + 3.4);

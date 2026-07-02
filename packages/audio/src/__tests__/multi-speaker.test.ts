@@ -44,10 +44,6 @@ describe("parseScript — no markup (single-speaker passthrough)", () => {
   });
 
   it("returns the exact same text byte-for-byte that would be sent to TTS today (passthrough guarantee)", () => {
-    // Documents the byte-identical contract: the cache key computed over the
-    // single-segment passthrough must match the key the legacy single-speaker
-    // code path would compute. The cache key hashes raw text, so equality of
-    // `segments[0].text` to the original script is the contract.
     const text = "Texto que ya contiene [pause] y tags v3.";
     const result = parseScript(text);
     expect(result.segments[0]?.text).toBe(text);
@@ -297,7 +293,6 @@ describe("mergeSegmentArtifacts", () => {
       previousAvg: 0.95,
       nextAvg: 0.5,
     });
-    // (0.95 - 0.5) / 0.95 ≈ 0.4737 → 47.4%
     expect(result.boundaryWarnings[0]?.dropPct).toBeGreaterThan(CAPTION_CONFIDENCE_DROP_WARN * 100);
   });
 

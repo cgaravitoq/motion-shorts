@@ -1,11 +1,3 @@
-// metric entrance choreography. See title-cards/v1/timeline.js for the contract.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance: s(".mt-card") -> "#scene-<id> .mt-card"
-//   p  = resolved params object for this scene
-// Seek-safe only (from/to/fromTo/set). Cards stagger in; each value pops slightly.
-// The big numbers then count up. Count-up is built from stepped tl.set(el,{textContent})
-// zero-duration tweens — the seek-safe primitive (callbacks/onUpdate don't fire
-// during Hyperframes' frame-by-frame seek; only set() materialises reliably).
 function build_metric(tl, t, s, p) {
   tl.from(s(".mt-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".mt-title"), { y: 42, opacity: 0, duration: 0.62, ease: "power2.out" }, t + 0.45);

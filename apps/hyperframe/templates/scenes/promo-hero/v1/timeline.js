@@ -1,6 +1,3 @@
-// promo-hero entrance choreography. See title-cards/v1/timeline.js for the
-// contract. Seek-safe only (from/to/set; no callbacks). The composite bg and
-// the top photo settle in first; badge, logo, title, body and CTA cascade up.
 function build_promoHero(tl, t, s, p) {
   tl.set(s(".pmh-bg"), { autoAlpha: 0 }, 0);
   tl.set(s(".pmh-photo"), { autoAlpha: 0, scale: 1.04, transformOrigin: "50% 0%" }, 0);

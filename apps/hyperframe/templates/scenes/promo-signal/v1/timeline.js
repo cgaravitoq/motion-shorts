@@ -1,6 +1,3 @@
-// promo-signal entrance choreography. Seek-safe only (from/to/set; no
-// callbacks). The accent chip drops in, the headline rises, the how-to
-// block follows, the bottom art composite rises from the frame edge.
 function build_promoSignal(tl, t, s, p) {
   tl.set(s(".psg-badge"), { autoAlpha: 0, y: -24 }, 0);
   tl.set(s(".psg-title"), { autoAlpha: 0, y: 46 }, 0);

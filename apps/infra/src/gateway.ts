@@ -1,7 +1,3 @@
-/**
- * upload-gateway Worker entrypoint. Alchemy bundles this file (rolldown)
- * and binds BUCKET (R2) + UPLOAD_TOKEN (secret) per alchemy.run.ts.
- */
 import * as Effect from "effect/Effect";
 import { type GatewayBucket, handleGatewayRequest } from "./gateway-core";
 

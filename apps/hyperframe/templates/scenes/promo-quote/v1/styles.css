@@ -1,7 +1,3 @@
-/* promo-quote — companion to the promo-* story-ad family (9:16, absolute
-   1080x1920 geometry). Full-bleed blurred composite; shell dark background
-   layers and the watermark are disabled whenever this type is present. */
-
 #ep-stage:has(.pqt) #bg-field {
   background: var(--brand-paper, #fff);
 }

@@ -1,8 +1,3 @@
-// promo-quote entrance choreography. See title-cards/v1/timeline.js for the
-// contract. Seek-safe only (from/to/set; no callbacks). The blurred bg fades
-// in; the avatar pops with the speaker fading next to it (the speaker keeps
-// its CSS translateY(-50%), so only autoAlpha is animated there); logo and
-// quote cascade up over the darkened lower band.
 function build_promoQuote(tl, t, s, p) {
   tl.set(s(".pqt-bg"), { autoAlpha: 0 }, 0);
   tl.set(s(".pqt-badge"), { autoAlpha: 0, y: -24 }, 0);

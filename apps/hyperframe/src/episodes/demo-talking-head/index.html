@@ -14,12 +14,6 @@
       .bg-grid { opacity: 0.55; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 72px 72px; }
       .vignette { background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.66) 100%); }
 
-      /* Talking-head-cutout component CSS (mirrors packages/catalog/snippets/talking-head-cutout.html).
-         Wrappers are NON-timed (no data-start, no `clip`) so the runtime leaves their layout alone.
-         The <video> elements ARE timed (Hyperframes owns alpha decode), so they become tracked
-         children of the wrapper and inherit the runtime's force-applied position:absolute/inset:0/100%x100%.
-         GSAP tweens target the wrapper IDs — never the <video> — so opacity/scale animations stay
-         on a stable, untouched layout box. */
       .talking-head-cutout { position: absolute; inset: 0; }
       .talking-head-cutout__plate-wrap,
       .talking-head-cutout__subject-wrap { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }

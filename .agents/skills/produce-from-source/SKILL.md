@@ -113,7 +113,7 @@ Generate **3 script drafts** with explicitly different angles. Don't write the s
 **Why this angle:** <one sentence>
 ```
 
-Map the topic's intent (informative / data / workflow / social / brand / vfx) to scene-types via `canonical-short`'s intent → scene skeleton table (`recommend_scene_types({ intent })` returns the same spine). The `outro` is always the last scene.
+Map the topic's intent (informative / data / workflow / social / brand / vfx) to scene-types via `canonical-short`'s intent → scene skeleton table; `bun run scene:gallery` (gallery episode) previews every scene-type for the same spine. The `outro` is always the last scene.
 
 ### Angle diversification rule
 
@@ -141,13 +141,13 @@ cat > examples/<slug>.txt <<'EOF'
 EOF
 
 bun run audio examples/<slug>.txt --lang=es \
-  --speed=1.0 --no-pause-injection \
+  --speed=1.04 \
   --out=public/voice/<slug>
 
 ffplay -nodisp -autoexit public/voice/<slug>/voice.mp3   # afplay on macOS
 ```
 
-Pacing on `eleven_v3`: never auto-inject pauses (`--pause-*` is ignored by `generate-audio` on v3 — tags add unpredictable multi-second gaps). Hand-author at most 1-2 expressive tags in the script (e.g. `[excited]` in the hook, `[thoughtful]` at the twist); see `docs/voice-config.md`.
+Pacing on `eleven_v3` is native — there is no pause injection (the `--pause-*` flags are removed). Control rhythm with punctuation only (periods/commas, ellipses …); never inject `<break>` SSML or `[pause]` tags. Hand-author at most 1-2 expressive tags in the script (e.g. `[excited]` in the hook, `[thoughtful]` at the twist); see `docs/voice-config.md`.
 
 Gate 2 loop: "Suena bien? Algun termino mal pronunciado?" — edit script + re-run until approved. See `audio-pipeline` for TTS/STT details.
 

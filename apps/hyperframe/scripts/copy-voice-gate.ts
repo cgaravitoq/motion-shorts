@@ -1,16 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Voice-gate the LinkedIn copy of an episode against the humanizer critic
- * rubric (hybrid contract: LinkedIn is personal voice; the other platforms
- * are channel style and skip this gate).
- *
- *   bun run copy:gate <slug> [--llm-signals=<file>] [--humanizer=<repo-path>]
- *
- * Imports loadVoiceProfile/runCritic from the humanizer repo source (bun
- * transpiles TS in place, resolving humanizer's own workspace deps). Without
- * --llm-signals only the 5 deterministic signals gate (partial verdict); pass
- * the in-session critic agent's JSON output for the full 8-signal verdict.
- */
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";

@@ -1,8 +1,3 @@
-/* promo-hero — story-ad replica (9:16, absolute 1080x1920 geometry from the
-   source design). The scene owns a full light frame, so the dark shell
-   background layers and the watermark are disabled whenever this type is
-   present (the scene composites its own full-bleed background). */
-
 #ep-stage:has(.pmh) #bg-field {
   background: var(--brand-paper, #fff);
 }

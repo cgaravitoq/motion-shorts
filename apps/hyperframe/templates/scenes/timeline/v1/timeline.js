@@ -1,6 +1,3 @@
-// timeline entrance choreography. See title-cards/v1/timeline.js for the contract.
-// The rail draws (vertical scaleY), then each event's dot and body stagger in
-// (body slides x:36). Stagger count adapts automatically to the resolved event count.
 function build_timeline(tl, t, s, p) {
   const railVars = { scaleY: 0 };
   const bodyEnter = { x: 36 };

@@ -4,7 +4,6 @@
 
 .co-grid { margin-top: var(--title-block-gap); display: flex; flex-direction: column; gap: 26px; }
 
-/* ── Code window (primary self-framed object) ─────────────────────────── */
 .co-window { box-sizing: border-box; border: 1px solid rgba(247, 248, 248, 0.09); border-radius: 26px; background: rgba(8, 9, 10, 0.94); box-shadow: 0 2px 0 rgba(247, 248, 248, 0.04) inset, 0 60px 150px rgba(0, 0, 0, 0.62), 0 12px 40px rgba(0, 0, 0, 0.5); overflow: hidden; }
 .co-window__bar { position: relative; display: flex; align-items: center; gap: 11px; padding: 18px 26px; border-bottom: 1px solid rgba(247, 248, 248, 0.07); background: linear-gradient(180deg, rgba(247, 248, 248, 0.05), rgba(247, 248, 248, 0.015)); }
 .co-window__dot { width: 14px; height: 14px; border-radius: 999px; background: var(--muted); flex: 0 0 auto; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.35) inset; }
@@ -19,7 +18,6 @@
 .co-line::before { content: counter(co-ln); flex: 0 0 auto; min-width: 1.6em; text-align: right; font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 28px; line-height: 1.4; font-variant-numeric: tabular-nums; color: var(--paper); opacity: var(--layer-structure, 0.15); user-select: none; }
 .co-line__text { font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 32px; line-height: 1.4; font-weight: 510; letter-spacing: 0; color: var(--paper); white-space: pre-wrap; word-break: break-word; }
 
-/* Line-count compaction so tall windows stay inside the safe band. */
 .co-window[data-lines="8"] .co-line__text,
 .co-window[data-lines="9"] .co-line__text,
 .co-window[data-lines="10"] .co-line__text { font-size: 28px; line-height: 1.34; }
@@ -30,7 +28,6 @@
 .co-window[data-lines="9"] .co-window__body,
 .co-window[data-lines="10"] .co-window__body { gap: 11px; }
 
-/* ── Output panel (second self-framed object, darker) ─────────────────── */
 .co-output { box-sizing: border-box; border: 1px solid color-mix(in srgb, var(--source-accent) 22%, rgba(247, 248, 248, 0.08)); border-radius: 22px; background: rgba(2, 2, 3, 0.97); box-shadow: inset 0 1px 0 rgba(247, 248, 248, 0.05), 0 50px 130px rgba(0, 0, 0, 0.58), 0 10px 36px rgba(0, 0, 0, 0.5); overflow: hidden; }
 .co-output__bar { display: flex; align-items: center; gap: 12px; padding: 16px 28px; border-bottom: 1px solid rgba(247, 248, 248, 0.06); background: linear-gradient(180deg, color-mix(in srgb, var(--source-accent) 6%, transparent), transparent); }
 .co-output__chip { width: 13px; height: 13px; border-radius: 4px; background: var(--source-accent); box-shadow: 0 0 16px color-mix(in srgb, var(--source-accent) 60%, transparent); flex: 0 0 auto; }

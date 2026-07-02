@@ -43,7 +43,7 @@ asset-prep guidance plus the layering/seek-safety knowledge that scene-type will
      any MP4.
 2. **Env.** `HEYGEN_API_KEY` is only required for the HeyGen path. See `.env.example`.
    Read via `import { env } from "@cgaravitoq/audio/env"` then `env.HEYGEN_API_KEY` -- do not
-   read `process.env.HEYGEN_API_KEY` directly (enforced by `bun run lint:env`).
+   read `process.env.HEYGEN_API_KEY` directly.
 
 ## Pipeline (asset prep)
 

@@ -1,9 +1,3 @@
-// bars entrance choreography. See title-cards/v1/timeline.js for the contract.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance: s(".br-fill") -> "#scene-<id> .br-fill"
-//   p  = resolved params object for this scene (use p.bars for data-driven motion)
-// Seek-safe only (from/to/fromTo/set). Each fill has width:var(--pct) and grows
-// via scaleX 0 -> 1 (transform-origin left); fills are hidden at literal 0 first.
 function build_bars(tl, t, s, p) {
   const axis = "scaleX";
   const origin = "0% 50%";

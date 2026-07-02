@@ -1,8 +1,3 @@
-/* promo-agenda — companion to the promo-* story-ad family (9:16, absolute
-   1080x1920 geometry). White frame; shell dark background layers and the
-   watermark are disabled whenever this type is present. Topic numbering is a
-   CSS counter, so the spec only carries the topic text. */
-
 #ep-stage:has(.pag) #bg-field {
   background: var(--brand-paper, #fff);
 }

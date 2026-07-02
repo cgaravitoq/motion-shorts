@@ -1,8 +1,3 @@
-/* promo-signal-toolbar — promo-signal skeleton with a toolbar mock as the
-   bottom art (9:16, absolute 1080x1920 geometry). Light paper frame; shell
-   layers and watermark disabled when present. The highlighted tool is a
-   separate baked layer so it can pop independently of the bar. */
-
 #ep-stage:has(.pst) #bg-field {
   background: var(--brand-paper, #f5f5f5);
 }

@@ -1,12 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Print the resolved distribution context for an episode as JSON.
- *
- *   bun run scripts/episode-context.ts <slug>
- *
- * Consumed by the generate-distribution-copy skill: narration, scene-spec
- * text, captions duration, and the rendered-mp4 pin in one place.
- */
 import fs from "node:fs";
 import path from "node:path";
 import { resolveEpisodeContext } from "./lib/episode-context";

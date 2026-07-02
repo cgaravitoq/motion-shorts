@@ -47,8 +47,7 @@ const resetEnv = () => {
   mockEnv.XDG_CACHE_HOME = undefined;
 };
 
-const makeTmpDir = () =>
-  fs.mkdtempSync(path.join(os.tmpdir(), "tts-cache-"));
+const makeTmpDir = () => fs.mkdtempSync(path.join(os.tmpdir(), "tts-cache-"));
 
 const baseInputs = (): TtsCacheKeyInputs => ({
   text: "hola mundo",
@@ -201,7 +200,10 @@ describe("read/writeCachedTts", () => {
     const captions = [{ text: "hola", start: 0, end: 0.5 }];
     r2Mocks.getObject
       .mockResolvedValueOnce({ body: audio, contentType: "audio/mpeg" })
-      .mockResolvedValueOnce({ body: Buffer.from(JSON.stringify(captions)), contentType: "application/json" });
+      .mockResolvedValueOnce({
+        body: Buffer.from(JSON.stringify(captions)),
+        contentType: "application/json",
+      });
 
     const hit = await readCachedTtsWithSource("3".repeat(64), { root: tmpRoot });
     expect(hit.source).toBe("r2-hit");
@@ -213,7 +215,9 @@ describe("read/writeCachedTts", () => {
     mockEnv.R2_ACCOUNT_ID = "account";
     mockEnv.R2_BUCKET = "bucket";
     r2Mocks.isR2Configured.mockReturnValue(true);
-    r2Mocks.getObject.mockResolvedValueOnce({ body: Buffer.from("audio"), contentType: "audio/mpeg" }).mockResolvedValueOnce(null);
+    r2Mocks.getObject
+      .mockResolvedValueOnce({ body: Buffer.from("audio"), contentType: "audio/mpeg" })
+      .mockResolvedValueOnce(null);
 
     const hit = await readCachedTtsWithSource("4".repeat(64), { root: tmpRoot });
     expect(hit).toEqual({ payload: null, source: "miss" });
@@ -225,15 +229,23 @@ describe("read/writeCachedTts", () => {
     r2Mocks.isR2Configured.mockReturnValue(true);
     mockEnv.MOTION_SHORTS_TTS_CACHE_R2 = "off";
     expect(isTtsCacheR2Enabled()).toBe(false);
-    expect(await readCachedTtsWithSource("5".repeat(64), { root: tmpRoot })).toEqual({ payload: null, source: "miss" });
+    expect(await readCachedTtsWithSource("5".repeat(64), { root: tmpRoot })).toEqual({
+      payload: null,
+      source: "miss",
+    });
     mockEnv.MOTION_SHORTS_TTS_CACHE_R2 = "on";
-    expect(await readCachedTtsWithSource("5".repeat(64), { root: tmpRoot, cacheMode: "local-only" })).toEqual({ payload: null, source: "miss" });
+    expect(
+      await readCachedTtsWithSource("5".repeat(64), { root: tmpRoot, cacheMode: "local-only" }),
+    ).toEqual({ payload: null, source: "miss" });
     expect(r2Mocks.getObject).not.toHaveBeenCalled();
   });
 
   it("falls back to local-only when R2 env is missing", async () => {
     expect(isTtsCacheR2Enabled()).toBe(false);
-    expect(await readCachedTtsWithSource("6".repeat(64), { root: tmpRoot })).toEqual({ payload: null, source: "miss" });
+    expect(await readCachedTtsWithSource("6".repeat(64), { root: tmpRoot })).toEqual({
+      payload: null,
+      source: "miss",
+    });
     expect(r2Mocks.getObject).not.toHaveBeenCalled();
   });
 
@@ -242,11 +254,15 @@ describe("read/writeCachedTts", () => {
     mockEnv.R2_BUCKET = "bucket";
     r2Mocks.isR2Configured.mockReturnValue(true);
     r2Mocks.putObject.mockResolvedValue(undefined);
-    await expect(writeCachedTtsToR2("7".repeat(64), { audio: Buffer.from("audio"), captions: [] })).resolves.toBe(true);
+    await expect(
+      writeCachedTtsToR2("7".repeat(64), { audio: Buffer.from("audio"), captions: [] }),
+    ).resolves.toBe(true);
     expect(r2Mocks.putObject).toHaveBeenCalledTimes(2);
 
     r2Mocks.putObject.mockRejectedValueOnce(new Error("boom"));
-    await expect(writeCachedTtsToR2("8".repeat(64), { audio: Buffer.from("audio"), captions: [] })).resolves.toBe(false);
+    await expect(
+      writeCachedTtsToR2("8".repeat(64), { audio: Buffer.from("audio"), captions: [] }),
+    ).resolves.toBe(false);
   });
 });
 

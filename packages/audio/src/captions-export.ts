@@ -22,11 +22,6 @@ const formatTimestamp = (seconds: number, msSep: "," | ".") => {
   return `${pad2(h)}:${pad2(m)}:${pad2(s)}${msSep}${pad3(ms)}`;
 };
 
-/**
- * Word-level captions span very short windows; rendering them as one cue per
- * word produces an unreadable sidecar in YouTube/TikTok players. We group
- * adjacent words into cues capped by a per-cue duration and character budget.
- */
 const DEFAULT_MAX_CUE_DURATION_S = 5;
 const DEFAULT_MAX_CUE_CHARS = 80;
 
@@ -37,9 +32,7 @@ interface Cue {
 }
 
 export interface CaptionExportOptions {
-  /** Max cue duration in seconds. Default 5. */
   maxCueDurationSec?: number;
-  /** Max characters per cue (before forced break). Default 80. */
   maxCueChars?: number;
 }
 

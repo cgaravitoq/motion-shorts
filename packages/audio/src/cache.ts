@@ -1,21 +1,8 @@
-/**
- * Local TTS cache keyed by sha256 of the inputs that affect the synthesised
- * audio. A cache hit returns both the audio bytes and the matching captions,
- * so re-running `bun run audio` on an unchanged script + voice + tuning is a
- * no-op against ElevenLabs.
- *
- * Layout: `<cacheRoot>/<hash>/{voice.mp3, captions.json}`. The cache root
- * defaults to `~/.cache/motion-shorts/tts/`; override with
- * `MOTION_SHORTS_TTS_CACHE_DIR` (handled in `env.ts`).
- *
- * Captions are part of the cache because the run output is the
- * voice+captions pair, and we want a cache hit to also short-circuit STT.
- */
 import { createHash } from "node:crypto";
-import { getObject, isR2Configured, putObject, type GetObjectResult } from "@cgaravitoq/r2-client";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { type GetObjectResult, getObject, isR2Configured, putObject } from "@cgaravitoq/r2-client";
 import { env } from "./env";
 import type { HyperframesCaption } from "./stt-types";
 
@@ -54,18 +41,11 @@ export const getCacheRoot = (): string => {
   if (env.MOTION_SHORTS_TTS_CACHE_DIR && env.MOTION_SHORTS_TTS_CACHE_DIR.length > 0) {
     return path.resolve(env.MOTION_SHORTS_TTS_CACHE_DIR);
   }
-  // Honor XDG when set; otherwise fall back to `~/.cache` (the linux default
-  // and a sane spot on macOS too — we don't store user-facing files here).
   const xdg = env.XDG_CACHE_HOME && env.XDG_CACHE_HOME.length > 0 ? env.XDG_CACHE_HOME : null;
   const base = xdg ?? path.join(os.homedir(), ".cache");
   return path.join(base, DEFAULT_CACHE_SUBDIR);
 };
 
-/**
- * Stable, order-independent hash over the inputs that materially affect TTS
- * output. Undefined tuning values are excluded so adding a flag with the
- * provider default doesn't invalidate prior cache entries.
- */
 export const computeTtsCacheKey = (inputs: TtsCacheKeyInputs): string => {
   const payload: Record<string, string | number> = {
     text: inputs.text,
@@ -100,7 +80,6 @@ export const readCachedTts = (hash: string, root?: string): CachedTts | null => 
   try {
     captions = JSON.parse(fs.readFileSync(captionsPath, "utf8"));
   } catch {
-    // Corrupt entry — treat as miss; the caller will overwrite on success.
     return null;
   }
   if (!Array.isArray(captions)) return null;
@@ -145,7 +124,9 @@ export const readCachedTtsWithSource = async (
       getObject({ bucket: env.R2_BUCKET, key: r2KeyFor(hash, "captions.json"), env }),
     ]);
   } catch (error) {
-    console.warn(`[tts-cache] R2 mirror read failed for ${hash.slice(0, 12)}: ${(error as Error).message}`);
+    console.warn(
+      `[tts-cache] R2 mirror read failed for ${hash.slice(0, 12)}: ${(error as Error).message}`,
+    );
     return { payload: null, source: "miss" };
   }
   if (!audioObject || !captionsObject) return { payload: null, source: "miss" };
@@ -188,7 +169,9 @@ export const writeCachedTtsToR2 = async (
     ]);
     return true;
   } catch (error) {
-    console.warn(`[tts-cache] R2 mirror write failed for ${hash.slice(0, 12)}: ${(error as Error).message}`);
+    console.warn(
+      `[tts-cache] R2 mirror write failed for ${hash.slice(0, 12)}: ${(error as Error).message}`,
+    );
     return false;
   }
 };

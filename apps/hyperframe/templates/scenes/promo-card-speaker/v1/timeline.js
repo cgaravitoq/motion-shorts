@@ -1,8 +1,3 @@
-// promo-card-speaker entrance choreography. See title-cards/v1/timeline.js for
-// the contract. Seek-safe only (from/to/set; no callbacks). The photo card
-// settles in first; badge and speaker fade (the speaker keeps its CSS
-// translateY(-50%), so only autoAlpha is animated there); the lower block
-// cascades up.
 function build_promoCardSpeaker(tl, t, s, p) {
   tl.set(s(".pcs-photo"), { autoAlpha: 0, scale: 0.965, transformOrigin: "50% 40%" }, 0);
   tl.set(s(".pcs-badge"), { autoAlpha: 0, y: -24 }, 0);

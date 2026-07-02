@@ -31,7 +31,7 @@ Collect before touching the spec; ask the user for anything missing:
 
 ## Scene grammar
 
-The seven promo-* types and their required slots (full detail: `templates/scenes/<type>/v1/manifest.json` or MCP `get_scene_type <type>`). All are 1080x1920 story-ad replicas sharing the same family geometry.
+The seven promo-* types and their required slots (full detail: read `templates/scenes/<type>/v1/manifest.json`). All are 1080x1920 story-ad replicas sharing the same family geometry.
 
 | Type | Purpose | Required slots |
 |------|---------|----------------|

@@ -1,9 +1,3 @@
-// BGM mixer: caption-driven ducking, head/tail fade, -14 LUFS loudnorm.
-export {
-  BgmTrackNotFoundError,
-  getBgmCacheRoot,
-  resolveBgmPath,
-} from "./bgm-resolver";
 export {
   BGM_DEFAULTS,
   type BuildArgsOptions,
@@ -14,23 +8,19 @@ export {
   type DuckWindow,
   type FfmpegRunner,
   type FilterGraphOptions,
-  mixBgm,
   type MixBgmOptions,
   type MixBgmResult,
+  mixBgm,
 } from "./bgm-mixer";
-// Caption sidecar exporters (SRT / WebVTT) for accessibility + multilingual rollouts.
 export {
-  type CaptionExportOptions,
-  type CaptionSidecarFormat,
-  parseCaptionFormats,
-  toSrt,
-  toVtt,
-} from "./captions-export";
-// TTS cache (sha256(script+voice+tuning) -> ~/.cache/motion-shorts/tts/<hash>/).
+  BgmTrackNotFoundError,
+  getBgmCacheRoot,
+  resolveBgmPath,
+} from "./bgm-resolver";
 export {
   type CachedTts,
-  type CacheMode,
   type CachedTtsLookup,
+  type CacheMode,
   cacheEntryPaths,
   computeTtsCacheKey,
   getCacheRoot,
@@ -38,25 +28,25 @@ export {
   readCachedTts,
   readCachedTtsWithSource,
   resolveCacheMode,
-  type TtsCacheSource,
   type TtsCacheKeyInputs,
+  type TtsCacheSource,
   writeCachedTts,
   writeCachedTtsToR2,
 } from "./cache";
+export {
+  type CaptionExportOptions,
+  type CaptionSidecarFormat,
+  parseCaptionFormats,
+  toSrt,
+  toVtt,
+} from "./captions-export";
 export {
   DEFAULT_ELEVENLABS_MODEL_ID,
   resolveElevenLabsModelId,
   resolveElevenLabsVoiceId,
 } from "./elevenlabs";
-export {
-  createTTSProvider,
-  getTTSProvider,
-  getTTSProviderName,
-  resolveTTSProviderDefaults,
-} from "./factory";
-// ffprobe helper — duration probing shared by render-episode + generate-audio + Scribe.
+export { getTTSProvider, getTTSProviderName, resolveTTSProviderDefaults } from "./factory";
 export { getAudioDurationSeconds } from "./ffprobe";
-// Multi-speaker scripts: inline `[speaker:<name>]` markup → per-segment TTS + merged captions.
 export {
   averageCaptionConfidence,
   CAPTION_CONFIDENCE_DROP_WARN,
@@ -74,18 +64,7 @@ export {
   type SpeakerSummaryEntry,
   summariseSpeakers,
 } from "./multi-speaker";
-export {
-  DEFAULT_PACING,
-  injectElevenV3Pauses,
-  injectPauses,
-  isElevenV3Model,
-  MAX_BREAK_MS,
-  type PacingOptions,
-  type PacingResult,
-  type PacingSyntax,
-  type PauseSyntax,
-} from "./script-pacing";
-// STT (Hyperframes-shape captions: { text, start, end, confidence? })
+export { isElevenV3Model } from "./script-pacing";
 export { getSTTProvider, type STTProviderName } from "./stt-factory";
 export {
   DEFAULT_MAX_AUDIO_MINUTES,

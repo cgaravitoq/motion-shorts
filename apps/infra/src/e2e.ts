@@ -1,14 +1,4 @@
 #!/usr/bin/env bun
-/**
- * E2E contract check against a DEPLOYED upload-gateway (e2e stage).
- *
- *   bun run deploy:e2e                # prints gatewayUrl in the stack output
- *   GATEWAY_URL=https://... bun run e2e
- *
- * Exercises the exact consumer contract (r2-artifacts/r2-client) over the
- * network: auth, PUT+sha256 verify, GET round-trip, HEAD, 404. Uses plain
- * fetch on purpose — independent from the pipeline code under test.
- */
 const gatewayUrl = (Bun.env.GATEWAY_URL ?? "").replace(/\/$/, "");
 const token = Bun.env.R2_UPLOAD_GATEWAY_TOKEN ?? "";
 if (!gatewayUrl || !token) {

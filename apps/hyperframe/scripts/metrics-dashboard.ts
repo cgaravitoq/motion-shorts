@@ -114,16 +114,12 @@ export const groupByEpisode = (
       const window = runs
         .toSorted((a, b) => String(a.ts ?? "").localeCompare(String(b.ts ?? "")))
         .slice(-limit);
-      const stageKeys = [
-        ...new Set(window.flatMap((run) => Object.keys(run.stages ?? {}))),
-      ].sort();
+      const stageKeys = [...new Set(window.flatMap((run) => Object.keys(run.stages ?? {})))].sort();
       const stageStats: Record<string, Stats> = Object.fromEntries(
-        stageKeys.map(
-          (stage): [string, Stats] => [
-            stage,
-            statsFor(window.map((run) => Number(run.stages?.[stage]))),
-          ],
-        ),
+        stageKeys.map((stage): [string, Stats] => [
+          stage,
+          statsFor(window.map((run) => Number(run.stages?.[stage]))),
+        ]),
       );
       return {
         episode,
@@ -141,7 +137,8 @@ export const sparklineSvg = (
   { width = 220, height = 48 }: { width?: number; height?: number } = {},
 ): string => {
   const nums = values.filter(Number.isFinite);
-  if (nums.length === 0) return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" aria-label="No data"></svg>`;
+  if (nums.length === 0)
+    return `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" aria-label="No data"></svg>`;
   const min = Math.min(...nums);
   const max = Math.max(...nums);
   const span = max - min || 1;
@@ -170,7 +167,10 @@ const renderRuns = (group: EpisodeGroup): string => {
     .toReversed()
     .map((run) => {
       const stages = group.stageKeys
-        .map((stage) => `<span><b>${escapeHtml(stage)}</b> ${formatMs(Number(run.stages?.[stage]))}</span>`)
+        .map(
+          (stage) =>
+            `<span><b>${escapeHtml(stage)}</b> ${formatMs(Number(run.stages?.[stage]))}</span>`,
+        )
         .join("");
       return `<tr><td>${escapeHtml(run.ts ?? "—")}</td><td>${escapeHtml(run.format ?? "—")}</td><td>${escapeHtml(run.variant ?? "—")}</td><td>${formatMs(Number(run.totalMs))}</td><td>${Number(run.assets?.fileCount ?? 0)}</td><td>${formatBytes(Number(run.assets?.totalBytes ?? 0))}</td><td class="stages">${stages}</td></tr>`;
     })
@@ -209,7 +209,8 @@ export const renderDashboard = (groups: EpisodeGroup[]): string => `<!doctype ht
       ? '<div class="empty">No render telemetry yet. Run <code>bun run render:episode &lt;slug&gt;</code> to create ledger entries.</div>'
       : groups
           .map(
-            (group) => `<section><div class="top"><div><h2>${escapeHtml(group.episode)}</h2><p class="muted">${group.runs.length} run${group.runs.length === 1 ? "" : "s"}</p></div><div class="spark">${sparklineSvg(group.runs.map((run) => Number(run.totalMs)))}</div></div>${renderStats(group)}${renderRuns(group)}</section>`,
+            (group) =>
+              `<section><div class="top"><div><h2>${escapeHtml(group.episode)}</h2><p class="muted">${group.runs.length} run${group.runs.length === 1 ? "" : "s"}</p></div><div class="spark">${sparklineSvg(group.runs.map((run) => Number(run.totalMs)))}</div></div>${renderStats(group)}${renderRuns(group)}</section>`,
           )
           .join("")
   }
@@ -218,7 +219,10 @@ export const renderDashboard = (groups: EpisodeGroup[]): string => `<!doctype ht
 export const createDashboardServer = ({
   ledgerPath = defaultLedgerPath,
   warn = console.warn,
-}: { ledgerPath?: string; warn?: (message: string) => void } = {}): http.Server =>
+}: {
+  ledgerPath?: string;
+  warn?: (message: string) => void;
+} = {}): http.Server =>
   http.createServer(async (_req, res) => {
     try {
       const records = await readLedger(ledgerPath, { warn });

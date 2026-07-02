@@ -1,7 +1,3 @@
-// promo-signal-action entrance + click choreography. Seek-safe only
-// (from/to/set; no callbacks). The CTA pill rises, the cursor travels in
-// from the lower right, presses the button (pill dips, icon spins a full
-// turn) and settles with a tiny bounce.
 function build_promoSignalAction(tl, t, s, p) {
   tl.set(s(".psa-badge"), { autoAlpha: 0, y: -24 }, 0);
   tl.set(s(".psa-title"), { autoAlpha: 0, y: 46 }, 0);
@@ -15,7 +11,6 @@ function build_promoSignalAction(tl, t, s, p) {
   tl.to(s(".psa-howto"), { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out" }, t + 0.6);
   tl.to(s(".psa-cta"), { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, t + 0.75);
 
-  // cursor approach + click
   tl.to(s(".psa-cursor"), { autoAlpha: 1, duration: 0.3, ease: "power1.out" }, t + 1.2);
   tl.to(s(".psa-cursor"), { x: 0, y: 0, duration: 1.0, ease: "power2.inOut" }, t + 1.2);
   tl.to(s(".psa-cursor"), { scale: 0.88, duration: 0.12, ease: "power2.in" }, t + 2.25);

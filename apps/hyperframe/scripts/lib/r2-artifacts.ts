@@ -1,14 +1,7 @@
+import { createHash, createHmac } from "node:crypto";
 import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
-import {
-  encodeKey,
-  loadWorkspaceEnv as loadWorkspaceEnvShared,
-  presignRequest,
-  type SignConfig,
-  sha256Hex as sha256HexValue,
-  signRequest,
-} from "@cgaravitoq/r2-client";
 import {
   decodeRemoteManifest,
   type FetchLike,
@@ -21,6 +14,8 @@ import {
 import { Effect, Result } from "effect";
 
 const DEFAULT_PROJECT_PREFIX = "motion-shorts";
+const REGION = "auto";
+const SERVICE = "s3";
 const BINARY_ASSET_EXTENSIONS = new Set([
   ".avif",
   ".gif",
@@ -49,19 +44,70 @@ export const requiredR2EnvKeys = baseR2EnvKeys;
 
 const missingKeys = (env: R2Env, keys: string[]): string[] => keys.filter((key) => !env[key]);
 
-const hasGatewayR2Transport = (env: R2Env): boolean => missingKeys(env, gatewayR2EnvKeys).length === 0;
+const hasGatewayR2Transport = (env: R2Env): boolean =>
+  missingKeys(env, gatewayR2EnvKeys).length === 0;
 
-const hasDirectS3R2Transport = (env: R2Env): boolean => missingKeys(env, directS3R2EnvKeys).length === 0;
+const hasDirectS3R2Transport = (env: R2Env): boolean =>
+  missingKeys(env, directS3R2EnvKeys).length === 0;
+
+const hasCloudflareApiTransport = (env: R2Env): boolean => Boolean(env.CLOUDFLARE_API_TOKEN);
 
 const transportErrorMessage =
-  "Set either R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or " +
+  "Set one of: CLOUDFLARE_API_TOKEN, or R2_UPLOAD_GATEWAY_URL + R2_UPLOAD_GATEWAY_TOKEN, or " +
   "R2_ACCESS_KEY_ID_WRITE + R2_SECRET_ACCESS_KEY_WRITE.";
+
+const parseDotenv = (source: string): Array<[string, string]> => {
+  const entries: Array<[string, string]> = [];
+  for (const line of source.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const separator = trimmed.indexOf("=");
+    if (separator === -1) continue;
+    const key = trimmed.slice(0, separator).trim();
+    let value = trimmed.slice(separator + 1).trim();
+    if (!key) continue;
+    if (value.startsWith('"') && value.endsWith('"')) {
+      value = value.slice(1, -1);
+    }
+    entries.push([key, value]);
+  }
+  return entries;
+};
+
+const findWorkspaceEnvPath = (startDir: string = import.meta.dirname): string | null => {
+  let current = path.resolve(startDir);
+  while (true) {
+    const envPath = path.join(current, ".env");
+    const hasWorkspaceMarker = ["turbo.json", "bun.lockb", "bun.lock"].some((marker) =>
+      fsSync.existsSync(path.join(current, marker)),
+    );
+    if (hasWorkspaceMarker && fsSync.existsSync(envPath)) {
+      return envPath;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+};
 
 export const loadWorkspaceEnv = ({
   env = Bun.env as R2Env,
   startDir = import.meta.dirname,
-}: { env?: R2Env; startDir?: string } = {}): boolean =>
-  loadWorkspaceEnvShared(env, startDir).loaded;
+}: {
+  env?: R2Env;
+  startDir?: string;
+} = {}): boolean => {
+  const envPath = findWorkspaceEnvPath(startDir);
+  if (!envPath) return false;
+
+  const source = fsSync.readFileSync(envPath, "utf8");
+  for (const [key, value] of parseDotenv(source)) {
+    if (!env[key]) {
+      env[key] = value;
+    }
+  }
+  return true;
+};
 
 export interface R2ArtifactsConfig {
   accountId: string;
@@ -75,6 +121,7 @@ export interface R2ArtifactsConfig {
   requestTimeoutMs: number;
   uploadGatewayUrl: string;
   uploadGatewayToken: string;
+  cloudflareApiToken: string;
 }
 
 export const assertR2Config = (env: R2Env = Bun.env as R2Env): R2ArtifactsConfig => {
@@ -82,7 +129,8 @@ export const assertR2Config = (env: R2Env = Bun.env as R2Env): R2ArtifactsConfig
     loadWorkspaceEnv({ env });
   }
   const missingBase = missingKeys(env, baseR2EnvKeys);
-  const hasTransport = hasGatewayR2Transport(env) || hasDirectS3R2Transport(env);
+  const hasTransport =
+    hasGatewayR2Transport(env) || hasCloudflareApiTransport(env) || hasDirectS3R2Transport(env);
   if (missingBase.length > 0 || !hasTransport) {
     const parts = [];
     if (missingBase.length > 0) {
@@ -116,6 +164,7 @@ export const assertR2Config = (env: R2Env = Bun.env as R2Env): R2ArtifactsConfig
     requestTimeoutMs: Number.parseInt(env.R2_REQUEST_TIMEOUT_MS || "60000", 10),
     uploadGatewayUrl: env.R2_UPLOAD_GATEWAY_URL?.replace(/\/$/, "") || "",
     uploadGatewayToken: env.R2_UPLOAD_GATEWAY_TOKEN || "",
+    cloudflareApiToken: env.CLOUDFLARE_API_TOKEN || "",
   };
 };
 
@@ -124,7 +173,7 @@ export const missingR2EnvKeys = (env: R2Env = Bun.env as R2Env): string[] => {
     loadWorkspaceEnv({ env });
   }
   const missingBase = missingKeys(env, baseR2EnvKeys);
-  if (hasGatewayR2Transport(env) || hasDirectS3R2Transport(env)) {
+  if (hasGatewayR2Transport(env) || hasCloudflareApiTransport(env) || hasDirectS3R2Transport(env)) {
     return missingBase;
   }
 
@@ -200,22 +249,48 @@ export const objectKeyFor = ({
 
 export const sha256Hex = async (filePath: string): Promise<string> => {
   const bytes = await fs.readFile(filePath);
-  return sha256HexValue(bytes);
+  return createHash("sha256").update(bytes).digest("hex");
 };
 
-const signConfig = (config: R2ArtifactsConfig): SignConfig => ({
-  accessKeyId: config.accessKeyId ?? "",
-  secretAccessKey: config.secretAccessKey ?? "",
-  endpoint: config.endpoint,
-  endpointPrefix: config.endpointPrefix,
-});
+const sha256Buffer = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
 
-const signR2Request = ({
+const hmac = (key: string | Buffer, value: string): Buffer =>
+  createHmac("sha256", key).update(value).digest();
+const hmacHex = (key: string | Buffer, value: string): string =>
+  createHmac("sha256", key).update(value).digest("hex");
+
+const signingKey = (secretAccessKey: string, dateStamp: string): Buffer => {
+  const kDate = hmac(`AWS4${secretAccessKey}`, dateStamp);
+  const kRegion = hmac(kDate, REGION);
+  const kService = hmac(kRegion, SERVICE);
+  return hmac(kService, "aws4_request");
+};
+
+const encodeKey = (key: string): string => key.split("/").map(encodeURIComponent).join("/");
+
+const timestamp = (date: Date): string => date.toISOString().replace(/[:-]|\.\d{3}/g, "");
+
+const signedHeadersString = (headers: Record<string, string>): string =>
+  Object.keys(headers).sort().join(";");
+
+const canonicalHeaderString = (headers: Record<string, string>): string =>
+  `${Object.keys(headers)
+    .sort()
+    .map((key) => `${key}:${String(headers[key]).trim().replace(/\s+/g, " ")}`)
+    .join("\n")}\n`;
+
+export interface SignedR2Request {
+  url: string;
+  headers: Record<string, string>;
+}
+
+export const signR2Request = ({
   config,
   method,
   key,
   payloadHash,
-  headers,
+  headers = {},
+  now = new Date(),
   expiresSeconds,
 }: {
   config: R2ArtifactsConfig;
@@ -223,11 +298,71 @@ const signR2Request = ({
   key: string;
   payloadHash: string;
   headers?: Record<string, string>;
+  now?: Date;
   expiresSeconds?: number;
-}): { url: string; headers: Record<string, string> } =>
-  expiresSeconds !== undefined
-    ? presignRequest({ config: signConfig(config), method, key, payloadHash, headers, expiresSeconds })
-    : signRequest({ config: signConfig(config), method, key, payloadHash, headers });
+}): SignedR2Request => {
+  const host = new URL(config.endpoint).host;
+  const amzDate = timestamp(now);
+  const dateStamp = amzDate.slice(0, 8);
+  const credentialScope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`;
+  const canonicalUri = `${config.endpointPrefix}/${encodeKey(key)}`;
+  const normalizedHeaders: Record<string, string> = {
+    host,
+    "x-amz-content-sha256": payloadHash,
+    "x-amz-date": amzDate,
+    ...Object.fromEntries(
+      Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value]),
+    ),
+  };
+
+  let canonicalQueryString = "";
+  const requestHeaders = { ...normalizedHeaders };
+  if (expiresSeconds !== undefined) {
+    delete requestHeaders["x-amz-date"];
+    const query = {
+      "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+      "X-Amz-Credential": `${config.accessKeyId}/${credentialScope}`,
+      "X-Amz-Date": amzDate,
+      "X-Amz-Expires": String(expiresSeconds),
+      "X-Amz-SignedHeaders": signedHeadersString(requestHeaders),
+    };
+    canonicalQueryString = Object.entries(query)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
+      .join("&");
+  }
+
+  const canonicalRequest = [
+    method,
+    canonicalUri,
+    canonicalQueryString,
+    canonicalHeaderString(requestHeaders),
+    signedHeadersString(requestHeaders),
+    payloadHash,
+  ].join("\n");
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    credentialScope,
+    createHash("sha256").update(canonicalRequest).digest("hex"),
+  ].join("\n");
+  const signature = hmacHex(signingKey(config.secretAccessKey ?? "", dateStamp), stringToSign);
+  const url = `${config.endpoint}${canonicalUri}${canonicalQueryString ? `?${canonicalQueryString}&X-Amz-Signature=${signature}` : ""}`;
+
+  if (expiresSeconds !== undefined) {
+    return { url, headers: requestHeaders };
+  }
+
+  return {
+    url,
+    headers: {
+      ...requestHeaders,
+      authorization:
+        `AWS4-HMAC-SHA256 Credential=${config.accessKeyId}/${credentialScope}, ` +
+        `SignedHeaders=${signedHeadersString(requestHeaders)}, Signature=${signature}`,
+    },
+  };
+};
 
 export interface RemoteUrlInfo {
   strategy: "signed-url" | "public-url";
@@ -256,9 +391,6 @@ export const buildRemoteUrl = ({
   };
 };
 
-// Real fetch gets timeout + exponential backoff with jitter on transient
-// failures; an injected fetchImpl (tests) is called directly, preserving
-// exact call counts — same contract the old fetchWithTimeout had.
 const doFetch = (
   fetchImpl: FetchLike,
   url: string,
@@ -295,14 +427,13 @@ const readRemoteManifest = async (manifestPath: string): Promise<RemoteManifest>
     );
   }
 
-  // keep the raw parse: validation-only, hydrate paths read fields verbatim
   return manifest as RemoteManifest;
 };
 
 const existingAssetMatches = async (outputPath: string, object: RemoteObject): Promise<boolean> => {
   try {
     const bytes = await fs.readFile(outputPath);
-    return bytes.byteLength === object.bytes && sha256HexValue(bytes) === object.sha256;
+    return bytes.byteLength === object.bytes && sha256Buffer(bytes) === object.sha256;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
     throw error;
@@ -368,7 +499,7 @@ const uploadAndVerifyObjectViaGateway = async ({
   }
   const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
   const type = contentType ?? contentTypeFor(filePath ?? key);
-  const hash = sha256HexValue(bytes);
+  const hash = createHash("sha256").update(bytes).digest("hex");
   const url = gatewayObjectUrl(config, key);
   const putResponse = await doFetch(
     fetchImpl,
@@ -405,7 +536,7 @@ const uploadAndVerifyObjectViaGateway = async ({
     );
   }
   const remoteBytes = Buffer.from(await getResponse.arrayBuffer());
-  const remoteHash = sha256HexValue(remoteBytes);
+  const remoteHash = createHash("sha256").update(remoteBytes).digest("hex");
   if (remoteBytes.byteLength !== bytes.byteLength || remoteHash !== hash) {
     throw new Error(
       `R2 gateway verification mismatch for ${key}: local=${bytes.byteLength}/${hash} remote=${remoteBytes.byteLength}/${remoteHash}`,
@@ -448,7 +579,7 @@ const downloadAndVerifyObjectViaGateway = async ({
     );
   }
   const bytes = Buffer.from(await response.arrayBuffer());
-  const hash = sha256HexValue(bytes);
+  const hash = sha256Buffer(bytes);
   if (bytes.byteLength !== object.bytes || hash !== object.sha256) {
     throw new Error(
       `R2 hydrate verification mismatch for ${object.key}: expected=${object.bytes}/${object.sha256} received=${bytes.byteLength}/${hash}`,
@@ -457,7 +588,7 @@ const downloadAndVerifyObjectViaGateway = async ({
   return bytes;
 };
 
-export const uploadAndVerifyObject = async ({
+const uploadAndVerifyObjectViaS3 = async ({
   config,
   filePath,
   key,
@@ -465,19 +596,8 @@ export const uploadAndVerifyObject = async ({
   contentType,
   fetchImpl = fetch,
 }: UploadObjectArgs): Promise<UploadedObjectInfo> => {
-  if (config.uploadGatewayUrl) {
-    return uploadAndVerifyObjectViaGateway({
-      config,
-      filePath,
-      key,
-      bytes: bodyBytes,
-      contentType,
-      fetchImpl,
-    });
-  }
-
   const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
-  const hash = sha256HexValue(bytes);
+  const hash = createHash("sha256").update(bytes).digest("hex");
   const headers = {
     "content-type": contentType ?? contentTypeFor(filePath ?? key),
     "x-amz-meta-sha256": hash,
@@ -516,7 +636,7 @@ export const uploadAndVerifyObject = async ({
     );
   }
   const remoteBytes = Buffer.from(await getResponse.arrayBuffer());
-  const remoteHash = sha256HexValue(remoteBytes);
+  const remoteHash = createHash("sha256").update(remoteBytes).digest("hex");
   if (remoteBytes.byteLength !== bytes.byteLength || remoteHash !== hash) {
     throw new Error(
       `R2 verification mismatch for ${key}: local=${bytes.byteLength}/${hash} remote=${remoteBytes.byteLength}/${remoteHash}`,
@@ -530,6 +650,93 @@ export const uploadAndVerifyObject = async ({
     contentType: headers["content-type"],
     ...buildRemoteUrl({ config, key }),
   };
+};
+
+const cloudflareApiObjectUrl = (config: R2ArtifactsConfig, key: string): string =>
+  `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/r2/buckets/${config.bucket}/objects/${encodeURIComponent(key)}`;
+
+const uploadAndVerifyObjectViaCloudflareApi = async ({
+  config,
+  filePath,
+  key,
+  bytes: bodyBytes,
+  contentType,
+  fetchImpl = fetch,
+}: UploadObjectArgs): Promise<UploadedObjectInfo> => {
+  const bytes = bodyBytes ?? (await fs.readFile(filePath as string));
+  const hash = createHash("sha256").update(bytes).digest("hex");
+  const ct = contentType ?? contentTypeFor(filePath ?? key);
+  const url = cloudflareApiObjectUrl(config, key);
+  const auth = `Bearer ${config.cloudflareApiToken}`;
+  const putResponse = await doFetch(
+    fetchImpl,
+    url,
+    {
+      method: "PUT",
+      headers: { authorization: auth, "content-type": ct },
+      body: bytes as Uint8Array<ArrayBuffer>,
+    },
+    config.requestTimeoutMs,
+  );
+  if (!putResponse.ok) {
+    throw new Error(
+      `R2 Cloudflare-API PUT failed for ${key}: ${putResponse.status} ${putResponse.statusText}`,
+    );
+  }
+  const getResponse = await doFetch(
+    fetchImpl,
+    url,
+    { method: "GET", headers: { authorization: auth } },
+    config.requestTimeoutMs,
+  );
+  if (!getResponse.ok) {
+    throw new Error(
+      `R2 Cloudflare-API verification GET failed for ${key}: ${getResponse.status} ${getResponse.statusText}`,
+    );
+  }
+  const remoteBytes = Buffer.from(await getResponse.arrayBuffer());
+  const remoteHash = createHash("sha256").update(remoteBytes).digest("hex");
+  if (remoteBytes.byteLength !== bytes.byteLength || remoteHash !== hash) {
+    throw new Error(`R2 Cloudflare-API verification mismatch for ${key}`);
+  }
+  return {
+    key,
+    bytes: bytes.byteLength,
+    sha256: hash,
+    contentType: ct,
+    ...buildRemoteUrl({ config, key }),
+  };
+};
+
+export const uploadAndVerifyObject = async (
+  args: UploadObjectArgs,
+): Promise<UploadedObjectInfo> => {
+  const { config, key } = args;
+  const attempts: Array<[string, boolean, () => Promise<UploadedObjectInfo>]> = [
+    ["gateway", Boolean(config.uploadGatewayUrl), () => uploadAndVerifyObjectViaGateway(args)],
+    [
+      "cloudflare-api",
+      Boolean(config.cloudflareApiToken),
+      () => uploadAndVerifyObjectViaCloudflareApi(args),
+    ],
+    [
+      "s3",
+      Boolean(config.accessKeyId && config.secretAccessKey),
+      () => uploadAndVerifyObjectViaS3(args),
+    ],
+  ];
+  const errors: string[] = [];
+  for (const [name, enabled, run] of attempts) {
+    if (!enabled) continue;
+    try {
+      return await run();
+    } catch (err) {
+      errors.push(`${name}: ${(err as Error).message}`);
+    }
+  }
+  throw new Error(
+    `R2 upload failed for ${key}. ${errors.length ? `Tried — ${errors.join(" | ")}` : "No R2 transport configured."}`,
+  );
 };
 
 const categoryForExt = (ext: string): string => {
@@ -685,8 +892,6 @@ const buildRemoteManifests = ({
     signedUrlTtlSeconds: item.signedUrlTtlSeconds,
   });
 
-  // The published final is a full replacement: each manifest lists exactly
-  // what this publish uploaded, never merged leftovers from earlier versions.
   return {
     renderManifest: {
       ...base,
@@ -712,32 +917,52 @@ export const downloadObjectBytes = async ({
   key: string;
   fetchImpl?: FetchLike;
 }): Promise<Buffer | null> => {
-  const request = config.uploadGatewayUrl
-    ? {
-        url: gatewayObjectUrl(config, key),
-        headers: { "x-upload-token": config.uploadGatewayToken },
-      }
-    : signR2Request({
-        config,
-        method: "GET",
-        key,
-        payloadHash: "UNSIGNED-PAYLOAD",
-        expiresSeconds: config.signedUrlTtlSeconds,
-      });
-  const response = await doFetch(
-    fetchImpl,
-    request.url,
-    { method: "GET", headers: request.headers },
-    config.requestTimeoutMs,
-  );
-  if (response.status === 404) return null;
-  if (!response.ok) {
-    throw new Error(`R2 GET failed for ${key}: ${response.status} ${response.statusText}`);
+  const transports: Array<{ url: string; headers: Record<string, string> }> = [];
+  if (config.uploadGatewayUrl) {
+    transports.push({
+      url: gatewayObjectUrl(config, key),
+      headers: { "x-upload-token": config.uploadGatewayToken },
+    });
   }
-  return Buffer.from(await response.arrayBuffer());
+  if (config.cloudflareApiToken) {
+    transports.push({
+      url: cloudflareApiObjectUrl(config, key),
+      headers: { authorization: `Bearer ${config.cloudflareApiToken}` },
+    });
+  }
+  if (config.accessKeyId && config.secretAccessKey) {
+    const signed = signR2Request({
+      config,
+      method: "GET",
+      key,
+      payloadHash: "UNSIGNED-PAYLOAD",
+      expiresSeconds: config.signedUrlTtlSeconds,
+    });
+    transports.push({ url: signed.url, headers: signed.headers });
+  }
+
+  // Try each transport in order; first 200 wins. A 404 (or transport error) is
+  // not trusted as "absent" until every transport has been tried — the gateway
+  // 404s when its Worker is down, which must not be read as "object missing".
+  for (const t of transports) {
+    let response: Response;
+    try {
+      response = await doFetch(
+        fetchImpl,
+        t.url,
+        { method: "GET", headers: t.headers },
+        config.requestTimeoutMs,
+      );
+    } catch {
+      continue;
+    }
+    if (response.ok) return Buffer.from(await response.arrayBuffer());
+  }
+  return null;
 };
 
-const toError = (cause: unknown): Error => (cause instanceof Error ? cause : new Error(String(cause)));
+const toError = (cause: unknown): Error =>
+  cause instanceof Error ? cause : new Error(String(cause));
 
 export const publishEpisodeArtifacts = async ({
   slug,
@@ -764,9 +989,6 @@ export const publishEpisodeArtifacts = async ({
   const config = assertR2Config(env);
   const artifacts = await collectEpisodeArtifacts({ episodeDir, renderPath, slug });
 
-  // Transactional: every object must upload and verify before a single
-  // manifest byte is written, locally or remotely. A mid-batch failure
-  // leaves the previously published final untouched.
   const uploaded = await runPromiseOrThrow(
     Effect.forEach(
       artifacts,
@@ -811,8 +1033,6 @@ export const publishEpisodeArtifacts = async ({
     ),
   );
 
-  // Local copies land only after R2 accepted all three manifests, so local
-  // state never claims a final that is not actually published.
   for (const [name, manifest] of manifestFiles) {
     await fs.writeFile(path.join(episodeDir, name), `${JSON.stringify(manifest, null, 2)}\n`);
   }
@@ -931,7 +1151,7 @@ export const hydrateEpisodeArtifacts = async ({
             );
           }
           const downloadedBytes = Buffer.from(await response.arrayBuffer());
-          const hash = sha256HexValue(downloadedBytes);
+          const hash = sha256Buffer(downloadedBytes);
           if (downloadedBytes.byteLength !== object.bytes || hash !== object.sha256) {
             throw new Error(
               `R2 hydrate verification mismatch for ${object.key}: expected=${object.bytes}/${object.sha256} received=${downloadedBytes.byteLength}/${hash}`,
@@ -980,7 +1200,9 @@ export const hydrateEpisodeFinal = async ({
     restored.push(manifestPath);
     runId ??= (JSON.parse(bytes.toString("utf8")) as { runId?: string }).runId ?? null;
     const destinationDir =
-      name === "render.remote.json" ? path.resolve(appRoot, "renders") : path.join(episodeDir, "assets");
+      name === "render.remote.json"
+        ? path.resolve(appRoot, "renders")
+        : path.join(episodeDir, "assets");
     restored.push(
       ...(await hydrateEpisodeArtifacts({
         manifestPath,

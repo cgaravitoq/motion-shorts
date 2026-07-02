@@ -17,10 +17,6 @@ export const formatParseError = (error: Schema.SchemaError, root = "spec"): stri
     return path ? `${root}.${path}: ${issue.message}` : `${root}: ${issue.message}`;
   });
 
-/**
- * Adapt a v4 decode Exit to a Result so boundary call sites keep a simple
- * isFailure/failure contract (the v3 decodeUnknownEither shape).
- */
 export const exitToResult = <A>(
   exit: Exit.Exit<A, Schema.SchemaError>,
 ): Result.Result<A, Schema.SchemaError> => {

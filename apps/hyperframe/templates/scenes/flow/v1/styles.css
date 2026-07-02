@@ -8,9 +8,6 @@
 
 .fl-step { counter-increment: fl-step; position: relative; z-index: 1; display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 30px; }
 
-/* Single vertical spine through the badge column (badge 92px -> center x = 46px;
-   first/last badge centers sit 46px from rail top/bottom). Replaces per-gap stubs;
-   drawn once by build_flow via scaleY from the top (transform-origin matches). */
 .fl-spine { position: absolute; left: 43.5px; top: 46px; bottom: 46px; width: 5px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--source-accent) 70%, transparent), var(--source-accent)); transform-origin: 50% 0%; z-index: 0; }
 
 .fl-step__badge { box-sizing: border-box; width: 92px; height: 92px; display: grid; place-items: center; border-radius: 26px; border: 1px solid var(--line); background: linear-gradient(var(--panel), var(--panel)), var(--ink); color: var(--paper); font-family: "Berkeley Mono", "JetBrains Mono", monospace; font-size: 40px; font-weight: 700; box-shadow: 0 18px 60px rgba(0,0,0,0.32); }

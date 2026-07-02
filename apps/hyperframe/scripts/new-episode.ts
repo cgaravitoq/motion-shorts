@@ -1,15 +1,4 @@
 #!/usr/bin/env bun
-/**
- * Scaffold a new scene-hub episode under `src/episodes/<slug>/`.
- *
- *   bun run scripts/new-episode.ts <slug> [--intent=workflow] [--width=1080] [--height=1920]
- *
- * The episode is authored as a typed scene-spec.json (NOT hand-written HTML).
- * This scaffolds a starter spec from the intent skeleton (each scene seeded
- * with its scene-type sample params), then assembles index.html so the episode
- * is immediately previewable. Edit scene-spec.json and re-run `bun run assemble
- * <slug>` to regenerate. index.html is generated — never hand-edit it.
- */
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
@@ -78,7 +67,6 @@ fs.mkdirSync(path.join(epDir, "assets"), { recursive: true });
 const width = Number.parseInt(values.width, 10);
 const height = Number.parseInt(values.height, 10);
 
-// Build the starter scene list from the intent skeleton (or a generic spine).
 const skeleton: ReadonlyArray<string> = values.intent
   ? routeIntent(values.intent).skeleton
   : ["hook", "title-cards", "outro"];
@@ -88,13 +76,10 @@ const sampleFor = (type: string): Record<string, unknown> => {
     ? (JSON.parse(fs.readFileSync(samplePath, "utf8")) as Record<string, unknown>)
     : {};
 };
-// Brand lockup for the outro: BRAND_NAME/BRAND_TAGLINE override the manifest
-// defaults (cgaravitoq / AI Engineering) at scaffold time, keeping assemble pure.
 const brandSlots: Record<string, string> = {};
-if (env.brandName) brandSlots.wordmark = env.brandName;
-if (env.brandTagline) brandSlots.tagline = env.brandTagline;
+if (env.BRAND_NAME) brandSlots.wordmark = env.BRAND_NAME;
+if (env.BRAND_TAGLINE) brandSlots.tagline = env.BRAND_TAGLINE;
 
-// Keep scene ids unique even if a type repeats in the skeleton.
 const counts: Record<string, number> = {};
 const scenes = skeleton.map((type) => {
   counts[type] = (counts[type] ?? 0) + 1;
@@ -141,11 +126,15 @@ try {
 fs.symlinkSync(path.relative(epDir, path.resolve("src/lib")), libLink, "dir");
 
 console.log(`Created ${epDir}/  (${width}x${height}, intent=${values.intent ?? "generic"})`);
-console.log(`  scene-spec.json  (${scenes.length} scenes: ${scenes.map((s) => s.type).join(" -> ")})`);
+console.log(
+  `  scene-spec.json  (${scenes.length} scenes: ${scenes.map((s) => s.type).join(" -> ")})`,
+);
 console.log(`  index.html       (generated, total=${built.totalDuration}s)`);
 console.log("  meta.json, hyperframes.json, assets/, lib -> ../../lib");
 console.log("\nNext steps:");
-console.log(`  1. Edit ${path.relative(process.cwd(), path.join(epDir, "scene-spec.json"))} (slots + scene-types)`);
+console.log(
+  `  1. Edit ${path.relative(process.cwd(), path.join(epDir, "scene-spec.json"))} (slots + scene-types)`,
+);
 console.log(`  2. bun run assemble ${slug}`);
 console.log(`  3. bun run scripts/scene-qa.ts ${slug}   # per-scene review`);
 console.log(`  4. add assets/voice.mp3 + captions.json, then bun run render:episode ${slug}`);

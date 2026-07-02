@@ -1,9 +1,3 @@
-/**
- * episode-context — resolves everything distribution copy needs about an
- * episode (narration, spec text, captions timing, rendered-mp4 pin) from the
- * slug-keyed locations it lives in. Tolerates partial episodes: missing
- * inputs land in `warnings`, they never throw.
- */
 import fs from "node:fs";
 import path from "node:path";
 
@@ -14,7 +8,6 @@ export interface CaptionWord {
   [key: string]: unknown;
 }
 
-// MCP generate_audio writes { words: [...] }; the episode asset is a bare array.
 export function parseCaptionWords(json: unknown): CaptionWord[] | null {
   const words = Array.isArray(json) ? json : (json as { words?: unknown } | null)?.words;
   return Array.isArray(words) ? (words as CaptionWord[]) : null;

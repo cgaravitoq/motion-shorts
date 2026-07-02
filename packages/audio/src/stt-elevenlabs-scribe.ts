@@ -118,8 +118,6 @@ export class ElevenLabsScribeProvider implements STTProvider {
     }
 
     const modelId = resolveScribeModel();
-    // The SDK's FormDataWrapper expects Buffer/Blob/stream (Uploadable.FromPath
-    // crashes at runtime). Read eagerly — Scribe caps at 5 min ≈ 5 MB resident.
     const response = await this.client.speechToText.convert({
       file: {
         data: fs.readFileSync(audioPath),

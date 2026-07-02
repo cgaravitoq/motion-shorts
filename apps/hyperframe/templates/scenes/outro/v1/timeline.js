@@ -1,8 +1,3 @@
-// outro entrance choreography. See title-cards/v1/timeline.js for the contract.
-// Special: this scene animates its text TO visible (tl.to), so it hides those
-// elements at literal time 0 first. It also fades the global #brand-corner
-// watermark out just before the lockup reveals. The assembler still performs
-// the generic section crossfade-in at the scene's window start.
 function build_outro(tl, t, s, p) {
   tl.set([s(".brand-outro__name"), s(".brand-outro__tagline"), s(".brand-outro__source")], { autoAlpha: 0, scale: 0.88, filter: "blur(16px)", transformOrigin: "50% 50%" }, 0);
   tl.to("#brand-corner", { autoAlpha: 0, duration: 0.45, ease: "power2.in" }, t - 0.55);

@@ -1,11 +1,3 @@
-// dashboard-composite entrance choreography. See title-cards/v1/timeline.js for
-// the contract.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance: s(".dc-tile") -> "#scene-<id> .dc-tile"
-//   p  = resolved params object for this scene
-// Seek-safe only (from/to/fromTo/set). Tiles stagger up; each mini-bar fill has
-// width:var(--pct) and grows via scaleX 0 -> 1 (transform-origin left), hidden at
-// literal 0 first; delta chips pop last. Values are static (no count-up).
 function build_dashboardComposite(tl, t, s, p) {
   tl.set(s(".dc-tile__fill"), { scaleX: 0, transformOrigin: "0% 50%" }, 0);
   tl.set(s(".dc-tile__delta"), { opacity: 0 }, 0);

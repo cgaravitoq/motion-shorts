@@ -1,8 +1,3 @@
-/* statement-lower-third — portrait (9:16). The statement anchors to the LOWER
-   third of the safe band (above the caption strip), left-aligned. The optional
-   image is a full-bleed dimmed background behind a gradient scrim; the scrim and
-   image are the scene's own frame (the statement is the primary object). */
-
 .scene-pad.slt { position: relative; justify-content: flex-end; }
 
 .slt-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.34; z-index: 0; }

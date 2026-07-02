@@ -1,14 +1,3 @@
-/**
- * upload-gateway core — the exact contract the pipeline consumes
- * (apps/hyperframe/scripts/lib/r2-artifacts.ts + packages/r2-client):
- *
- *   PUT  /objects/<key>   x-upload-token, x-content-sha256, content-type, body
- *   GET  /objects/<key>   x-upload-token -> 200 bytes (+content-type) | 404
- *   HEAD /objects/<key>   x-upload-token -> 200 (+content-length/type) | 404
- *
- * Pure Effect handler over a minimal structural R2 binding so tests run
- * under bun with a mock bucket — no Workers runtime required.
- */
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 

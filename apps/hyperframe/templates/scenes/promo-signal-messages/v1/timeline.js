@@ -1,6 +1,3 @@
-// promo-signal-messages entrance + float choreography. Seek-safe only
-// (from/to/set; no callbacks). Cards pop in one by one down the staircase,
-// then drift gently out of phase like floating notifications.
 function build_promoSignalMessages(tl, t, s, p) {
   tl.set(s(".psm-badge"), { autoAlpha: 0, y: -24 }, 0);
   tl.set(s(".psm-title"), { autoAlpha: 0, y: 46 }, 0);
@@ -15,7 +12,6 @@ function build_promoSignalMessages(tl, t, s, p) {
   tl.to(s(".psm-card:nth-child(2)"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.8)" }, t + 1.2);
   tl.to(s(".psm-card:nth-child(3)"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.8)" }, t + 1.55);
 
-  // gentle out-of-phase float
   tl.to(s(".psm-card:nth-child(1)"), { y: -10, duration: 0.9, ease: "sine.inOut" }, t + 2.3);
   tl.to(s(".psm-card:nth-child(1)"), { y: 0, duration: 0.9, ease: "sine.inOut" }, t + 3.2);
   tl.to(s(".psm-card:nth-child(2)"), { y: -12, duration: 0.9, ease: "sine.inOut" }, t + 2.6);

@@ -156,22 +156,35 @@ export const validateSourcePackage = (obj: unknown): SimpleValidation => {
           errors.push(`assets[${index}].${field} must be a non-empty string`);
         }
       }
-      if (asset.bytes !== undefined && (!Number.isInteger(asset.bytes) || (asset.bytes as number) < 0)) {
+      if (
+        asset.bytes !== undefined &&
+        (!Number.isInteger(asset.bytes) || (asset.bytes as number) < 0)
+      ) {
         errors.push(`assets[${index}].bytes must be a non-negative integer when present`);
       }
       if (asset.role !== undefined && !SOURCE_ASSET_ROLES.includes(asset.role as string)) {
-        errors.push(`assets[${index}].role must be one of ${SOURCE_ASSET_ROLES.join(", ")} when present`);
+        errors.push(
+          `assets[${index}].role must be one of ${SOURCE_ASSET_ROLES.join(", ")} when present`,
+        );
       }
       if (asset.motion !== undefined && !SOURCE_ASSET_MOTION.includes(asset.motion as string)) {
-        errors.push(`assets[${index}].motion must be one of ${SOURCE_ASSET_MOTION.join(", ")} when present`);
+        errors.push(
+          `assets[${index}].motion must be one of ${SOURCE_ASSET_MOTION.join(", ")} when present`,
+        );
       }
       if (asset.altText !== undefined && typeof asset.altText !== "string") {
         errors.push(`assets[${index}].altText must be a string when present`);
       }
-      if (asset.licenseRisk !== undefined && !["low", "review", "blocked"].includes(asset.licenseRisk as string)) {
+      if (
+        asset.licenseRisk !== undefined &&
+        !["low", "review", "blocked"].includes(asset.licenseRisk as string)
+      ) {
         errors.push(`assets[${index}].licenseRisk must be low, review, or blocked when present`);
       }
-      if (asset.brandRisk !== undefined && !["low", "review", "blocked"].includes(asset.brandRisk as string)) {
+      if (
+        asset.brandRisk !== undefined &&
+        !["low", "review", "blocked"].includes(asset.brandRisk as string)
+      ) {
         errors.push(`assets[${index}].brandRisk must be low, review, or blocked when present`);
       }
       if (asset.transparent !== undefined && typeof asset.transparent !== "boolean") {

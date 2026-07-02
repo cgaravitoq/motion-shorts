@@ -118,7 +118,7 @@ Do not change narration, captions, audio, or unrelated scenes unless the user ex
 
 Final response should include:
 
-- the `contact-sheet.jpg` shown **in the chat** (CLI session: deliver the file into the conversation; MCP client: `scene_qa` already returns it as an inline image) — the user reviews from the chat, never by opening folders
+- the `contact-sheet.jpg` shown **in the chat** — deliver the file into the conversation; the user reviews from the chat, never by opening folders
 - what visual problem was fixed (which scenes / slots)
 - the per-scene QA path (`renders/<slug>-qa/`) and the key frames reviewed
 - the `inspect` verdict (`inspectOk` / `inspectIssues`) from `report.json`

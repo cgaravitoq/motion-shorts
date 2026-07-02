@@ -22,7 +22,7 @@
   object-fit: cover;
 }
 .ax-image[src=""] { display: none; }
-/* When the image is absent the frame keeps a usable canvas for the pins. */
+
 .ax-frame:has(.ax-image[src=""]) {
   min-height: 760px;
   background: color-mix(in srgb, var(--source-accent) 7%, var(--panel));

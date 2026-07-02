@@ -1,7 +1,3 @@
-/* promo-card-speaker — story-ad replica (9:16, absolute 1080x1920 geometry
-   from the source design). White frame; shell dark background layers and the
-   watermark are disabled whenever this type is present. */
-
 #ep-stage:has(.pcs) #bg-field {
   background: var(--brand-paper, #fff);
 }

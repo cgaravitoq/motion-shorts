@@ -94,7 +94,6 @@
         background: linear-gradient(120deg, transparent 0%, transparent calc(var(--shimmer-pos, -20%) - 12%), rgba(255,255,255,0.82) var(--shimmer-pos, -20%), transparent calc(var(--shimmer-pos, -20%) + 12%), transparent 100%);
         mix-blend-mode: overlay;
       }
-      /* Text variant: shimmer travels through the glyphs themselves via background-clip: text. Use on text-only elements where there is no container background to overlay. */
       .hf-shimmer-sweep--text {
         display: inline-block;
         background-image: linear-gradient(
@@ -214,8 +213,6 @@
       tl.from("#scene-grain .label", { x: -42, opacity: 0, duration: 0.45, ease: "back.out(1.7)" }, T.grain.in + 0.1);
       tl.from("#scene-grain .headline", { y: 34, opacity: 0, duration: 0.6, ease: "back.out(1.6)" }, T.grain.in + 0.3);
       tl.from("#scene-grain .demo-card", { y: 36, opacity: 0, scale: 0.96, duration: 0.7, ease: "power2.out" }, T.grain.in + 0.7);
-      // Deterministic grain offsets distributed across the full scene visibility (~6s)
-      // for a continuously-moving film-grain feel. tl.set is seek-safe.
       const grainOffsets = [
         [-5, 4], [6, -3], [-8, 1], [3, 7], [-2, -5], [9, 2], [-4, -7], [5, 5],
         [-9, -1], [2, 6], [-6, -3], [7, 4], [-1, 8], [4, -6], [-7, 0], [8, -2],

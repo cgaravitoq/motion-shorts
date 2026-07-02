@@ -1,9 +1,3 @@
-// big-stat entrance choreography. See title-cards/v1/timeline.js for the contract.
-// The hero number scales/blurs in, then counts up to its target. Count-up is
-// built from stepped tl.set(el,{textContent}) zero-duration tweens — the
-// seek-safe primitive (callbacks/onUpdate don't fire during Hyperframes'
-// frame-by-frame seek; only set() materialises reliably). The .bs-suffix span
-// keeps its own slot value.
 function build_bigStat(tl, t, s, p) {
   tl.from(s(".bs-label"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".bs-figure"), { scale: 0.7, autoAlpha: 0, filter: "blur(18px)", transformOrigin: "0% 50%", duration: 0.78, ease: "back.out(1.5)" }, t + 0.42);

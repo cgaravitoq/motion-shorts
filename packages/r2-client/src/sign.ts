@@ -19,7 +19,8 @@ export interface SignRequestArgs {
   now?: Date;
 }
 
-const hmac = (key: string | Buffer, value: string): Buffer => createHmac("sha256", key).update(value).digest();
+const hmac = (key: string | Buffer, value: string): Buffer =>
+  createHmac("sha256", key).update(value).digest();
 
 const hmacHex = (key: string | Buffer, value: string): string =>
   createHmac("sha256", key).update(value).digest("hex");
@@ -38,7 +39,8 @@ export const encodeKey = (key: string): string => key.split("/").map(encodeURICo
 
 export const timestamp = (date: Date): string => date.toISOString().replace(/[:-]|\.\d{3}/g, "");
 
-const signedHeadersString = (headers: Record<string, string>): string => Object.keys(headers).sort().join(";");
+const signedHeadersString = (headers: Record<string, string>): string =>
+  Object.keys(headers).sort().join(";");
 
 const canonicalHeaderString = (headers: Record<string, string>): string =>
   `${Object.keys(headers)
@@ -61,7 +63,9 @@ export const createCanonicalRequest = ({
     host,
     "x-amz-content-sha256": payloadHash,
     "x-amz-date": amzDate,
-    ...Object.fromEntries(Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value])),
+    ...Object.fromEntries(
+      Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value]),
+    ),
   };
   const signedHeaders = signedHeadersString(normalizedHeaders);
   const canonicalRequest = [
@@ -81,7 +85,9 @@ export const createStringToSign = (canonicalRequest: string, amzDate: string): s
   return ["AWS4-HMAC-SHA256", amzDate, credentialScope, sha256Hex(canonicalRequest)].join("\n");
 };
 
-export const signRequest = (args: SignRequestArgs): { url: string; headers: Record<string, string> } => {
+export const signRequest = (
+  args: SignRequestArgs,
+): { url: string; headers: Record<string, string> } => {
   const { canonicalRequest, signedHeaders, amzDate } = createCanonicalRequest(args);
   const dateStamp = amzDate.slice(0, 8);
   const credentialScope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`;
@@ -93,7 +99,9 @@ export const signRequest = (args: SignRequestArgs): { url: string; headers: Reco
       host: new URL(args.config.endpoint).host,
       "x-amz-content-sha256": args.payloadHash,
       "x-amz-date": amzDate,
-      ...Object.fromEntries(Object.entries(args.headers ?? {}).map(([name, value]) => [name.toLowerCase(), value])),
+      ...Object.fromEntries(
+        Object.entries(args.headers ?? {}).map(([name, value]) => [name.toLowerCase(), value]),
+      ),
       authorization:
         `AWS4-HMAC-SHA256 Credential=${args.config.accessKeyId}/${credentialScope}, ` +
         `SignedHeaders=${signedHeaders}, Signature=${signature}`,

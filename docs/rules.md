@@ -15,7 +15,7 @@ A short is a typed `scene-spec.json` at `apps/hyperframe/src/episodes/<slug>/sce
 
 ## 2. Scene-types — the only building blocks
 
-There are 24 scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`.
+There are 39 scene-types (24 general + 15 brand-pack-driven `promo-*` story-ad types). The 24 general scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`.
 
 Repeatable slots have ranges:
 
@@ -131,7 +131,7 @@ Run from `apps/hyperframe/` cwd:
 - `bun run scene:gallery` — generate the gallery episode exercising every scene-type.
 - `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2] [--frames=1|3]` — per-scene visual QA: snapshots key frames per scene + `hyperframes inspect` for overflow/overlap. Writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. No full mp4. `--scenes` re-checks only changed scenes; `--frames=3` adds entry/mid/late frames for motion debugging (default `1`).
 - `bun run render:episode <slug> --format=mp4 [--keep-local]` — final full render (after per-scene approval).
-- `bun run audio <script.txt> --lang=es --speed=1.0 --no-pause-injection [--out=<dir>]` — TTS + captions (`generate-audio.ts`). Takes any script path as a positional; `--out` defaults to `out/audio/`. Point it at the canonical voice dir per rule 21, e.g. `--out=public/voice/<slug>`.
+- `bun run audio <script.txt> --lang=es --speed=1.04 [--out=<dir>]` — TTS + captions (`generate-audio.ts`). Takes any script path as a positional; `--out` defaults to `out/audio/`. Point it at the canonical voice dir per rule 21, e.g. `--out=public/voice/<slug>`.
 
 Render variants:
 
@@ -142,7 +142,7 @@ Render variants:
 
 ## 15. Pipeline and gates
 
-producer -> strategist (3 scripts) -> [researcher] -> visual-director (writes `scene-spec.json`) -> audio-producer -> composer (`scene:check` + `assemble` + lint) -> qa (per-scene `scene-qa` loop, then final render) -> publisher.
+producer -> strategist (3 scripts) -> [researcher] -> visual-director (writes `scene-spec.json`) -> audio-producer -> composer (`scene:check` + `assemble` + lint) -> qa (per-scene `scene-qa` loop, then final render). Publishing is manual copy-paste downstream — distribution copy is produced by the generate-distribution-copy skill (`distribution.json` + `copy:check` / `copy:gate`).
 
 Gates:
 
@@ -151,11 +151,7 @@ Gates:
 3. **per-scene visual** — approve/reject each scene; iterate only the rejected ones via `assemble` + `scene-qa --scenes`
 4. final render
 
-## 16. MCP tools
-
-`apps/mcp` exposes: `list_scene_types`, `get_scene_type`, `recommend_scene_types(intent)`, `validate_scene_spec(spec)`, `assemble_episode(spec)`, `scene_qa(slug, [scenes])`, `lint_html`, `generate_audio`, `render_composition`.
-
-## 17. Gitignored outputs
+## 16. Gitignored outputs
 
 Don't commit `out/`, `renders/`, `node_modules/`, `.turbo/`. `bun.lock` IS committed (pinned).
 R2 + remote manifests are canonical for final accepted render/media artifacts. Review renders stay local by default; pass `--upload=r2` only when the output should be persisted remotely. After verified upload, local render outputs are deleted by default unless `--keep-local` is passed. Fresh clones of remote-only episodes should run `bun run hydrate:episode <slug>` from `apps/hyperframe/` before previewing or rendering.
@@ -181,7 +177,7 @@ One `AGENTS.md` at root, with `CLAUDE.md` as a symlink.
 
 `TTS_PROVIDER=elevenlabs|inworld`; default is ElevenLabs.
 ElevenLabs voices use `ELEVENLABS_VOICE_ID_ES` / `ELEVENLABS_VOICE_ID_EN`.
-ElevenLabs TTS defaults to `ELEVENLABS_MODEL_ID=eleven_v3`; override per run with `--model=<id>`.
+ElevenLabs TTS uses `ELEVENLABS_MODEL_ID=eleven_v3` — v3-only; non-v3 model IDs (`eleven_multilingual_v2`, `eleven_turbo_v2`, any v2/v2.5) are permanently blocked and the CLI throws if one is passed.
 Inworld requires `INWORLD_API_KEY` + `INWORLD_VOICE_ID_ES` / `INWORLD_VOICE_ID_EN`.
 Inworld model defaults to `INWORLD_TTS_MODEL=inworld-tts-2`.
 STT swap via `STT_PROVIDER=elevenlabs|hyperframes-transcribe`.
@@ -195,9 +191,9 @@ Amplified style: `--style=0.25` (increases API latency).
 
 See `docs/voice-config.md` for full voice configuration.
 
-## 24. Script-side pause injection
+## 24. Native pacing (no injection)
 
-Pause injection is **v2/v2.5-only** (SSML `<break />` after `.!?` and `:;--`, via `--pause-sentence=<ms>` / `--pause-clause=<ms>`). On `eleven_v3` — the production default — injection never runs and `--pause-*` flags are ignored with a warning: v3 pause tags produce unpredictable multi-second gaps. Hand-author at most 1-2 expressive tags in the script instead (`[excited]`, `[thoughtful]`, `[short pause]`).
+There is no pause injection. The old `--pause-sentence` / `--pause-clause` / `--no-pause-injection` flags are removed, and `eleven_v3` is the only model. Pacing is native: write tight scripts and control rhythm with punctuation only (periods/commas for beats, ellipses `…` for a longer hold). Never inject `<break>` SSML or `[pause]` / `[short pause]` / `[long pause]` tags programmatically; hand-author at most 1-2 expressive tags in the script instead (`[excited]`, `[thoughtful]`).
 
 ## 25. Captions shape
 

@@ -13,8 +13,6 @@
     "copy:check": "bun run scripts/copy-check.ts",
     "copy:gate": "bun run scripts/copy-voice-gate.ts",
     "copy:sync": "bun run scripts/copy-sync.ts",
-    "publish:auth": "bun run scripts/publish-auth.ts",
-    "publish:episode": "bun run scripts/publish-episode.ts",
     "scene:gallery": "bun run scripts/build-catalog-demo.ts",
     "lint:seek-safe": "bun run scripts/lint-seek-safe.ts",
     "preview": "bunx hyperframes preview",
@@ -32,10 +30,10 @@
   },
   "dependencies": {
     "@cgaravitoq/audio": "workspace:*",
-    "@cgaravitoq/publish": "workspace:*",
-    "@cgaravitoq/r2-client": "workspace:*",
     "@cgaravitoq/spec": "workspace:*",
-    "effect": "4.0.0-beta.78"
+    "@t3-oss/env-core": "0.13.11",
+    "effect": "4.0.0-beta.78",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "hyperframes": "0.6.70"

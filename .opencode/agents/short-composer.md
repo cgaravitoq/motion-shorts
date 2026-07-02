@@ -28,7 +28,7 @@ You may edit only inside `apps/hyperframe/src/episodes/<slug>/` — specifically
 ## Workflow
 
 1. Confirm the audio gate was approved before finalizing the spec.
-2. Read `src/episodes/<slug>/scene-spec.json`. Fill every missing or placeholder slot from the approved script + visual direction. Each scene has a `type` (one of the 24 scene-types under `apps/hyperframe/templates/scenes/`) and typed `slots`. The `outro` scene must stay pinned as the last scene. To confirm a scene-type's exact slots and repeatable ranges, read its `apps/hyperframe/templates/scenes/<type>/v1/manifest.json` (or use the MCP `get_scene_type` tool). The assembler owns everything universal (background, brand-corner, paused GSAP timeline + crossfades, track allocation, captions/audio tracks, registry) — only touch scene `slots`.
+2. Read `src/episodes/<slug>/scene-spec.json`. Fill every missing or placeholder slot from the approved script + visual direction. Each scene has a `type` (one of the 24 scene-types under `apps/hyperframe/templates/scenes/`) and typed `slots`. The `outro` scene must stay pinned as the last scene. To confirm a scene-type's exact slots and repeatable ranges, read its `apps/hyperframe/templates/scenes/<type>/v1/manifest.json`. The assembler owns everything universal (background, brand-corner, paused GSAP timeline + crossfades, track allocation, captions/audio tracks, registry) — only touch scene `slots`.
 3. Copy the approved `voice.mp3` and `captions.json` into `src/episodes/<slug>/assets/` if not already present.
 4. Validate, assemble, then lint — all from `apps/hyperframe/`:
    - `bun run scene:check src/episodes/<slug>/scene-spec.json`

@@ -29,7 +29,7 @@ A generated image must be referenced from a scene-type slot that takes an image.
 
 So before generating, confirm where the asset will land:
 
-- Inspect the candidate scene-type with `bun run scene:check` or the MCP `get_scene_type` tool and look for an image-capable slot (kind `image`, or a slot whose value is an asset path).
+- Inspect the candidate scene-type by reading `templates/scenes/<type>/v1/manifest.json` and look for an image-capable slot (kind `image`, or a slot whose value is an asset path).
 - **If no scene-type exposes an image slot, flag it.** The integration point does not exist yet — an image-capable scene-type (or an image slot added to an existing one, e.g. a `media`/`screenshot` slot on `social-card` or a new screenshot scene-type) must be introduced first. Raise this with the visual-director before generating the asset; do not assemble an episode that references a slot that the assembler cannot bind.
 
 ## Workflow

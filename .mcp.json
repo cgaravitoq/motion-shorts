@@ -3,10 +3,6 @@
     "notion": {
       "type": "http",
       "url": "https://mcp.notion.com/mcp"
-    },
-    "motion-shorts": {
-      "command": "bun",
-      "args": ["run", "apps/mcp/src/index.ts"]
     }
   }
 }

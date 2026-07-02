@@ -1,14 +1,3 @@
-/*
- * GSAP timeline helpers shared across Hyperframes compositions.
- *
- * Hyperframes contract (see AGENTS.md rules 1–2 and 21):
- *   - Every composition MUST register `window.__timelines["<comp-id>"]`
- *   - Timeline MUST be `paused: true` — the engine drives the playhead
- *   - No Math.random / Date.now / repeat: -1 / async timeline construction
- *
- * Loaded via <script src="lib/timeline-helpers.js"></script> AFTER GSAP.
- * Exposes helpers on window.__hf for use inside episode <script> blocks.
- */
 ((global) => {
   if (!global.gsap) {
     console.error("[hf] timeline-helpers loaded before GSAP — load gsap.min.js first");
@@ -23,10 +12,6 @@
     global.__timelines[compositionId] = timeline;
   };
 
-  /**
-   * Builds a paused GSAP timeline and registers it under the composition ID
-   * read from the data-composition-id attribute on the stage element.
-   */
   const buildTimeline = (stageSelector) => {
     const stage = document.querySelector(stageSelector);
     if (!stage) throw new Error(`buildTimeline: ${stageSelector} not found`);
@@ -37,12 +22,6 @@
     return tl;
   };
 
-  /**
-   * Counter animation pattern — animates a number from `from` to `to` over
-   * `duration`s, formatting with the given `format` callback.
-   *
-   *   counter(tl, "#kpi-value", { from: 0, to: 150000, duration: 2 }, 0.5);
-   */
   const counter = (tl, target, opts, position = 0) => {
     const el = typeof target === "string" ? document.querySelector(target) : target;
     if (!el) throw new Error(`counter: ${target} not found`);
@@ -63,10 +42,6 @@
     );
   };
 
-  /**
-   * Stagger reveal — fades in children of `parent` with vertical offset.
-   * Layout-Before-Animation rule: assumes children already in final position.
-   */
   const staggerIn = (tl, parent, opts = {}, position = 0) => {
     const sel = typeof parent === "string" ? `${parent} > *` : parent;
     return tl.from(
@@ -82,11 +57,6 @@
     );
   };
 
-  /**
-   * Fits text into a container by shrinking font-size until it fits or hits
-   * minFontSize. Uses the official window.__hyperframes.fitTextFontSize when
-   * present (Hyperframes runtime injects it); falls back to a manual loop.
-   */
   const fitText = (selector, opts = {}) => {
     const el = typeof selector === "string" ? document.querySelector(selector) : selector;
     if (!el) return;
@@ -125,12 +95,6 @@
     }
   };
 
-  // Idempotent: extend any existing __hf rather than replace. This script
-  // gets re-evaluated each time a sub-composition is inlined into the master
-  // page (Hyperframes inlines them at render time), so a destructive
-  // `__hf = { ... }` would clobber methods attached by other helpers
-  // (notably captions-karaoke.js's `__hf.karaoke`). Keep this assignment
-  // additive.
   global.__hf = global.__hf || {};
   global.__hf.registerTimeline = registerTimeline;
   global.__hf.buildTimeline = buildTimeline;

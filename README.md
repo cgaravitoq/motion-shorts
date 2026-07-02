@@ -30,7 +30,9 @@ paused GSAP timeline + crossfades, captions/audio, track allocation) plus
 `contrib-heatmap`, `decision-tree`, `outro` (the pinned brand sign-off,
 always last), plus seven asset-led types — `media-split`,
 `annotated-asset`, `code-output`, `dashboard-composite`,
-`statement-lower-third`, `logo-grid`, and `before-after`.
+`statement-lower-third`, `logo-grid`, and `before-after`. A further 15
+brand-pack-driven `promo-*` story-ad types bring the on-disk total to 39
+scene-types.
 Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps`
 2-6, `metric.stats` 1-4, `timeline.events` 3-6, `code.lines` 1-12).
 
@@ -85,7 +87,7 @@ cp .env.example .env                                   # set ELEVENLABS_API_KEY
 ```
 
 This repo is local-first. Specs are assembled, QA'd, and rendered through the
-scene-hub scripts, the Hyperframes CLI, or the local stdio MCP server; there is
+scene-hub scripts and the Hyperframes CLI; there is
 no maintained production API or worker stack.
 
 ## Scene-hub commands
@@ -113,9 +115,9 @@ bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]
 # Final full render (only after per-scene QA approval).
 bun run render:episode <slug> --format=mp4 [--keep-local]
 
-# TTS + word-level captions
-bun run audio examples/<slug>.txt --lang=es --speed=1.0 \
-  --pause-sentence=300 --pause-clause=0 --out=public/voice/<slug>
+# TTS + word-level captions (eleven_v3 only; pacing is native — punctuation, no injection)
+bun run audio examples/<slug>.txt --lang=es --speed=1.04 \
+  --out=public/voice/<slug>
 ```
 
 ## Render an existing demo episode
@@ -187,7 +189,7 @@ echo "Your voiceover script." > examples/my-first-short.txt
 
 # 3. Generate voice + word-level captions
 bun run audio examples/my-first-short.txt --lang=es \
-  --speed=1.0 --pause-sentence=300 --pause-clause=0 \
+  --speed=1.04 \
   --out=public/voice/my-first-short
 
 # 4. Listen BEFORE building the visuals (TTS issues are cheap to fix in
@@ -237,7 +239,7 @@ apps/hyperframe/
                            _shell/        Universal look (tokens, bg layers,
                                           brand-corner, paused GSAP timeline,
                                           captions/audio, track allocation)
-                           scenes/<type>/v1/  24 scene-types: hook, title-cards,
+                           scenes/<type>/v1/  24 general scene-types: hook, title-cards,
                                           flow, fanout, metric, bars, big-stat,
                                           comparison, timeline, quote, code,
                                           social-card, progress-ring, line-chart,
@@ -247,6 +249,8 @@ apps/hyperframe/
                                           dashboard-composite,
                                           statement-lower-third, logo-grid,
                                           before-after
+                                          + 15 brand promo-* story-ad types
+                                          (39 scene-types total)
   examples/<slug>.txt    Narration scripts (one per episode)
   public/voice/<slug>/   Canonical audio assets (gitignored, regenerable)
   renders/               Local render + scene-qa cache (gitignored)
@@ -258,13 +262,7 @@ packages/audio/          @cgaravitoq/audio — ElevenLabs TTS + Scribe STT,
 packages/spec/           @cgaravitoq/spec — Effect-Schema single source of
                          truth for scene-spec + remote manifests, imported
                          across the engine.
-packages/publish/        @cgaravitoq/publish — YouTube/TikTok/Instagram
-                         upload clients + token/ledger helpers.
 packages/r2-client/      R2 upload/manifest helper for render + audio artifacts.
-apps/mcp/                Local stdio MCP server: list_scene_types,
-                         get_scene_type, recommend_scene_types,
-                         validate_scene_spec, assemble_episode, scene_qa,
-                         lint_html, generate_audio, render_composition.
 
 .agents/skills/          Source skill files (audio-pipeline, canonical-short,
                          new-episode, produce-from-source, short-*)

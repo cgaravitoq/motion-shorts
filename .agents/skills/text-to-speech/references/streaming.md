@@ -8,7 +8,6 @@ Stream audio chunks as they're generated for lower latency.
 |-------|---------|----------|
 | `eleven_flash_v2_5` | ~75ms | Lowest latency, 32 languages |
 | `eleven_flash_v2` | ~75ms | Lowest latency, English only |
-| `eleven_turbo_v2_5` | Low | Balanced quality/speed |
 
 ## Python Streaming
 

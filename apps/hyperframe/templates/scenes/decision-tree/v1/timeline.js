@@ -1,14 +1,3 @@
-// decision-tree entrance choreography. See bars/v1/timeline.js for the contract
-// header and progress-ring/v1/timeline.js for the real-px stroke-dasharray pattern.
-//   tl = global paused timeline   t = this scene's global start (seconds)
-//   s  = selector helper scoped to this instance: s(".dt-branch") -> "#scene-<id> .dt-branch"
-//   p  = resolved params object for this scene (p.branches drives the layout)
-// Seek-safe only (from/to/fromTo/set). Connector geometry is derived from the SAME
-// fixed constants that the CSS uses to place the nodes (viewBox 912x760, root center
-// x=456, trunk top y=196, elbow y=320, result top y=420) — NEVER measured at runtime.
-// Each wire's stroke-dasharray is its REAL axis-aligned px length (a literal sum), and
-// it draws via strokeDashoffset len->0 (the seek-safe primitive, like progress-ring).
-// Result columns + the root are placed synchronously up front (deterministic setup).
 function build_decisionTree(tl, t, s, p) {
   const W = 912;
   const ROOT_X = W / 2;

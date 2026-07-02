@@ -1,7 +1,3 @@
-/* promo-details — companion to the promo-* story-ad family (9:16, absolute
-   1080x1920 geometry). White frame; shell dark background layers and the
-   watermark are disabled whenever this type is present. */
-
 #ep-stage:has(.pdt) #bg-field {
   background: var(--brand-paper, #fff);
 }

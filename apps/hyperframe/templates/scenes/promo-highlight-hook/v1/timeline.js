@@ -1,6 +1,3 @@
-// promo-highlight-hook entrance choreography. Seek-safe only (from/to/set;
-// no callbacks). Logo fades, the marker headline rises, the subtitle
-// follows, the art canvas rises from the bottom edge with a slow settle.
 function build_promoHighlightHook(tl, t, s, p) {
   tl.set(s(".phk-logo"), { autoAlpha: 0, y: -20 }, 0);
   tl.set([s(".phk-title"), s(".phk-subtitle")], { autoAlpha: 0, y: 46 }, 0);
