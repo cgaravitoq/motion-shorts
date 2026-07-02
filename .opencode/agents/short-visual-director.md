@@ -32,11 +32,12 @@ You translate the approved script into a typed `scene-spec.json`. A short is a s
 
 ## Scene-types (the only building blocks)
 
-24 types. Each owns its content + entrance motion; the assembler owns everything universal (background, brand-corner, the single paused GSAP timeline + crossfades, track allocation, captions/audio). `outro` is the pinned brand sign-off and is ALWAYS the last scene. Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12, `progress-ring.rings` 1-3, `line-chart.series` 1-3, `decision-tree.branches` 2-3).
+39 types: 24 general types plus 15 brand-pack-driven `promo-*` story-ad/carousel types. Each owns its content + entrance motion; the assembler owns everything universal (background, brand-corner, the single paused GSAP timeline + crossfades, track allocation, captions/audio). `outro` is the pinned brand sign-off and is ALWAYS the last scene. Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12, `progress-ring.rings` 1-3, `line-chart.series` 1-3, `decision-tree.branches` 2-3).
 
 - **Visual-first (graphic — prefer these as the backbone):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `metric`/`big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window), `progress-ring` (animated rings), `line-chart` (animated trend), `contrib-heatmap` (activity grid), `decision-tree` (branching choice), `social-card` (platform post card). They explain by being SEEN.
 - **Text-led (use sparingly — short copy only):** `hook` (opening statement), `title-cards` (labeled cards), `quote` (pull-quote).
-- **Desktop-first (asset-led, 16:9-first but carry a portrait layout):** `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`. Their image slots bind paths under the episode's `assets/`.
+- **Asset-led portrait types:** `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`. Image-capable slots bind paths under the episode's `assets/`.
+- **Promo brand-pack types:** `promo-intro-card`, `promo-hero`, `promo-card-speaker`, `promo-blur-cta`, `promo-agenda`, `promo-quote`, `promo-details`, `promo-highlight-hook`, `promo-signal`, `promo-signal-cards`, `promo-signal-action`, `promo-signal-toolbar`, `promo-signal-messages`, `promo-signal-device`, `promo-product-outro`.
 - **Brand:** `outro` (pinned, always last).
 
 ## Visual-first by default

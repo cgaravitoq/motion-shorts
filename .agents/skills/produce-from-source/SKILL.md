@@ -20,7 +20,7 @@ description: >
 
 A short is a typed `scene-spec.json` at `src/episodes/<slug>/scene-spec.json`. A deterministic assembler turns it into the monolithic `index.html` (1:1; identical spec => identical bytes). **`index.html` is generated — never hand-edit it.** Every spec edit is followed by `bun run assemble <slug>`.
 
-Scenes are composed only from the 17 scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `outro`. `outro` is the pinned brand sign-off, always last.
+Scenes are composed only from the 39 scene-types under `templates/scenes/<type>/v1/`: the 24 general types documented in `docs/templates.md` plus the 15 brand-pack-driven `promo-*` story-ad/carousel types. `hook` normally opens; `outro` is the pinned brand sign-off, always last. Read each chosen type's `manifest.json` before filling slots.
 
 ## When to invoke
 

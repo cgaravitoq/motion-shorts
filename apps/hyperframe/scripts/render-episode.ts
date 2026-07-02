@@ -9,7 +9,7 @@
  * read-only — no more git-dirty surprises after a render.
  *
  *   bun run scripts/render-episode.ts <slug> [--format=mp4|mov|webm]
- *                                              [--variant=short|square-1080]
+ *                                              [--variant=short]
  *                                              [--quality=draft|standard|high]
  *                                              [--output=<path>]
  *                                              [--fps=30]
@@ -20,8 +20,7 @@
  *                                              [--keep-local]
  *
  * Episode layout expected:
- *   src/episodes/<slug>/index.html         # root 9:16 composition (variant=short)
- *   src/episodes/<slug>/index.square.html  # optional 1:1 composition (variant=square-1080)
+ *   src/episodes/<slug>/index.html         # root 9:16 composition
  *   src/episodes/<slug>/meta.json          # { id, name, ... }
  *   src/episodes/<slug>/hyperframes.json   # config
  *   src/episodes/<slug>/assets/voice.mp3
@@ -64,15 +63,11 @@ const HELP = `Usage: bun run scripts/render-episode.ts <slug> [options]
 Options:
   --format=mp4|mov|webm    Output container format. Default mp4 (h264 yuv420p).
                            mov gives ProRes 4444 + alpha; webm gives VP9 + alpha.
-  --variant=short|square-1080
-                            Composition variant. Default short (9:16, reads
-                            index.html). square-1080 reads index.square.html and
-                            renders 1080x1080.
+  --variant=short           Composition variant. Default short (9:16, reads
+                            index.html). Kept for explicit compatibility.
   --quality=draft|standard|high
                            Render quality preset. Default standard.
-  --output=<path>          Output file. Default renders/<slug>.<format> for
-                            short, renders/<slug>.square.<format> for
-                            square-1080.
+  --output=<path>          Output file. Default renders/<slug>.<format>.
   --fps=24|30|60           Frame rate. Default 30.
   --tail=<seconds>         Padding past end-of-audio so the final frame can
                            hold for reading. Resolution order: CLI flag >
@@ -96,7 +91,7 @@ Options:
 
 const VALID_FORMATS = ["mp4", "mov", "webm"];
 const VALID_FPS_VALUES = [24, 30, 60];
-const VALID_VARIANTS = ["short", "square-1080"];
+const VALID_VARIANTS = ["short"];
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
 interface VariantRender {
@@ -106,17 +101,9 @@ interface VariantRender {
   bitrate30: string;
 }
 
-// Variant resolves to the source HTML filename inside the episode dir. The
-// short default keeps the canonical "index.html" — existing render behavior is
-// byte-identical when --variant is omitted.
+// Variant resolves to the source HTML filename inside the episode dir.
 const VARIANT_RENDER: Record<string, VariantRender> = {
   short: { index: "index.html", outputSuffix: "", resolution: "portrait", bitrate30: "10M" },
-  "square-1080": {
-    index: "index.square.html",
-    outputSuffix: ".square",
-    resolution: "square",
-    bitrate30: "10M",
-  },
 };
 
 const variantIndexFilename = (variant: string): string =>
@@ -306,13 +293,7 @@ const main = async (): Promise<void> => {
   const captionsPath = path.join(assetsDir, "captions.json");
 
   if (!fs.existsSync(indexPath)) {
-    const hint =
-      variant === "square-1080"
-        ? " The square variant has no assembler support yet (see docs/formats.md)."
-        : "";
-    console.error(
-      `render-episode: missing required file ${indexPath} for variant=${variant}.${hint}`,
-    );
+    console.error(`render-episode: missing required file ${indexPath} for variant=${variant}.`);
     process.exit(1);
   }
 
@@ -392,14 +373,8 @@ const main = async (): Promise<void> => {
     );
   }
 
-  // ── Build working copy under out/episodes/<slug>[/<variant>] ──────────
-  // Short variant keeps the historical layout (out/episodes/<slug>/) so the
-  // default render path is byte-identical. Non-default variants nest under
-  // out/episodes/<slug>/<variant>/ so they don't clobber each other.
-  const workDir =
-    variant === "short"
-      ? path.resolve("out/episodes", slug)
-      : path.resolve("out/episodes", slug, variant);
+  // ── Build working copy under out/episodes/<slug> ─────────────────────
+  const workDir = path.resolve("out/episodes", slug);
 
   const srcHtml = fs.readFileSync(indexPath, "utf8");
   const stampedDuration = hasVoice
