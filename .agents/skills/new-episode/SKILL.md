@@ -19,7 +19,7 @@ Scaffold a new Hyperframes episode at `apps/hyperframe/src/episodes/<slug>/`. An
 
 1. **Slug uniqueness.** `ls apps/hyperframe/src/episodes/` -- abort if the slug already exists with content (the scaffolder also refuses a non-empty dir).
 2. **Slug format.** Lowercase kebab-case, regex `^[a-z0-9][a-z0-9-]*$`. Convention: `short-NN` for vertical reels, topic-slug for one-offs.
-3. **Pick aspect.** Default vertical 9:16 (`--width=1080 --height=1920`). For horizontal `--width=1920 --height=1080`. For LinkedIn square `--width=1080 --height=1080`.
+3. **Use the vertical format.** Default and supported production format is 9:16 (`--width=1080 --height=1920`). Do not introduce horizontal or square episodes in the current pipeline.
 4. **Pick an intent (optional).** `--intent=` seeds the spec from an intent skeleton (a sensible hook-first / outro-last scene order). One of: `informative`, `data`, `workflow`, `social`, `brand`, `vfx`. Omit for a generic `hook -> title-cards -> outro` starter.
 
 ## Run
@@ -65,7 +65,7 @@ The scaffold does NOT create `out/<slug>/` or `public/voice/<slug>/` — those c
 
 ## After scaffolding (author the spec)
 
-1. **Pick scene-types & fill slots.** Edit `scene-spec.json`: per scene set `id` (unique kebab), `type` (one of the 17 scene-types), optional `duration` (else the type default), optional `status` (`draft`/`approved` for the HITL loop), and `slots`. To see a type's exact slots and repeat ranges, run `bun run scene:gallery` or read `templates/scenes/<type>/v1/manifest.json`. Keep `outro` as the final scene (it's pinned to track 7). Self-framed types (`code`, `social-card`) already encode the no-double-frame rule.
+1. **Pick scene-types & fill slots.** Edit `scene-spec.json`: per scene set `id` (unique kebab), `type` (one of the 39 scene-types), optional `duration` (else the type default), optional `status` (`draft`/`approved` for the HITL loop), and `slots`. To see every type and each type's exact slots/repeat ranges, run `bun run scene:gallery` or read `templates/scenes/<type>/v1/manifest.json`. Keep `outro` as the final scene (it's pinned to track 7). Self-framed types (`code`, `social-card`, `code-output`, `annotated-asset`, `before-after`) already encode the no-double-frame rule.
 2. **Validate fast (no assembly):**
    ```bash
    bun run scene:check src/episodes/<slug>/scene-spec.json

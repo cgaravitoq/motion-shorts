@@ -31,11 +31,13 @@ The assembler owns everything universal: background layers, the brand-corner wat
 
 ## Scene-types (the building blocks)
 
-Seventeen scene-types live under `templates/scenes/<type>/v1/`:
+Thirty-nine scene-types live under `templates/scenes/<type>/v1/`: 24 general types plus 15 brand-pack-driven `promo-*` story-ad/carousel types.
 
-- **Visual-first (graphic — prefer these):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `line-chart` (time series with axes, 1-3 series), `progress-ring` (1-3 animated rings/gauges), `contrib-heatmap` (GitHub-style activity grid), `decision-tree` (question + 2-3 tone-coloured branches), `metric` / `big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window).
-- **Text-led (use sparingly):** `hook` (opening statement), `title-cards` (labeled cards), `quote` (pull-quote).
-- **Brand:** `outro` (pinned, always last).
+- **Visual-first general types (graphic — prefer these):** `fanout` (animated orchestration graph 1→N→1), `bars` (animated bar chart), `line-chart` (time series with axes, 1-3 series), `progress-ring` (1-3 animated rings/gauges), `contrib-heatmap` (GitHub-style activity grid), `decision-tree` (question + 2-3 tone-coloured branches), `metric` / `big-stat` (animated count-up numbers), `flow` (numbered pipeline + drawn connectors), `timeline` (rail + dots), `comparison` (A vs B), `code` (terminal/editor window), `social-card` (platform post card).
+- **Asset-led general types:** `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`. These bind image/screenshot paths under the episode's `assets/` where the manifest exposes image slots.
+- **Text-led general types (use sparingly):** `hook` (opening statement), `title-cards` (labeled cards), `quote` (pull-quote).
+- **Promo brand-pack types:** `promo-intro-card`, `promo-hero`, `promo-card-speaker`, `promo-blur-cta`, `promo-agenda`, `promo-quote`, `promo-details`, `promo-highlight-hook`, `promo-signal`, `promo-signal-cards`, `promo-signal-action`, `promo-signal-toolbar`, `promo-signal-messages`, `promo-signal-device`, `promo-product-outro`.
+- **Brand sign-off:** `outro` (pinned to track 7, always last).
 
 Repeatable slots have ranges (`title-cards.cards` 2-6, `flow.steps` 2-6, `fanout.workers` 2-6, `bars.bars` 2-6, `line-chart.series` 1-3, `progress-ring.rings` 1-3, `decision-tree.branches` 2-3, `metric.stats` 1-4, `comparison.left/rightPoints` 1-5, `timeline.events` 3-6, `code.lines` 1-12).
 

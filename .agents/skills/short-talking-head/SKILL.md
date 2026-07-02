@@ -197,9 +197,8 @@ If a teammate's local episode is missing the WebMs, hydration recreates them fro
 
 ## Integration status (follow-up)
 
-The scene-hub (`apps/hyperframe/templates/scenes/<type>/v1/`) has 17 scene-types: hook,
-title-cards, flow, fanout, metric, bars, big-stat, comparison, timeline, quote, code,
-social-card, progress-ring, line-chart, contrib-heatmap, decision-tree, outro.
+The scene-hub (`apps/hyperframe/templates/scenes/<type>/v1/`) has 39 scene-types: 24 general
+types plus 15 brand-pack-driven `promo-*` story-ad/carousel types.
 **None of them wraps an alpha-video presenter.** A short is assembled deterministically from
 `scene-spec.json` by the engine in `apps/hyperframe/scripts/lib/` (`scene-instantiator`,
 `assemble-episode`, `scene-spec`, `scene-router`) -- `index.html` is generated, never
@@ -235,7 +234,7 @@ short is blocked on that follow-up.
 
 - `AGENTS.md` -- critical constraints (monolithic generated single file, paused timeline +
   registry, seek-safe, track convention).
-- `apps/hyperframe/templates/scenes/` -- the 17 scene-types (none avatar-capable yet).
+- `apps/hyperframe/templates/scenes/` -- the 39 scene-types (none avatar-capable yet).
 - `apps/hyperframe/scripts/lib/` -- the assembler engine the future avatar scene-type plugs
   into.
 - `.agents/skills/canonical-short/SKILL.md` -- the full short pipeline.

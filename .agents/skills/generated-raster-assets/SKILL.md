@@ -25,12 +25,12 @@ Stay in pure scene-type HTML/CSS/SVG when the scene needs editable live counters
 
 ## Integration Point
 
-A generated image must be referenced from a scene-type slot that takes an image. As of now the 17 scene-types (`hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `outro`) expose only `text`, `richText`, and `repeat` slots — **none currently exposes an image slot**.
+A generated image must be referenced from a scene-type slot that takes an image. The current 39-type hub includes image-capable scene-types. Common general-purpose choices are `media-split`, `annotated-asset`, `statement-lower-third`, and `before-after`; promo scene-types also expose image slots for brand-pack story ads and carousel frames.
 
 So before generating, confirm where the asset will land:
 
 - Inspect the candidate scene-type by reading `templates/scenes/<type>/v1/manifest.json` and look for an image-capable slot (kind `image`, or a slot whose value is an asset path).
-- **If no scene-type exposes an image slot, flag it.** The integration point does not exist yet — an image-capable scene-type (or an image slot added to an existing one, e.g. a `media`/`screenshot` slot on `social-card` or a new screenshot scene-type) must be introduced first. Raise this with the visual-director before generating the asset; do not assemble an episode that references a slot that the assembler cannot bind.
+- **If the chosen scene-type does not expose an image slot, switch types or flag it.** Do not assemble an episode that references a slot the manifest does not define.
 
 ## Workflow
 

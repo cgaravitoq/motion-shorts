@@ -6,8 +6,6 @@ motion-shorts ships a single render profile: the **9:16 short**, generated from 
 |---------|--------|-------------|-----|----------------------------|---------------------------------------------------------------|--------------|
 | `short` | 9:16   | 1080 × 1920 | 30  | H.264 High + AAC-LC 48 kHz | YouTube Shorts, TikTok, Instagram Reels, LinkedIn mobile feed | `index.html` |
 
-> The 1:1 `square-1080` variant is declared in `render:episode` but has no assembler support yet.
-
 ## Render
 
 Compositions are generated — assemble from `scene-spec.json` first, then render:
