@@ -3,7 +3,7 @@
   "type": "media-split",
   "version": 1,
   "label": "Media split (copy + screenshot)",
-  "description": "Real product copy paired with a screenshot or image. A title and 2-4 marked bullet points sit on one side; the image is the primary asset on the other side (70/30 desktop, full-width mid-band on portrait). mediaSide flips the columns left/right. The image carries presence (rounded, bordered, soft shadow) and is never double-framed.",
+  "description": "Real product copy paired with a screenshot or image. A title and 2-4 marked bullet points lead, with the image as the primary asset in a full-width mid-band. The image carries presence (rounded, bordered, soft shadow) and is never double-framed.",
   "builder": "build_mediaSplit",
   "classPrefix": "ms-",
   "defaultDuration": 7.5,

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { formatBytes } from "./lib/telemetry";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 export const defaultLedgerPath = path.resolve(scriptDir, "..", ".metrics", "runs.ndjson");
@@ -37,19 +38,6 @@ const escapeHtml = (value: unknown): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-
-export const formatBytes = (bytes: number): string => {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "0B";
-  const units = ["B", "KB", "MB", "GB"];
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  const rounded = unit > 0 && value < 10 ? value.toFixed(1) : Math.round(value).toString();
-  return `${rounded}${units[unit]}`;
-};
 
 export const formatMs = (ms: number): string => {
   if (!Number.isFinite(ms)) return "—";

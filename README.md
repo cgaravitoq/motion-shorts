@@ -28,7 +28,7 @@ paused GSAP timeline + crossfades, captions/audio, track allocation) plus
 `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`,
 `quote`, `code`, `social-card`, `progress-ring`, `line-chart`,
 `contrib-heatmap`, `decision-tree`, `outro` (the pinned brand sign-off,
-always last), plus seven desktop-first asset-led types — `media-split`,
+always last), plus seven asset-led types — `media-split`,
 `annotated-asset`, `code-output`, `dashboard-composite`,
 `statement-lower-third`, `logo-grid`, and `before-after`. A further 15
 brand-pack-driven `promo-*` story-ad types bring the on-disk total to 39
@@ -36,9 +36,7 @@ scene-types.
 Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps`
 2-6, `metric.stats` 1-4, `timeline.events` 3-6, `code.lines` 1-12).
 
-A short renders 9:16 by default; pass `--format=desktop` to also assemble a
-16:9 `index.desktop.html` (rendered with `render:episode --variant=desktop-1080p`),
-where the desktop-first types come into their own.
+A short renders 9:16, generated from `scene-spec.json` by the assembler.
 
 No React, no JSX, no build step. Render is local, single-machine,
 headless Chrome + ffmpeg, frame-accurate. See
@@ -101,8 +99,7 @@ All commands run from `apps/hyperframe/`:
 bun run new:episode <slug> [--intent=informative|data|workflow|social|brand|vfx]
 
 # Regenerate index.html from scene-spec.json (after every spec edit).
-# --format=desktop instead writes the 16:9 index.desktop.html.
-bun run assemble <slug> [--format=short|desktop]
+bun run assemble <slug>
 
 # Validate scene-spec(s) against the scene-type manifests (no assembly)
 bun run scene:check [<spec>...]
@@ -116,8 +113,7 @@ bun run scene:gallery
 bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]
 
 # Final full render (only after per-scene QA approval).
-# Add --variant=desktop-1080p to render the 16:9 index.desktop.html.
-bun run render:episode <slug> --format=mp4 [--variant=desktop-1080p] [--keep-local]
+bun run render:episode <slug> --format=mp4 [--keep-local]
 
 # TTS + word-level captions (eleven_v3 only; pacing is native — punctuation, no injection)
 bun run audio examples/<slug>.txt --lang=es --speed=1.04 \
@@ -248,7 +244,7 @@ apps/hyperframe/
                                           comparison, timeline, quote, code,
                                           social-card, progress-ring, line-chart,
                                           contrib-heatmap, decision-tree, outro
-                                          + 7 desktop-first: media-split,
+                                          + 7 asset-led: media-split,
                                           annotated-asset, code-output,
                                           dashboard-composite,
                                           statement-lower-third, logo-grid,

@@ -45,15 +45,20 @@ export const resolveTTSProviderDefaults = (opts: {
   }
 };
 
-export const getTTSProvider = (): TTSProvider => {
-  switch (env.TTS_PROVIDER) {
+export const createTTSProvider = (
+  providerName: TTSProviderName,
+  opts: { apiKey?: string } = {},
+): TTSProvider => {
+  switch (providerName) {
     case "elevenlabs":
-      return new ElevenLabsTTSProvider();
+      return new ElevenLabsTTSProvider(opts);
     case "inworld":
-      return new InworldTTSProvider();
+      return new InworldTTSProvider(opts);
     default: {
-      const _exhaustive: never = env.TTS_PROVIDER;
+      const _exhaustive: never = providerName;
       throw new Error(`Unknown TTS_PROVIDER: ${_exhaustive}`);
     }
   }
 };
+
+export const getTTSProvider = (): TTSProvider => createTTSProvider(env.TTS_PROVIDER);

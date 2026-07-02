@@ -1,5 +1,13 @@
+// contrib-heatmap entrance choreography. See metric/v1/timeline.js for the contract.
+//   tl = global paused timeline   t = this scene's global start (seconds)
+//   s  = selector helper scoped to this instance: s(".ch-cell") -> "#scene-<id> .ch-cell"
+//   p  = resolved params object (p.data = "row/row/.../row", 7 rows of digits 0-4)
+// This is the ONLY scene-type that GENERATES its DOM in the builder: the cell
+// count is data-driven (7xN), so the fragment ships an empty .ch-grid and the
+// builder parses p.data, sizes the grid, and creates one .ch-cell per value
+// BEFORE any tween. This runs synchronously at load — fully deterministic, so
+// identical p.data => identical DOM => identical bytes.
 function build_contrib_heatmap(tl, t, s, p) {
-  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
   const grid = document.querySelector(s(".ch-grid"));
   const rows = String(p && p.data ? p.data : "")
     .split("/")
@@ -11,38 +19,13 @@ function build_contrib_heatmap(tl, t, s, p) {
 
   if (grid && valid) {
     grid.style.setProperty("--ch-cols", String(cols));
-    const panel = document.querySelector(s(".ch-panel"));
-    if (isDesktop) {
-      if (panel) {
-        panel.style.setProperty("--ch-cols", String(cols));
-        panel.style.setProperty("--ch-gap", "10px");
-      }
-      grid.style.setProperty("--ch-gap", "10px");
-      grid.style.setProperty("--ch-grid-h", "440px");
-      if (panel && !panel.querySelector(".ch-months")) {
-        const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        const months = document.createElement("div");
-        months.className = "ch-months";
-        const labelEvery = 4;
-        const labelCount = Math.ceil(cols / labelEvery);
-        for (let i = 0; i < labelCount; i++) {
-          const startCol = i * labelEvery;
-          const span = Math.min(labelEvery, cols - startCol);
-          const m = document.createElement("span");
-          m.className = "ch-month";
-          m.style.gridColumn = startCol + 1 + " / span " + span;
-          m.textContent = MONTHS[i % 12];
-          months.appendChild(m);
-        }
-        panel.insertBefore(months, grid);
-      }
-    } else {
-      const gap = 8;
-      const cellByWidth = Math.floor((832 - (cols - 1) * gap) / cols);
-      const cell = Math.max(20, Math.min(52, cellByWidth));
-      grid.style.setProperty("--ch-cell", cell + "px");
-      grid.style.setProperty("--ch-gap", gap + "px");
-    }
+    // Fixed square cells fit the 9:16 safe band (width ~832px).
+    const gap = 8;
+    const cellByWidth = Math.floor((832 - (cols - 1) * gap) / cols);
+    const cell = Math.max(20, Math.min(52, cellByWidth));
+    grid.style.setProperty("--ch-cell", cell + "px");
+    grid.style.setProperty("--ch-gap", gap + "px");
+    // Column-major order so the diagonal sweep reads left-to-right per week.
     for (let c = 0; c < cols; c++) {
       for (let r = 0; r < 7; r++) {
         const div = document.createElement("div");
@@ -60,6 +43,8 @@ function build_contrib_heatmap(tl, t, s, p) {
   tl.from(s(".ch-title"), { y: 42, opacity: 0, duration: 0.62, ease: "power2.out" }, t + 0.45);
   tl.from(s(".ch-panel"), { y: 40, opacity: 0, scale: 0.96, duration: 0.55, ease: "power3.out", transformOrigin: "50% 50%" }, t + 0.9);
 
+  // Diagonal cascade: each cell starts at scale 0 (hidden at literal 0), then
+  // pops in keyed to its column+row sweep index — a left-to-right wipe.
   const cells = gsap.utils.toArray(s(".ch-cell"));
   tl.set(cells, { scale: 0, autoAlpha: 0, transformOrigin: "50% 50%" }, 0);
   const sweepStep = 0.05;

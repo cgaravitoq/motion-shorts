@@ -1,3 +1,11 @@
+/**
+ * Render telemetry — stage timers, asset inventory, NDJSON ledger.
+ *
+ * Wraps `apps/hyperframe/scripts/render-episode.ts` boundaries with
+ * `performance.now()` timers and persists a one-line summary per run to
+ * `apps/hyperframe/.metrics/runs.ndjson`. The dashboard surfacing the
+ * ledger is intentionally deferred to a follow-up.
+ */
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
@@ -41,6 +49,12 @@ export interface AssetInventory {
   topFiles: Array<{ path: string; bytes: number }>;
 }
 
+// Walks `dir` recursively and returns the file inventory. Symlinks are
+// followed for file content (assets/voice.mp3 lives behind a symlink in the
+// working copy), but the walker skips already-visited real paths so a
+// pathological loop can't hang the render. Errors on individual files are
+// swallowed; the inventory is best-effort observability, not a correctness
+// signal.
 export const collectAssetInventory = (
   dir: string,
   { topN = 5 }: { topN?: number } = {},
@@ -67,6 +81,7 @@ export const collectAssetInventory = (
         if (seen.has(real)) continue;
         seen.add(real);
       } catch {
+        // Broken symlink — skip.
         continue;
       }
       if (stat.isDirectory()) {
@@ -95,6 +110,9 @@ export const formatBytes = (bytes: number): string => {
     value /= 1024;
     unit += 1;
   }
+  // Show one decimal only when the value has a fractional part below 10.
+  // Whole values like 2048B (=2KB) and 4MiB (=4MB) read cleaner as "2KB",
+  // not "2.0KB".
   const useDecimal = unit > 0 && value < 10 && Math.round(value * 10) % 10 !== 0;
   const rounded = useDecimal ? value.toFixed(1) : Math.round(value);
   return `${rounded}${units[unit]}`;
@@ -171,6 +189,9 @@ export const buildRecord = ({
   ts: new Date().toISOString(),
   slug,
   format,
+  // variant is optional for back-compat with callers that omit it. Default to
+  // "short" so existing ledger queries can group by variant without nullable
+  // casing.
   variant: variant ?? "short",
   quality,
   fps,

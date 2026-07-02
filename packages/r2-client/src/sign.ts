@@ -108,3 +108,56 @@ export const signRequest = (
     },
   };
 };
+
+export interface PresignRequestArgs extends SignRequestArgs {
+  expiresSeconds: number;
+}
+
+export const presignRequest = ({
+  config,
+  method,
+  key,
+  payloadHash,
+  headers = {},
+  now = new Date(),
+  expiresSeconds,
+}: PresignRequestArgs): { url: string; headers: Record<string, string> } => {
+  const host = new URL(config.endpoint).host;
+  const amzDate = timestamp(now);
+  const dateStamp = amzDate.slice(0, 8);
+  const credentialScope = `${dateStamp}/${REGION}/${SERVICE}/aws4_request`;
+  const canonicalUri = `${config.endpointPrefix}/${encodeKey(key)}`;
+  const requestHeaders: Record<string, string> = {
+    host,
+    "x-amz-content-sha256": payloadHash,
+    ...Object.fromEntries(Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value])),
+  };
+  const signedHeaders = signedHeadersString(requestHeaders);
+  const query = {
+    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+    "X-Amz-Credential": `${config.accessKeyId}/${credentialScope}`,
+    "X-Amz-Date": amzDate,
+    "X-Amz-Expires": String(expiresSeconds),
+    "X-Amz-SignedHeaders": signedHeaders,
+  };
+  const canonicalQueryString = Object.entries(query)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
+    .join("&");
+
+  const canonicalRequest = [
+    method,
+    canonicalUri,
+    canonicalQueryString,
+    canonicalHeaderString(requestHeaders),
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+  const stringToSign = ["AWS4-HMAC-SHA256", amzDate, credentialScope, sha256Hex(canonicalRequest)].join("\n");
+  const signature = hmacHex(signingKey(config.secretAccessKey, dateStamp), stringToSign);
+
+  return {
+    url: `${config.endpoint}${canonicalUri}?${canonicalQueryString}&X-Amz-Signature=${signature}`,
+    headers: requestHeaders,
+  };
+};

@@ -1,7 +1,6 @@
 function build_bars(tl, t, s, p) {
-  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
-  const axis = isDesktop ? "scaleY" : "scaleX";
-  const origin = isDesktop ? "50% 100%" : "0% 50%";
+  const axis = "scaleX";
+  const origin = "0% 50%";
   tl.set(s(".br-fill"), { [axis]: 0, transformOrigin: origin }, 0);
   tl.from(s(".br-eyebrow"), { y: 18, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.2);
   tl.from(s(".br-title"), { y: 42, opacity: 0, duration: 0.62, ease: "power2.out" }, t + 0.45);

@@ -1,4 +1,4 @@
-export { env } from "./env";
+export { env, loadWorkspaceEnv } from "./env";
 export {
   createCanonicalRequest,
   createStringToSign,

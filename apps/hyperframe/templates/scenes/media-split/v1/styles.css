@@ -1,3 +1,7 @@
+/* media-split portrait (9:16) — title top, image mid (full-width), bullets below.
+   The image is the primary asset (rounded, bordered, soft shadow) and is never
+   wrapped in a separate glass card. data-side is a no-op (the stack is vertical
+   regardless). */
 
 .ms- { gap: 0; }
 .ms-copy { display: contents; }
@@ -15,5 +19,6 @@
 .ms-point__mark { flex: 0 0 auto; margin-top: 12px; width: 18px; height: 18px; border-radius: 6px; background: var(--source-accent-2); }
 .ms-point__text { font-size: 32px; line-height: 1.26; font-weight: 540; color: var(--paper); }
 
+/* Source order is copy-then-media; reassert visual order so title leads. */
 .ms-eyebrow { order: 0; }
 .ms-title { order: 1; }

@@ -1,14 +1,20 @@
 #!/usr/bin/env bun
+/**
+ * Assemble an episode's composition from its scene-spec.json.
+ *
+ *   bun run scripts/assemble.ts <slug> [--print]
+ *
+ * Reads  src/episodes/<slug>/scene-spec.json
+ * Writes src/episodes/<slug>/index.html  (9:16, 1080x1920)
+ */
 import fs from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { type AssembledEpisode, assembleEpisode, type EpisodeFormat } from "./lib/assemble-episode";
+import { type AssembledEpisode, assembleEpisode } from "./lib/assemble-episode";
 
 const expectedCwd = path.resolve(import.meta.dirname, "..");
 if (path.resolve(process.cwd()) !== expectedCwd) {
-  console.error(
-    `assemble: must run from ${expectedCwd}. Hint: cd apps/hyperframe && bun run assemble <slug>`,
-  );
+  console.error(`assemble: must run from ${expectedCwd}. Hint: cd apps/hyperframe && bun run assemble <slug>`);
   process.exit(1);
 }
 
@@ -16,7 +22,6 @@ const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
   options: {
     print: { type: "boolean", default: false },
-    format: { type: "string", default: "short" },
   },
   allowPositionals: true,
 });
@@ -27,12 +32,7 @@ if (!slug) {
   process.exit(1);
 }
 
-if (values.format !== "short" && values.format !== "desktop") {
-  console.error(`assemble: --format must be "short" or "desktop", got "${values.format}"`);
-  process.exit(1);
-}
-const format = values.format as EpisodeFormat;
-const indexFilename = format === "desktop" ? "index.desktop.html" : "index.html";
+const indexFilename = "index.html";
 
 const episodeDir = path.resolve("src/episodes", slug);
 const specPath = path.join(episodeDir, "scene-spec.json");
@@ -46,7 +46,7 @@ if (!spec.slug) spec.slug = slug;
 
 let result: AssembledEpisode;
 try {
-  result = assembleEpisode(spec, { format });
+  result = assembleEpisode(spec);
 } catch (err) {
   console.error(`assemble: ${(err as Error).message}`);
   process.exit(1);

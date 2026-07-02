@@ -1,6 +1,5 @@
 function build_statementLowerThird(tl, t, s, p) {
-  const isDesktop = document.getElementById("ep-stage")?.dataset.format === "desktop-1080p";
-  const attrOpacity = isDesktop ? 0.4 : 1;
+  const attrOpacity = 1;
 
   tl.set(s(".slt-statement"), { yPercent: 110, opacity: 0 }, 0);
   tl.set(s(".slt-attribution"), { y: 18, opacity: 0 }, 0);

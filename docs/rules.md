@@ -126,10 +126,10 @@ For diagrams, pick the frame by density. A compact chart or small decision diagr
 Run from `apps/hyperframe/` cwd:
 
 - `bun run new:episode <slug> [--intent=informative|data|workflow|social|brand|vfx]` — scaffold a starter `scene-spec.json` + assemble `index.html`.
-- `bun run assemble <slug> [--format=short|desktop]` — regenerate the index from `scene-spec.json` (run after every spec edit). `--format=short` (default) writes `index.html`; `--format=desktop` writes the 16:9 `index.desktop.html` (1920x1080).
+- `bun run assemble <slug>` — regenerate `index.html` from `scene-spec.json` (run after every spec edit).
 - `bun run scene:check [<spec>...]` — validate scene-spec(s) against scene-type manifests (no assembly).
 - `bun run scene:gallery` — generate the gallery episode exercising every scene-type.
-- `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2] [--frames=1|3] [--format=short|desktop]` — per-scene visual QA: snapshots key frames per scene + `hyperframes inspect` for overflow/overlap. Writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. No full mp4. `--scenes` re-checks only changed scenes; `--frames=3` adds entry/mid/late frames for motion debugging (default `1`); `--format=desktop` QAs the 16:9 variant.
+- `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2] [--frames=1|3]` — per-scene visual QA: snapshots key frames per scene + `hyperframes inspect` for overflow/overlap. Writes `renders/<slug>-qa/<scene-id>/*.png` + `report.json`. No full mp4. `--scenes` re-checks only changed scenes; `--frames=3` adds entry/mid/late frames for motion debugging (default `1`).
 - `bun run render:episode <slug> --format=mp4 [--keep-local]` — final full render (after per-scene approval).
 - `bun run audio <script.txt> --lang=es --speed=1.04 [--out=<dir>]` — TTS + captions (`generate-audio.ts`). Takes any script path as a positional; `--out` defaults to `out/audio/`. Point it at the canonical voice dir per rule 21, e.g. `--out=public/voice/<slug>`.
 
