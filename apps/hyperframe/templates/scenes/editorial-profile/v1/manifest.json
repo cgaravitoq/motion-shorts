@@ -1,0 +1,34 @@
+{
+  "id": "editorial-profile@1",
+  "type": "editorial-profile",
+  "version": 1,
+  "label": "Editorial profile (hero name + features)",
+  "description": "Dark editorial profile with a baked hero image, oversized name, accent tagline, feature rows, price pill, and optional supporting note.",
+  "builder": "build_editorialProfile",
+  "classPrefix": "edp",
+  "defaultDuration": 8,
+  "intentTags": ["informative", "brand", "social"],
+  "slots": {
+    "brand": { "kind": "text", "required": true },
+    "kicker": { "kind": "text", "required": true },
+    "name": { "kind": "text", "required": true },
+    "tagline": { "kind": "text", "required": true },
+    "accentColor": { "kind": "text", "required": false, "default": "#f4b840" },
+    "artImage": { "kind": "image", "required": true },
+    "features": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 4,
+      "item": {
+        "text": { "kind": "text", "required": true }
+      }
+    },
+    "price": { "kind": "text", "required": true },
+    "note": { "kind": "text", "required": false, "default": "" },
+    "counter": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "hero image stays clipped within the top-right frame edge",
+    "feature dividers span the 920px content column"
+  ]
+}

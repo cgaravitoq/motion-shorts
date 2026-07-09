@@ -15,7 +15,8 @@ A short is a typed `scene-spec.json` at `apps/hyperframe/src/episodes/<slug>/sce
 
 ## 2. Scene-types — the only building blocks
 
-There are 39 scene-types (24 general + 15 brand-pack-driven `promo-*` story-ad types). The 24 general scene-types: `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `outro`.
+There are 44 scene-types (29 general + 15 brand-pack-driven `promo-*` story-ad types).
+The 29 general scene-types are `hook`, `title-cards`, `flow`, `fanout`, `metric`, `bars`, `big-stat`, `comparison`, `timeline`, `quote`, `code`, `social-card`, `progress-ring`, `line-chart`, `contrib-heatmap`, `decision-tree`, `media-split`, `annotated-asset`, `code-output`, `dashboard-composite`, `statement-lower-third`, `logo-grid`, `before-after`, `editorial-hook`, `editorial-lineup`, `editorial-profile`, `editorial-cheat-sheet`, `editorial-outro`, and `outro`.
 
 Repeatable slots have ranges:
 

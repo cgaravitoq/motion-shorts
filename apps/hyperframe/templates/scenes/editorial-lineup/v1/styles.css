@@ -1,0 +1,112 @@
+#ep-stage:has(.edl) #bg-field {
+  background: var(--brand-ink, #0d0d0d);
+}
+#ep-stage:has(.edl) #bg-grid,
+#ep-stage:has(.edl) #bg-grain,
+#ep-stage:has(.edl) #bg-vignette {
+  display: none;
+}
+#ep-stage:has(.edl) #brand-corner {
+  display: block;
+  top: 126px;
+  right: 64px;
+  width: 72px;
+  opacity: 0.12;
+}
+#ep-stage:has(.edl) #captions {
+  bottom: 1%;
+  height: 10%;
+  padding: 0 60px;
+  box-sizing: border-box;
+  font-size: 52px;
+}
+
+.scene-pad.edl {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  background: var(--brand-ink, #0d0d0d);
+}
+.edl-brand,
+.edl-kicker,
+.edl-title,
+.edl-counter {
+  position: absolute;
+  margin: 0;
+}
+.edl-brand {
+  left: 80px;
+  top: 120px;
+  color: var(--brand-ink-inverse, #ffffff);
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 51px;
+}
+.edl-kicker {
+  left: 80px;
+  top: 330px;
+  color: var(--brand-muted, #8c8c8c);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 41px;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+.edl-title {
+  left: 80px;
+  top: 400px;
+  width: 920px;
+  color: var(--brand-ink-inverse, #ffffff);
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 106px;
+  letter-spacing: -1.5px;
+}
+.edl-cards {
+  position: absolute;
+  left: 80px;
+  top: 720px;
+  width: 920px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.edl-card {
+  box-sizing: border-box;
+  height: 300px;
+  padding: 58px 56px;
+  overflow: hidden;
+  background: var(--brand-surface, #1a1a1a);
+  border: 1px solid transparent;
+  border-radius: var(--brand-radius-card, 32px);
+}
+.edl-card-title {
+  margin: 0;
+  color: var(--brand-ink-inverse, #ffffff);
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 68px;
+}
+.edl-card-body {
+  margin: 24px 0 0;
+  width: 808px;
+  color: var(--brand-muted, #b3b3b3);
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 46px;
+}
+.edl-cards--4 {
+  gap: 24px;
+}
+.edl-cards--4 .edl-card {
+  height: 226px;
+  padding-top: 36px;
+}
+.edl-counter {
+  left: 80px;
+  top: 1760px;
+  color: var(--brand-muted, #666666);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 39px;
+}

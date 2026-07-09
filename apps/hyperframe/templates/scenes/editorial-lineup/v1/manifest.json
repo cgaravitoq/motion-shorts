@@ -1,0 +1,30 @@
+{
+  "id": "editorial-lineup@1",
+  "type": "editorial-lineup",
+  "version": 1,
+  "label": "Editorial lineup (stacked cards)",
+  "description": "Dark editorial slide with a brand label, kicker, large headline, and two to four stacked descriptive cards.",
+  "builder": "build_editorialLineup",
+  "classPrefix": "edl",
+  "defaultDuration": 7,
+  "intentTags": ["informative", "brand", "social"],
+  "slots": {
+    "brand": { "kind": "text", "required": true },
+    "kicker": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "cards": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 4,
+      "item": {
+        "title": { "kind": "text", "required": true },
+        "body": { "kind": "text", "required": true }
+      }
+    },
+    "counter": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "cards remain inside the 920px content column",
+    "card copy does not overflow its row"
+  ]
+}

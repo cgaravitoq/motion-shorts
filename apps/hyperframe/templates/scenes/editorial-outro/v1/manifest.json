@@ -1,0 +1,19 @@
+{
+  "id": "editorial-outro@1",
+  "type": "editorial-outro",
+  "version": 1,
+  "label": "Editorial announcement CTA",
+  "description": "Full-frame editorial announcement with a brand label, rollout kicker, large CTA headline, supporting line, and optional sequence counter.",
+  "builder": "build_editorialOutro",
+  "classPrefix": "edo",
+  "defaultDuration": 4,
+  "intentTags": ["informative", "brand", "social"],
+  "slots": {
+    "brand": { "kind": "text", "required": true },
+    "kicker": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "subtitle": { "kind": "text", "required": true },
+    "counter": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": ["headline remains within the 920px text column"]
+}

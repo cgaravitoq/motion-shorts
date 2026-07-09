@@ -1,0 +1,11 @@
+{
+  "brand": "Acme",
+  "kicker": "The product family",
+  "title": "Three products.<br>One system.",
+  "cards": [
+    { "title": "Alpha", "body": "Maximum capability for the hardest work." },
+    { "title": "Beta", "body": "Balanced performance for everyday teams." },
+    { "title": "Gamma", "body": "Fast and affordable for high-volume tasks." }
+  ],
+  "counter": "02 / 07"
+}

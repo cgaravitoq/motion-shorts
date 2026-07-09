@@ -1,0 +1,82 @@
+#ep-stage:has(.edo) #bg-field {
+  background: var(--brand-ink, #0d0d0d);
+}
+#ep-stage:has(.edo) #bg-grid,
+#ep-stage:has(.edo) #bg-grain,
+#ep-stage:has(.edo) #bg-vignette {
+  display: none;
+}
+#ep-stage:has(.edo) #brand-corner {
+  display: block;
+  top: 126px;
+  right: 64px;
+  width: 72px;
+  opacity: 0.12;
+}
+#ep-stage:has(.edo) #captions {
+  bottom: 1%;
+  height: 10%;
+  padding: 0 60px;
+  box-sizing: border-box;
+  font-size: 52px;
+}
+
+.scene-pad.edo {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  background: var(--brand-ink, #0d0d0d);
+}
+.edo-brand,
+.edo-kicker,
+.edo-title,
+.edo-subtitle,
+.edo-counter {
+  position: absolute;
+  margin: 0;
+}
+.edo-brand {
+  left: 80px;
+  top: 120px;
+  color: var(--brand-ink-inverse, #ffffff);
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 51px;
+}
+.edo-kicker {
+  left: 80px;
+  top: 633px;
+  color: var(--source-accent-2, #f4b840);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 41px;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+.edo-title {
+  left: 80px;
+  top: 703px;
+  width: 920px;
+  color: var(--brand-ink-inverse, #ffffff);
+  font-size: 112px;
+  font-weight: 700;
+  line-height: 122px;
+  letter-spacing: -2px;
+}
+.edo-subtitle {
+  left: 80px;
+  top: 1193px;
+  width: 880px;
+  color: var(--brand-muted, #b3b3b3);
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 53px;
+}
+.edo-counter {
+  left: 80px;
+  top: 1760px;
+  color: var(--brand-muted, #666666);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 39px;
+}

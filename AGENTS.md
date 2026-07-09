@@ -22,11 +22,13 @@ Shorts are authored as a typed **scene-spec.json** (an ordered list of parametri
 ```
 apps/hyperframe/               Shorts pipeline (Hyperframes 0.6.x + GSAP 3.15.x)
   templates/_shell/            Universal shell: look + paused timeline + tracks, emitted into every episode
-  templates/scenes/<type>/v1/  39 scene-types — 24 general (hook, title-cards, flow, fanout, metric, bars,
+  templates/scenes/<type>/v1/  44 scene-types - 29 general (hook, title-cards, flow, fanout, metric, bars,
                                big-stat, comparison, timeline, quote, code, social-card,
                                progress-ring, line-chart, contrib-heatmap, decision-tree,
                                media-split, annotated-asset, code-output, dashboard-composite,
-                               statement-lower-third, logo-grid, before-after, outro)
+                               statement-lower-third, logo-grid, before-after, editorial-hook,
+                               editorial-lineup, editorial-profile, editorial-cheat-sheet,
+                               editorial-outro, outro)
                                plus 15 brand-pack-driven promo-* story-ad types
   scripts/lib/                 Engine: scene-instantiator, assemble-episode, scene-spec, scene-router
   src/episodes/<slug>/         scene-spec.json (source of truth) -> generated index.html
@@ -53,7 +55,7 @@ Breaking any of these will corrupt the render. They are non-negotiable.
 
 A short is a `scene-spec.json`. To author one (CWD `apps/hyperframe/`):
 
-1. **Pick scene-types.** `bun run scene:gallery` (gallery episode) to choose from the 39 types. Each type's exact slots: read `templates/scenes/<type>/v1/manifest.json`. Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4). `outro` is the pinned brand sign-off, always last. Seven types are asset-led (media-split, annotated-asset, code-output, dashboard-composite, statement-lower-third, logo-grid, before-after) — image slots bind paths under the episode's `assets/`.
+1. **Pick scene-types.** `bun run scene:gallery` (gallery episode) to choose from the 44 types. Each type's exact slots: read `templates/scenes/<type>/v1/manifest.json`. Repeatable slots have ranges (e.g. `title-cards.cards` 2-6, `flow.steps` 2-6, `metric.stats` 1-4). `outro` is the pinned brand sign-off, always last. Seven types are asset-led (media-split, annotated-asset, code-output, dashboard-composite, statement-lower-third, logo-grid, before-after) - image slots bind paths under the episode's `assets/`.
 2. **Scaffold + fill.** `bun run new:episode <slug> [--intent=...]` writes a starter spec; edit `src/episodes/<slug>/scene-spec.json` slots, then `bun run scene:check <slug-spec>` to validate.
 3. **Assemble.** `bun run assemble <slug>` regenerates `index.html` (run after every spec edit).
 4. **Per-scene QA (HITL).** `bun run scripts/scene-qa.ts <slug> [--scenes=id1,id2]` snapshots each scene + runs `hyperframes inspect` (overflow/overlap), no full render. Iterate only rejected scenes.

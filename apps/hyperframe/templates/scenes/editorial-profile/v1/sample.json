@@ -1,0 +1,16 @@
+{
+  "brand": "Acme",
+  "kicker": "Meet the flagship",
+  "name": "Alpha",
+  "tagline": "For the hardest problems.",
+  "accentColor": "#f4b840",
+  "artImage": "assets/generated/placeholder-asset.png",
+  "features": [
+    { "text": "Complex problem solving" },
+    { "text": "Security research" },
+    { "text": "Frontier-level reasoning" }
+  ],
+  "price": "$5 in · $30 out per 1M tokens",
+  "note": "",
+  "counter": "03 / 07"
+}

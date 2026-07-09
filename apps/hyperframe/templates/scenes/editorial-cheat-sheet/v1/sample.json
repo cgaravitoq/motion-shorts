@@ -1,0 +1,12 @@
+{
+  "brand": "Acme",
+  "kicker": "Cheat sheet",
+  "title": "Which one should<br>you use?",
+  "choices": [
+    { "prompt": "Hardest problems?", "answer": "Go Alpha.", "tone": "warm" },
+    { "prompt": "Everyday work at scale?", "answer": "Go Beta.", "tone": "green" },
+    { "prompt": "Speed on a budget?", "answer": "Go Gamma.", "tone": "blue" }
+  ],
+  "note": "Choose the right capability for every task.",
+  "counter": "06 / 07"
+}

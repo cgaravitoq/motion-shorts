@@ -1,0 +1,32 @@
+{
+  "id": "editorial-cheat-sheet@1",
+  "type": "editorial-cheat-sheet",
+  "version": 1,
+  "label": "Editorial cheat sheet (three choices)",
+  "description": "Dark editorial decision slide with a headline and two to four question-and-answer choices revealed in sequence.",
+  "builder": "build_editorialCheatSheet",
+  "classPrefix": "edc",
+  "defaultDuration": 12,
+  "intentTags": ["informative", "brand", "social"],
+  "slots": {
+    "brand": { "kind": "text", "required": true },
+    "kicker": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "choices": {
+      "kind": "repeat",
+      "min": 2,
+      "max": 4,
+      "item": {
+        "prompt": { "kind": "text", "required": true },
+        "answer": { "kind": "text", "required": true },
+        "tone": { "kind": "text", "required": false, "default": "neutral" }
+      }
+    },
+    "note": { "kind": "text", "required": false, "default": "" },
+    "counter": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "three-choice layout preserves the 310px vertical rhythm",
+    "answers remain readable above the caption strip"
+  ]
+}

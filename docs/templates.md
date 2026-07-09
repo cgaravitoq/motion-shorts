@@ -9,7 +9,7 @@ scene-spec.json  ──(assembler)──>  index.html  ──(render)──>  mp
 
 `index.html` is **generated**. Never edit it by hand; edit the spec and re-run `bun run assemble <slug>`.
 
-This doc is the **scene-type authoring reference**: the shell, the 39 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
+This doc is the **scene-type authoring reference**: the shell, the 44 scene-types and their slots, how to add a new scene-type, and how scene-types compose.
 
 ## Layout
 
@@ -47,7 +47,7 @@ The build engine is `apps/hyperframe/scripts/lib/`:
 | `scene-spec.ts` | `validateSceneSpec` — fast pre-flight against manifests (no assembly) |
 | `scene-router.ts` | intent → recommended scene-type skeleton + typed summaries |
 
-## The 39 scene-types
+## The 44 scene-types
 
 These are the only building blocks. `hook` opens; `outro` is the pinned brand sign-off, always last, on fixed track 7. Repeatable slots have a count range — the layout and stagger adapt automatically to the count. The seven `media-split` through `before-after` are the asset-led component library — layouts that bind an image or screenshot slot. The fifteen `promo-*` types are the brand-pack-driven story-ad family (light full-frame layouts replicated from Figma ad references; see `docs/brand-packs.md`): seven event-promo types plus eight carousel types.
 
@@ -76,6 +76,11 @@ These are the only building blocks. `hook` opens; `outro` is the pinned brand si
 | `statement-lower-third` | Large statement anchored to the lower third | 7 | — | `statement*` (rich), `attribution?`, `image?` (full-bleed bg) |
 | `logo-grid` | Social-proof band of name chips/wordmarks | 7 | `items` **3-8** (`label*`) | `title?` (rich), `eyebrow?` |
 | `before-after` | Two images with a vertical wipe reveal | 7 | — | `imageBefore*`, `imageAfter*`, `labelBefore?`, `labelAfter?`, `title?` (rich), `eyebrow?` |
+| `editorial-hook` | Dark editorial opener with a headline and baked hero-art band | 6 | - | `brand*`, `kicker*`, `title*` (rich), `subtitle*`, `artImage*`, `counter?` |
+| `editorial-lineup` | Editorial headline with stacked descriptive cards | 7 | `cards` **2-4** (`title*`, `body*`) | `brand*`, `kicker*`, `title*` (rich), `counter?` |
+| `editorial-profile` | Editorial profile with hero art, features, and pricing | 8 | `features` **2-4** (`text*`) | `brand*`, `kicker*`, `name*`, `tagline*`, `accentColor?`, `artImage*`, `price*`, `note?`, `counter?` |
+| `editorial-cheat-sheet` | Sequential question-and-answer decision slide | 12 | `choices` **2-4** (`prompt*`, `answer*`, `tone?`) | `brand*`, `kicker*`, `title*` (rich), `note?`, `counter?` |
+| `editorial-outro` | Full-frame editorial announcement CTA | 4 | - | `brand*`, `kicker*`, `title*` (rich), `subtitle*`, `counter?` |
 | `outro` | Pinned brand sign-off (track 7, last) | 5.5 | — | `source?` |
 | `promo-intro-card` | Story-ad opener: speaker photo card with badge notch | 4.5 | — | `badge*`, `speakerName*`, `speakerRole*`, `title*` (rich), `date*`, `photoImage*`, `logoImage*` |
 | `promo-hero` | Story-ad hero: photo card over dimmed composite bg | 4.5 | — | `badge*`, `title*` (rich), `body*` (rich), `cta*`, `bgImage*`, `photoImage*`, `logoImage*` |

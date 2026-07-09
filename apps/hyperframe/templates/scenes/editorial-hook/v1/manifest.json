@@ -1,0 +1,23 @@
+{
+  "id": "editorial-hook@1",
+  "type": "editorial-hook",
+  "version": 1,
+  "label": "Editorial hook (headline + hero art)",
+  "description": "Full-frame dark editorial opener with a small brand label, dated kicker, oversized headline, supporting line, and a baked hero-art band.",
+  "builder": "build_editorialHook",
+  "classPrefix": "edh",
+  "defaultDuration": 6,
+  "intentTags": ["informative", "brand", "social"],
+  "slots": {
+    "brand": { "kind": "text", "required": true },
+    "kicker": { "kind": "text", "required": true },
+    "title": { "kind": "richText", "required": true },
+    "subtitle": { "kind": "text", "required": true },
+    "artImage": { "kind": "image", "required": true },
+    "counter": { "kind": "text", "required": false, "default": "" }
+  },
+  "validation": [
+    "hero art fills the 1080x560 lower band",
+    "headline and subtitle remain above the art"
+  ]
+}
