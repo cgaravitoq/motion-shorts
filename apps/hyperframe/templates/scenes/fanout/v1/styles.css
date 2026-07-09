@@ -14,8 +14,6 @@
 .fo-row--synth { top: 536px; left: 456px; transform: translate(-50%, -50%); }
 .fo-row--workers { top: 300px; left: 0; width: 912px; height: 0; }
 
-.fo-row--workers .fo-node--worker { position: absolute; top: 0; }
-
 .fo-node { box-sizing: border-box; display: flex; align-items: center; gap: 18px; padding: 26px 34px; border: 1px solid var(--line); border-radius: 22px; background: var(--panel); box-shadow: 0 22px 70px rgba(0,0,0,0.3); white-space: nowrap; }
 .fo-node__dot { flex: none; width: 18px; height: 18px; border-radius: 999px; background: var(--source-accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--source-accent) 22%, transparent); }
 .fo-node__label { font-size: 40px; line-height: 1.05; font-weight: 740; color: var(--paper); letter-spacing: 0; white-space: nowrap; }
@@ -26,3 +24,5 @@
 .fo-node--worker .fo-node__dot { width: 14px; height: 14px; background: var(--source-accent-2); box-shadow: 0 0 0 5px color-mix(in srgb, var(--source-accent-2) 22%, transparent); }
 .fo-node--synth { padding: 28px 40px; border-color: color-mix(in srgb, var(--source-accent-2) 55%, var(--line)); background: color-mix(in srgb, var(--source-accent-2) 8%, var(--panel)); }
 .fo-node--synth .fo-node__dot { background: var(--source-accent-2); box-shadow: 0 0 0 7px color-mix(in srgb, var(--source-accent-2) 24%, transparent); }
+
+.fo-row--workers .fo-node--worker { position: absolute; top: 0; }
